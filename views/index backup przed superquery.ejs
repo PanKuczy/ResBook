@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResBook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Libre+Baskerville&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body>
+    <header>    
+        <div class="top-menu">
+            <h1><a href="/">Resbook</a></h1>
+            <h3>Hello, <%= user %></h3>
+        </div>
+    </header>
+    <div class="container">
+        <div class="box" id="categories-list">
+            <h3>Categories:</h3>
+            <ul>
+            <% for(let item of categories){%>
+                <li class="categories-item"><%= item?.name ?? null %></li>
+            <% } %>
+            </ul>
+        </div>
+        <div class="box" id="main-content">
+    
+            <% for(let item of resources){%>
+    
+            <div class="user-book">
+                <a href="/resource/<%= item.id %>" class="book-heading">
+                    <!-- <div class="book-heading"> -->
+
+                        <div class="book-cover">
+                            <img src="<%= item?.cover_url ?? null %>">
+                        </div>
+                        <div class="book-heading-text">
+                            <p class="book-categories"><%= item?.categories %></p>
+                            <h2><%= item.title %></h2>
+                            <h3><%= item?.subtitle ?? null %></h3>
+                            <h5><span class="author-text">By <%= item.authors %></span><span class="year-text"><%= item?.publication_year ?? null -%><%if(item?.place){%>,<% } %>
+                            <%- item?.place ?? null -%></span></h5>
+                        </div>
+
+                    <!-- </div> -->
+                </a>
+                <div class="notes-box" <%= showElement ? '' : 'hidden="true"' %>>
+                    <p>Note1</p>
+                    <p>Note2</p>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <footer>
+        footer-sruter
+    </footer>
+</body>
+</html>
