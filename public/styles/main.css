@@ -225,6 +225,15 @@ margin: 50px 5% 50px 5%;
     width: 100%;
     border-top: 5px solid;
 }
+.notes-box h4{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.notes-sortby{
+    text-align: end;
+    font-weight: normal;
+}
 .single-note-item{
     border-top: 1px dashed;
 }

@@ -31,7 +31,7 @@
                 </div>
     <!-- NOTES     -->
                 <div class="notes-box" <%= showElement ? '' : 'hidden="true"' %>>
-                    <h4>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="handler('new-note')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></h4>
+                    <h4><span>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="handler('new-note')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></span> <span class="notes-sortby">Sort by:</span></h4>
     <!-- ADD NOTE -->
                     <form class="new-note hidden" action="/add-note" method="post" id="add-new-note">
                         <div class="new-note-box">
