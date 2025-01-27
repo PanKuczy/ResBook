@@ -3,6 +3,37 @@
 </footer>
 
 <script>
+// TOGGLE RESOURCE
+function toggleResource(id) {
+        console.log("Clicked ID: ", id);
+        const rollout = document.getElementById("notesbox-" + id);
+        // change icon
+        let icon = document.getElementById('toggle-notes-icon-' + id);
+        if (icon.classList.value === 'fa-solid fa-circle-chevron-down') {
+            icon.classList.value = 'fa-solid fa-circle-chevron-up';
+        } else {
+            icon.classList.value = 'fa-solid fa-circle-chevron-down';
+        }
+
+        // Check the current display style and toggle between 'none' and 'flex'
+        // if (rollout.style.display === 'none' || rollout.style.display === '') {
+        //     rollout.style.display = 'block';
+        // } else {
+        //     rollout.style.display = 'none';
+        // }
+        console.log(rollout.classList);
+        if (rollout.classList.value == "notes-box hidden" || rollout.classList.value === '') {
+            rollout.classList.remove("hidden");
+            rollout.classList.add("visible");
+        } else {
+            rollout.classList.add("hidden");
+            rollout.classList.remove("visible");
+        }
+    }
+
+
+// ONCLICKS
+
     function handler(id) {
         console.log(id);
         document.getElementById("add-" + id).classList.remove("hidden")

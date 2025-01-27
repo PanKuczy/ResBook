@@ -10,8 +10,9 @@
 
         <%- include('partials/categories_bar.ejs'); -%>
         <div class="box" id="main-content">
-    
+            <% // console.log(resources);%>
             <% for(let item of resources){%>
+                <% const resourceIndex = resources.indexOf(item); %>
     <!-- BOOK -->
             <div class="user-book deletable-item" id="resource-id-<%= item?.resource_id %>">
                 <a href="/resource/<%= item.resource_id %>" class="book-heading">
@@ -27,10 +28,11 @@
                     </div>
                 </a>
                 <div class="resource-expand">
-                    <button class="icon-button"><i class="fa-solid fa-circle-chevron-down"></i></button>
+                    <button class="icon-button" onclick="toggleResource(<%= item?.resource_id %>)" type="button"><i id="toggle-notes-icon-<%= item?.resource_id %>" class="fa-solid fa-circle-chevron-down"></i></button>
                 </div>
     <!-- NOTES     -->
-                <div class="notes-box" <%= showElement ? '' : 'hidden="true"' %>>
+     
+                <div class="notes-box hidden" <%= //showElement ? '' : 'hidden="true"' %>  id="notesbox-<%= item?.resource_id %>">
                     <h4><span>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="handler('new-note')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></span> <span class="notes-sortby">Sort by:</span></h4>
     <!-- ADD NOTE -->
                     <form class="new-note hidden" action="/add-note" method="post" id="add-new-note">
@@ -68,8 +70,8 @@
                     <% let notesTagsCorelArray = [notes_tags_corel]; %>
                     <% notesTagsCorelArray = [...notes_tags_corel]; %> 
 
-                    <% if (resources[0]?.notes && resources[0].notes.length > 0) { %>
-                        <% for(let note of resources[0]?.notes ?? null){%>
+                    <% if (resources[resourceIndex]?.notes && resources[resourceIndex].notes.length > 0) { %>
+                        <% for(let note of resources[resourceIndex]?.notes ?? null){%>
                             <div class="single-note-item deletable-item <%if (!note?.note_id){%><%='hidden'%><%}%>" id="note-id-<%= note?.note_id %>">
                                 <% const filteredArray = notesTagsCorelArray.filter((id) => id.note_id == note.note_id ) %>
     <!-- NOTE HEADING -->
