@@ -152,6 +152,7 @@ margin: 50px 5% 50px 5%;
 }
 
 .user-book{
+    position: relative;
     align-content: start;
     justify-content: left;
     background-color: var(--color-graymid);
@@ -162,6 +163,11 @@ margin: 50px 5% 50px 5%;
     border: 0.05em solid;
     border-radius: 5px;
     border-color: var(--color-beige1);
+    outline: 1px solid none;
+}
+.user-book:hover{
+    border-color: var(--color-hover);
+    outline: 1px solid var(--color-hover);
 }
 .year-text{
     float: inline-end;
@@ -170,6 +176,8 @@ margin: 50px 5% 50px 5%;
     display: flex;
     height: max-content;
 }
+
+
 .book-heading-text{
     width: 100%;
     padding-left: 25px;
@@ -203,6 +211,13 @@ margin: 50px 5% 50px 5%;
     color: var(--color-graymid);
     border-radius: 5px;
 }
+
+.resource-expand{
+    position: absolute;
+    right: 18px;
+    bottom: 5px;
+}
+
 .notes-box{
     padding: 25px;
     margin: 0px -25px;

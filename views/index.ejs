@@ -7,7 +7,7 @@
             <input type="hidden" name="delete_resource_id" value="">
             <input type="hidden" name="delete_route" value="">
         </form>
-        
+
         <%- include('partials/categories_bar.ejs'); -%>
         <div class="box" id="main-content">
     
@@ -26,6 +26,9 @@
                         <%- item?.place ?? null -%></span></h5>
                     </div>
                 </a>
+                <div class="resource-expand">
+                    <button class="icon-button"><i class="fa-solid fa-circle-chevron-down"></i></button>
+                </div>
     <!-- NOTES     -->
                 <div class="notes-box" <%= showElement ? '' : 'hidden="true"' %>>
                     <h4>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="handler('new-note')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></h4>
