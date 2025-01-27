@@ -1,45 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>ResBook</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Libre+Baskerville&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles/main.css" />
-    <script src="https://kit.fontawesome.com/4b1644e470.js" crossorigin="anonymous"></script>
-    <!-- <script src="/scripts/scripts.js" defer></script> -->
-
-</head>
-<body>
-    <header>    
-        <div class="top-menu">
-            <h1><a href="/">Resbook</a></h1>
-            <h3>Hello, <%= user %></h3>
-        </div>
-    </header>
+<%- include('partials/header.ejs'); -%>
     <div class="container">
     <!-- DELETE FORM UNIVERSAL -->
         <form id="delete-form" method="post" style="display:none;">
-            <input type="hidden" name="item_id" value="">
-            <input type="hidden" name="resource_id" value="">
+            <input type="hidden" name="delete_item_id" value="">
+            <input type="hidden" name="delete_item_DOMid" value="">
+            <input type="hidden" name="delete_resource_id" value="">
+            <input type="hidden" name="delete_route" value="">
         </form>
-
-        <div class="box" id="categories-list">
-            <h3>Categories:</h3>
-            <ul>
-            <% for(let item of categories){%>
-                <li class="categories-item"><%= item?.name ?? null %></li>
-            <% } %>
-            </ul>
-        </div>
+        
+        <%- include('partials/categories_bar.ejs'); -%>
         <div class="box" id="main-content">
     
             <% for(let item of resources){%>
     <!-- BOOK -->
-            <div class="user-book">
+            <div class="user-book deletable-item" id="resource-id-<%= item?.resource_id %>">
                 <a href="/resource/<%= item.resource_id %>" class="book-heading">
                     <div class="book-cover">
                         <img src="<%= item?.cover_url ?? null %>">
@@ -60,7 +34,6 @@
                         <div class="new-note-box">
                             <div class="tags-rollout">
                                 <button onclick="toggleRollout()" type="button">Select Tags <i id="triangle-icon" class="fa-solid fa-square-caret-right"></i></button>
-                                <!-- <form action="/submit" method="POST"> -->
                                     <div id="tag-rollout">
                                         <div id="tag-container" class="note-heading-row">
                                             <% tags.forEach(tag => { %>
@@ -73,8 +46,6 @@
                                         <button type="button" onclick="addTag()">Add Tag</button>
                                     </div>
                                     <input type="hidden" name="selectedTags" id="selectedTags" />
-                                    <!-- <button type="submit">Submit</button> -->
-                                <!-- </form> -->
                             </div>
                             <!-- <input type="text" name="newNoteTags" placeholder="Tags" autocomplete="off" autofocus="true"  id="new-note-pages"/> -->
                             <textarea type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text" required></textarea>
@@ -94,23 +65,14 @@
                     <% let notesTagsCorelArray = [notes_tags_corel]; %>
                     <% notesTagsCorelArray = [...notes_tags_corel]; %> 
 
-                    <% //console.log("DEBUG notesTagsCorelArray type: ", typeof notesTagsCorelArray); %>
-                    <% //console.log("DEBUG notesTagsCorelArray: ", notesTagsCorelArray); %>
-                    <% //const filteredArray = notesTagsCorelArray.filter((i) => i.note_id == 3 ) %>
-                    <% //console.log("DEBUG filteredTagsArray: ", filteredArray); %>
-                    <% //notesTagsCorelArray.forEach() console.log("DEBUG notesTagsCorelArray: ", notesTagsCorelArray); %>
                     <% if (resources[0]?.notes && resources[0].notes.length > 0) { %>
                         <% for(let note of resources[0]?.notes ?? null){%>
-                            <div class="single-note-item <%if (!note?.note_id){%><%='hidden'%><%}%>" id="note-id-<%= note?.note_id %>">
-                                <% //const tagIds = notes_tags_corel.filter((id) => id.note_id == note.note_id); %>
-                                <% //const tagIds = note.note_id; %>
+                            <div class="single-note-item deletable-item <%if (!note?.note_id){%><%='hidden'%><%}%>" id="note-id-<%= note?.note_id %>">
                                 <% const filteredArray = notesTagsCorelArray.filter((id) => id.note_id == note.note_id ) %>
     <!-- NOTE HEADING -->
                                 <div class="note-heading-row">
                                     <div class="note-date-del-edit-row">
 
-                                        <!-- <div > -->
-                                        
                                                 <form action="/edit-note" method="post">
                                                     <input type="hidden" name="note_id" value="<%= note?.note_id ?? null %>">
                                                     <button 
@@ -121,34 +83,26 @@
                                                         <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit note</span>
                                                     </button>
                                                 </form>
-                                                <!-- <form action="/delete-note" method="post"> -->
-                                                    <!-- <input type="hidden" name="note_id" value="<%= note?.note_id ?? null %>"> -->
+
                                                     <button 
                                                         class="icon-button tooltip-container" 
-                                                        id="delete-item-<%= note?.note_id ?? null %>" 
-                                                        type="button" 
-                                                         
-                                                        onclick="showConfirmationPopup('<%= note?.note_id ?? null %>', '/delete-note', '<%= item.resource_id %>')">
+                                                        id="delete-note-<%= note?.note_id ?? null %>"
+                                                        type="button"
+                                                        onclick="showConfirmationPopup('<%= note?.note_id ?? null %>', '/delete-note', '<%= item.resource_id %>', 'note-id-<%= note?.note_id %>')">
                                                         <i class="fa-solid fa-trash"></i><span class="tooltip">delete note</span>
                                                     </button>
-                                                <!-- </form> -->
                                             <p class="note-date" value="date" id="note-<%= note?.note_id ?? null %>-date"><%= note?.formattedDate ?? null %></p>
-                                        <!-- </div>  -->
-                                    </div>                              
+
+                                    </div>
+    <!-- NOTE HEADING: TAGS -->
                                     <p class="note-tags-row">
                                     <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="handler('new-tag')">+<span class="tooltip">add tags</span></button>
                                     <% for(let tag of filteredArray){ %>
                                         <% const tagId = tag.tag_id; %>
                                         <% const filteredTags = tags.filter((item) => item.id == tagId ) %> 
-                                        <% //console.log("DEBUG filteredTagsArray: ", filteredTags); %>
-                                        <%= //tags.name = tagId %>
                                         <span class="single-note-tags" id="tag-id-<%=tag.tag_id %>" style="background-color: <%= filteredTags[0].color %>; color: <%= filteredTags[0].invertColor %>; border-color: <%= filteredTags[0].invertColor %>"><%= filteredTags[0].name %></span>
                                     <%}%></p>
                                 </div>
-                                <% //const tagIds = Object.values(notes_tags_corel); %>
-                                <% //const tagIds = notes_tags_corel.note_id; %>
-                                <% //console.log("EJS OUTPUT:", tagIds); %>
-                                <!-- const tags = resources[0].notes_tags_corel[0].filter((id) => resources[0].notes_tags_corel[0].note_id == note.note_id ) -->
     <!-- NOTE TEXT -->
                                 <p class="single-note-text" id="note-<%= note?.note_id ?? null %>-text"><%= note.note_text %>
                                     <span class="single-note-targets" id="note-<%= note?.note_id ?? null %>-target-object">
@@ -181,118 +135,4 @@
     </div>
     
 
-    <footer>
-        footer-sruter
-    </footer>
-
-    <script>
-        function handler(id) {
-            console.log(id);
-            document.getElementById("add-" + id).classList.remove("hidden")
-            document.getElementById("add-" + id).classList.add("visible")
-            // document.getElementById("title" + id).setAttribute("hidden", true)
-            // document.getElementById("edit" + id).setAttribute("hidden", true)
-            // document.getElementById("done" + id).removeAttribute("hidden")
-            // document.getElementById("input" + id).removeAttribute("hidden")
-        }
-        function cancel(id){
-            document.getElementById(id).classList.add("hidden")
-            document.getElementById(id).classList.remove("visible")
-        }
-        function submit(id){
-            document.getElementById(id).classList.add("hidden")
-            document.getElementById(id).classList.remove("visible")
-        }
-        const textarea = document.getElementById('new-note-text');
-        textarea.addEventListener('input', function() {
-            // Reset the height to allow shrinking if necessary
-            this.style.height = 'auto';
-            // Set the new height based on the scroll height
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-
-        // FUNCTION TO ADD TAGS TO NOTE --- chyba na razie nie używam i trzeba będzie jakoś zmienić
-
-        let selectedTagIds = [];
-
-        function toggleRollout(event) {
-            // event.preventDefault(); // Prevent default form submission
-
-            const rollout = document.getElementById('tag-rollout');
-            // change icon
-            let triangle = document.getElementById('triangle-icon');
-            if (triangle.classList.value === 'fa-solid fa-square-caret-right') {
-                triangle.classList.value = 'fa-solid fa-square-caret-down';
-            } else {
-                triangle.classList.value = 'fa-solid fa-square-caret-right';
-            }
-
-            // Check the current display style and toggle between 'none' and 'flex'
-            if (rollout.style.display === 'none' || rollout.style.display === '') {
-                rollout.style.display = 'flex';
-            } else {
-                rollout.style.display = 'none';
-            }
-        }
-
-        function selectTag(element) {
-            const tagId = element.getAttribute('data-id');
-            if (selectedTagIds.includes(tagId)) {
-                selectedTagIds = selectedTagIds.filter(id => id !== tagId);
-                element.classList.remove('clicked');
-            } else {
-                selectedTagIds.push(tagId);
-                element.classList.add('clicked');
-            }
-            document.getElementById('selectedTags').value = selectedTagIds.join(',');
-        }
-
-        function addTag() {
-            const newTagInput = document.getElementById('new-tag');
-            const newTagName = newTagInput.value.trim();
-            if (newTagName) {
-                const newTagId = new Date().getTime(); // Generate a unique ID for the new tag
-                const tagContainer = document.getElementById('tag-container');
-                
-                const newTagElement = document.createElement('span');
-                newTagElement.className = 'tag single-note-tags';
-                newTagElement.setAttribute('data-id', newTagId);
-                newTagElement.textContent = newTagName;
-                newTagElement.onclick = function() { selectTag(this); };
-                
-                tagContainer.appendChild(newTagElement);
-                
-                newTagInput.value = ''; // Clear the input box
-            }
-        }
-        // DELETE ITEMS UNIVERSAL FUNCTION
-        // Function to show confirmation popup and set the item ID, route, and resource_id
-        function showConfirmationPopup(itemId, route, resourceId) {
-        // Set the hidden item_id for deletion in the form dynamically
-        document.querySelector('input[name="item_id"]').value = itemId;
-        // Set the hidden resource_id for the item in the form dynamically
-        document.querySelector('input[name="resource_id"]').value = resourceId;
-        // Set the action (route) dynamically
-        document.getElementById('delete-form').action = route;
-        // Show the confirmation popup
-        document.getElementById('confirmation-popup').style.display = 'flex';
-        }
-
-        // Function to handle deletion when user confirms
-        function confirmDelete() {
-            // Hide the confirmation popup
-            document.getElementById('confirmation-popup').style.display = 'none';
-            // Submit the form
-            document.getElementById('delete-form').submit();
-        }
-
-        // Function to handle cancellation
-        function cancelDelete() {
-            // Hide the confirmation popup without submitting the form
-            document.getElementById('confirmation-popup').style.display = 'none';
-        }
-
-
-    </script>
-</body>
-</html>
+<%- include('partials/footer.ejs'); -%>

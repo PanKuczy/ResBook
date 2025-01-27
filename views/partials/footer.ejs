@@ -1,0 +1,155 @@
+<footer>
+    footer-sruter
+</footer>
+
+<script>
+    function handler(id) {
+        console.log(id);
+        document.getElementById("add-" + id).classList.remove("hidden")
+        document.getElementById("add-" + id).classList.add("visible")
+        // document.getElementById("title" + id).setAttribute("hidden", true)
+        // document.getElementById("edit" + id).setAttribute("hidden", true)
+        // document.getElementById("done" + id).removeAttribute("hidden")
+        // document.getElementById("input" + id).removeAttribute("hidden")
+    }
+    function cancel(id){
+        document.getElementById(id).classList.add("hidden")
+        document.getElementById(id).classList.remove("visible")
+    }
+    function submit(id){
+        document.getElementById(id).classList.add("hidden")
+        document.getElementById(id).classList.remove("visible")
+    }
+    const textarea = document.getElementById('new-note-text');
+    textarea.addEventListener('input', function() {
+        // Reset the height to allow shrinking if necessary
+        this.style.height = 'auto';
+        // Set the new height based on the scroll height
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // FUNCTION TO ADD TAGS TO NOTE --- chyba na razie nie używam i trzeba będzie jakoś zmienić
+
+    let selectedTagIds = [];
+
+    function toggleRollout(event) {
+        // event.preventDefault(); // Prevent default form submission
+
+        const rollout = document.getElementById('tag-rollout');
+        // change icon
+        let triangle = document.getElementById('triangle-icon');
+        if (triangle.classList.value === 'fa-solid fa-square-caret-right') {
+            triangle.classList.value = 'fa-solid fa-square-caret-down';
+        } else {
+            triangle.classList.value = 'fa-solid fa-square-caret-right';
+        }
+
+        // Check the current display style and toggle between 'none' and 'flex'
+        if (rollout.style.display === 'none' || rollout.style.display === '') {
+            rollout.style.display = 'flex';
+        } else {
+            rollout.style.display = 'none';
+        }
+    }
+
+    function selectTag(element) {
+        const tagId = element.getAttribute('data-id');
+        if (selectedTagIds.includes(tagId)) {
+            selectedTagIds = selectedTagIds.filter(id => id !== tagId);
+            element.classList.remove('clicked');
+        } else {
+            selectedTagIds.push(tagId);
+            element.classList.add('clicked');
+        }
+        document.getElementById('selectedTags').value = selectedTagIds.join(',');
+    }
+
+    function addTag() {
+        const newTagInput = document.getElementById('new-tag');
+        const newTagName = newTagInput.value.trim();
+        if (newTagName) {
+            const newTagId = new Date().getTime(); // Generate a unique ID for the new tag
+            const tagContainer = document.getElementById('tag-container');
+            
+            const newTagElement = document.createElement('span');
+            newTagElement.className = 'tag single-note-tags';
+            newTagElement.setAttribute('data-id', newTagId);
+            newTagElement.textContent = newTagName;
+            newTagElement.onclick = function() { selectTag(this); };
+            
+            tagContainer.appendChild(newTagElement);
+            
+            newTagInput.value = ''; // Clear the input box
+        }
+    }
+
+
+</script>
+
+<!-- +++++++++++++++++++ NOWE FUNKCJE NON-RELOADING Z UZYCIEM AXIOS I RES.JSON, docelowo zastąpią większość routów z form i submit buttonow-->
+<script>
+    // Function to show confirmation popup and set the item ID, route, resource_id, type
+    function showConfirmationPopup(itemId, route, resourceId, itemDOMid) {
+        // Set the hidden item_id for deletion in the form dynamically
+        document.querySelector('input[name="delete_item_id"]').value = itemId;
+        // Set the hidden item_type for deletion in the form dynamically
+        document.querySelector('input[name="delete_item_DOMid"]').value = itemDOMid;
+        // Set the hidden resource_id for the item in the form dynamically
+        document.querySelector('input[name="delete_resource_id"]').value = resourceId;
+        // Set the action (route) dynamically
+        // document.getElementById('delete-form').action = route;
+        document.querySelector('input[name="delete_route"]').value = route;
+        // Show the confirmation popup
+        document.getElementById('confirmation-popup').style.display = 'flex';
+    }
+
+// Function to handle cancellation
+function cancelDelete() {
+    // Hide the confirmation popup without submitting the form
+    document.getElementById('confirmation-popup').style.display = 'none';
+}
+
+// Delete Item (DELETE request using Axios)
+// Function to handle deletion when user confirms
+function confirmDelete() {
+    // Hide the confirmation popup
+    document.getElementById('confirmation-popup').style.display = 'none';
+
+    const itemDomId = document.getElementById('delete-form').delete_item_DOMid.value;
+    const itemElement = document.getElementById(itemDomId);
+    const itemId = document.getElementById('delete-form').delete_item_id.value;
+    const itemResourceId = document.getElementById('delete-form').delete_resource_id.value;
+    const route = document.getElementById('delete-form').delete_route.value;
+    // Adding a fade-out class for animation
+    itemElement.classList.add('fade-out');
+    // console.log("FE Delete request sent: ", itemDomId, itemId, itemResourceId, route);
+    
+    // do data bedzie mozna dodawac kolejne opcje jezeli beda potrzebne, np. note_id przy kasowaniu tagow
+    const data = {
+        resource_id: itemResourceId, 
+        item_id: itemId
+    };
+
+    // After the animation, make the DELETE request
+    setTimeout(() => {
+        axios.post(route, data)
+        .then(response => {
+        if (response.data.success) {
+            // Remove the item from the DOM
+            itemElement.remove();
+        }
+        })
+        .catch(error => {
+        console.error('Error deleting item:', error);
+        alert('Error deleting item');
+        });
+    }, 300); // Wait for animation to complete before sending DELETE request
+}
+
+
+
+
+</script>
+
+</body>
+</html>

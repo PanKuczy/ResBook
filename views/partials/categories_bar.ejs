@@ -1,0 +1,9 @@
+<div class="box" id="categories-list">
+    <h3>Categories:</h3>
+    <ul>
+    <% for(let item of categories){%>
+        <li class="categories-item"><%= item?.name ?? null %></li>
+    <% } %>
+        <li class="categories-item">+</li>
+    </ul>
+</div>

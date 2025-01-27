@@ -18,6 +18,7 @@ const db = new pg.Client({
     database: "resbook",
     port: 5432
 });
+app.use(express.json());
 
 let userState = "logged";
 let currentUserId = 1;
@@ -362,21 +363,38 @@ app.post("/add-note", async (req, res) =>{
 });
 
 
+// STARE DELETE
+// app.post("/delete-note", async (req,res)=>{
+//     const resourceId = req.body.resource_id;
+//     const queryDeleteNote = `
+//     DELETE 
+//     FROM notes 
+//     WHERE id=$1
+//     `;
+//     const deleteResult = await db.query(queryDeleteNote,[req.body.item_id]);
 
-app.post("/delete-note", async (req,res)=>{
-    const resourceId = req.body.resource_id;
-    const queryDeleteNote = `
-    DELETE 
-    FROM notes 
-    WHERE id=$1
-    `;
-    const deleteResult = await db.query(queryDeleteNote,[req.body.item_id]);
+//     const data = await getAllData();
 
-    const data = await getAllData();
+//     res.redirect(`/resource/${resourceId}`);
 
-    res.redirect(`/resource/${resourceId}`);
+// });
 
+app.post("/delete-note", async (req,res) => {
+    try {
+        const queryDeleteNote = `
+        DELETE 
+        FROM notes 
+        WHERE id=$1
+        `;
+        await db.query(queryDeleteNote,[req.body.item_id]);
+        res.json({ success: true, itemId: req.body.item_id });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error deleting item' });
+      }
+    res.status(200);
 });
+
 
 // db.end();
 app.listen(port, () =>  {
