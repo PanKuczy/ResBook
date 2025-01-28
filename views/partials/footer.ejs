@@ -49,25 +49,8 @@ function toggleResource(id, forceDirection) {
         // document.getElementById("done" + id).removeAttribute("hidden")
         // document.getElementById("input" + id).removeAttribute("hidden")
     }
-    function cancel(id){
-        document.getElementById(id).classList.add("hidden")
-        document.getElementById(id).classList.remove("visible")
-    }
-    function submit(id){
-        document.getElementById(id).classList.add("hidden")
-        document.getElementById(id).classList.remove("visible")
-    }
-    const textarea = document.getElementById('new-note-text');
-    textarea.addEventListener('input', function() {
-        // Reset the height to allow shrinking if necessary
-        this.style.height = 'auto';
-        // Set the new height based on the scroll height
-        this.style.height = (this.scrollHeight) + 'px';
-    });
 
-
-
-// FILTERING BASIC FUNCTIONS
+// FILTERING RESOURCES BASIC FUNCTIONS
     let filtered = false;
     // const frontEndResources = <%-// JSON.stringify(resources) %>; //to chyba jednak nie bedzie potrzbene jak i cale zbieranie zasobow. niech ta funkcja opreuje tylko na DOM id'sach
 
@@ -118,32 +101,56 @@ function toggleResource(id, forceDirection) {
 
 
 
+// ADD NEW NOTE
+    // Submit or cancel new note form
+    function cancel(id){
+        document.getElementById(id).classList.add("hidden")
+        document.getElementById(id).classList.remove("visible")
+    }
+    function submit(id){
+        document.getElementById(id).classList.add("hidden")
+        document.getElementById(id).classList.remove("visible")
+    }
 
-// FUNCTION TO ADD TAGS TO NOTE --- chyba na razie nie używam i trzeba będzie jakoś zmienić
+    // Resize text areas automatically
+    const textareas = document.getElementsByClassName('new-note-text');
+    for (let element of textareas) {
+        element.addEventListener('input', function() {
+            // Reset the height to allow shrinking if necessary
+            this.style.height = 'auto';
+            // Set the new height based on the scroll height
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    };
+
+
+    // FUNCTION TO ADD TAGS TO NOTE --- chyba na razie nie używam i trzeba będzie jakoś zmienić
 
     let selectedTagIds = [];
 
-    function toggleRollout(event) {
-        // event.preventDefault(); // Prevent default form submission
-
-        const rollout = document.getElementById('tag-rollout');
+    function newNoteRolloutToggle(id) {
+        // event.preventDefault(); // Prevent default form submission - chyba przeszkadzalo
+        const rollout = document.getElementById('tag-rollout-' + id);
         // change icon
-        let triangle = document.getElementById('triangle-icon');
+        let triangle = document.getElementById('triangle-icon-' + id);
         if (triangle.classList.value === 'fa-solid fa-square-caret-right') {
             triangle.classList.value = 'fa-solid fa-square-caret-down';
         } else {
             triangle.classList.value = 'fa-solid fa-square-caret-right';
         }
 
-        // Check the current display style and toggle between 'none' and 'flex'
-        if (rollout.style.display === 'none' || rollout.style.display === '') {
-            rollout.style.display = 'flex';
+        // Toggle tags rollouts
+        if (rollout.classList.value == "tag-rollout-drawer hidden" || rollout.classList.value === '') {
+            rollout.classList.remove("hidden");
+            rollout.classList.add("visible");
         } else {
-            rollout.style.display = 'none';
+            rollout.classList.add("hidden");
+            rollout.classList.remove("visible");
         }
+
     }
 
-    function selectTag(element) {
+    function selectTag(element, resourceId) {
         const tagId = element.getAttribute('data-id');
         if (selectedTagIds.includes(tagId)) {
             selectedTagIds = selectedTagIds.filter(id => id !== tagId);
@@ -152,9 +159,10 @@ function toggleResource(id, forceDirection) {
             selectedTagIds.push(tagId);
             element.classList.add('clicked');
         }
-        document.getElementById('selectedTags').value = selectedTagIds.join(',');
+        document.getElementById('selectedNewNoteTags-' + resourceId).value = selectedTagIds.join(',');
     }
 
+    // ta funkcja jeszcze nie testowana i nie dziala
     function addTag() {
         const newTagInput = document.getElementById('new-tag');
         const newTagName = newTagInput.value.trim();

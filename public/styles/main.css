@@ -355,6 +355,10 @@ margin: 50px 5% 50px 5%;
     padding: 10px;
     z-index: 1000;
 }
+
+.tag-rollout-drawer{
+    display: flex;
+}
 #tag-container {
     display: flex;
     flex-wrap: wrap;

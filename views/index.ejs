@@ -36,17 +36,17 @@
                 </div>
     <!-- NOTES     -->
      
-                <div class="notes-box hidden" <%= //showElement ? '' : 'hidden="true"' %>  id="notesbox-<%= item?.resource_id %>">
-                    <h4><span>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="handler('new-note')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></span> <span class="notes-sortby">Sort by:</span></h4>
+                <div class="notes-box hidden" id="notesbox-<%= item?.resource_id %>">
+                    <h4><span>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="handler('new-note-<%= item?.resource_id %>')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></span> <span class="notes-sortby">Sort by:</span></h4>
     <!-- ADD NOTE -->
-                    <form class="new-note hidden" action="/add-note" method="post" id="add-new-note">
+                    <form class="new-note hidden" action="/add-note" method="post" id="add-new-note-<%= item?.resource_id %>">
                         <div class="new-note-box">
                             <div class="tags-rollout">
-                                <button onclick="toggleRollout()" type="button">Select Tags <i id="triangle-icon" class="fa-solid fa-square-caret-right"></i></button>
-                                    <div id="tag-rollout">
-                                        <div id="tag-container" class="note-heading-row">
+                                <button onclick="newNoteRolloutToggle(<%= item?.resource_id %>)" type="button">Select Tags <i id="triangle-icon-<%= item?.resource_id %>" class="fa-solid fa-square-caret-right"></i></button>
+                                    <div id="tag-rollout-<%= item?.resource_id %>" class="tag-rollout-drawer hidden">
+                                        <div id="tag-container-<%= item?.resource_id %>" class="note-heading-row">
                                             <% tags.forEach(tag => { %>
-                                                <span class="tag single-note-tags" data-id="<%= tag.id %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this)">
+                                                <span class="tag single-note-tags" data-id="<%= tag.id %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
                                                     <%= tag.name %>
                                                 </span>
                                             <% }); %>
@@ -54,19 +54,19 @@
                                         <input type="text" id="new-tag" placeholder="Add new tag" />
                                         <button type="button" onclick="addTag()">Add Tag</button>
                                     </div>
-                                    <input type="hidden" name="selectedTags" id="selectedTags" />
+                                    <input type="hidden" name="selectedTags" id="selectedNewNoteTags-<%= item?.resource_id %>" />
                             </div>
                             <!-- <input type="text" name="newNoteTags" placeholder="Tags" autocomplete="off" autofocus="true"  id="new-note-pages"/> -->
-                            <textarea type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text" required></textarea>
+                            <textarea class="new-note-text" type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text-<%= item?.resource_id %>" required></textarea>
                             <div class="flex-end">
                                 <label for="new-note-pages">Pages: </label>
-                                <input type="text" name="target_pages" placeholder="Pages" autocomplete="off" autofocus="true" id="new-note-pages"/>
+                                <input type="text" name="target_pages" placeholder="Pages" autocomplete="off" autofocus="true" id="new-note-pages-<%= item?.resource_id %>"/>
                                 <label for="new-note-link">Link: </label>
-                                <input type="text" name="target_object" placeholder="Link" autocomplete="off" autofocus="true" id="new-note-link"/>
+                                <input type="text" name="target_object" placeholder="Link" autocomplete="off" autofocus="true" id="new-note-link-<%= item?.resource_id %>"/>
                             </div>
                             <input type="hidden" name="resource_id" value="<%= item.resource_id %>" />
-                            <button class="text-button" type="submit" name="note-submit" onclick="submit('add-new-note')" value="" >Submit</button>
-                            <button class="text-button" type="reset" name="note-cancel" onclick="cancel('add-new-note')" value="" >Cancel</button>
+                            <button class="text-button" type="submit" name="note-submit" onclick="submit('add-new-note-<%= item?.resource_id %>')" value="" >Submit</button>
+                            <button class="text-button" type="reset" name="note-cancel" onclick="cancel('add-new-note-<%= item?.resource_id %>')" value="" >Cancel</button>
                         </div>
                     </form>
     <!-- ADD NOTE END -->

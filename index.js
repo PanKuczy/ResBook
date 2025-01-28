@@ -113,113 +113,113 @@ function appendToDataTree(existingObject, objectToBeAdded) {
 db.connect();
 
 
-///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+//xxxxxxxxxxxxx SUPER QUERY ALL xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 async function getAllData () {
-const resultUsers = await db.query("select * from users where id=($1)", [currentUserId]);
-const superQuery = `
-SELECT 
-    r.id AS resource_id,
-    r.title AS resource_title,
-    r.authors,
-    r.resource_type,
-    r.isbn,
-    r.doi,
-    r.created_at AS resource_created_at,
-    r.subtitle,
-    r.place,
-    r.cover_url,
-    r.publication_year,
-    STRING_AGG(DISTINCT c.name, ', ') AS resource_categories,
-    json_agg(
-        DISTINCT jsonb_build_object(
-            'note_id', n.id,
-            'note_text', n.note_text,
-            'created_at', n.created_at,
-            'updated_at', n.updated_at,
-            'target_pages', n.target_pages,
-            'target_object', n.target_object,
-            'tags', nt.tags
-        )
-    ) AS notes
-FROM resources r
-JOIN user_resources ur ON r.id = ur.resource_id
-LEFT JOIN resource_categories rc ON r.id = rc.resource_id
-LEFT JOIN categories c ON rc.category_id = c.id
-LEFT JOIN notes n ON n.resource_id = r.id AND n.user_id = ur.user_id
-LEFT JOIN (
+    const resultUsers = await db.query("select * from users where id=($1)", [currentUserId]);
+    const superQuery = `
     SELECT 
-        nt.note_id, 
-        STRING_AGG(t.name, ', ') AS tags
-    FROM note_tags nt
-    JOIN tags t ON nt.tag_id = t.id
-    GROUP BY nt.note_id
-) nt ON n.id = nt.note_id
-WHERE ur.user_id = $1
-GROUP BY r.id;
-`;
+        r.id AS resource_id,
+        r.title AS resource_title,
+        r.authors,
+        r.resource_type,
+        r.isbn,
+        r.doi,
+        r.created_at AS resource_created_at,
+        r.subtitle,
+        r.place,
+        r.cover_url,
+        r.publication_year,
+        STRING_AGG(DISTINCT c.name, ', ') AS resource_categories,
+        json_agg(
+            DISTINCT jsonb_build_object(
+                'note_id', n.id,
+                'note_text', n.note_text,
+                'created_at', n.created_at,
+                'updated_at', n.updated_at,
+                'target_pages', n.target_pages,
+                'target_object', n.target_object,
+                'tags', nt.tags
+            )
+        ) AS notes
+    FROM resources r
+    JOIN user_resources ur ON r.id = ur.resource_id
+    LEFT JOIN resource_categories rc ON r.id = rc.resource_id
+    LEFT JOIN categories c ON rc.category_id = c.id
+    LEFT JOIN notes n ON n.resource_id = r.id AND n.user_id = ur.user_id
+    LEFT JOIN (
+        SELECT 
+            nt.note_id, 
+            STRING_AGG(t.name, ', ') AS tags
+        FROM note_tags nt
+        JOIN tags t ON nt.tag_id = t.id
+        GROUP BY nt.note_id
+    ) nt ON n.id = nt.note_id
+    WHERE ur.user_id = $1
+    GROUP BY r.id;
+    `;
 
-// const resultUserResources = await db.query("SELECT r.* FROM resources r JOIN user_resources ur ON r.id = ur.resource_id WHERE ur.user_id = ($1)", [currentUserId]);
-const resultUserResources = await db.query(superQuery, [currentUserId]);
-// console.log(resultUserResources.rows);
-// console.log(util.inspect(resultUserResources.rows, { depth: null, colors: true }));
+    // const resultUserResources = await db.query("SELECT r.* FROM resources r JOIN user_resources ur ON r.id = ur.resource_id WHERE ur.user_id = ($1)", [currentUserId]);
+    const resultUserResources = await db.query(superQuery, [currentUserId]);
+    // console.log(resultUserResources.rows);
+    // console.log(util.inspect(resultUserResources.rows, { depth: null, colors: true }));
 
-const queryCategories = `
-SELECT id, name
-FROM categories
-WHERE user_id = ($1);
-`;
-const resultUserCategories = await db.query(queryCategories,[currentUserId]);
+    const queryCategories = `
+    SELECT id, name
+    FROM categories
+    WHERE user_id = ($1);
+    `;
+    const resultUserCategories = await db.query(queryCategories,[currentUserId]);
 
-const queryTags = `
-SELECT id, name, color
-FROM tags
-WHERE user_id = ($1);
-`
-const queryNotesTagsCorelation =`
-SELECT *
-FROM note_tags;`
-const resultNotesTagsCorelation = await db.query(queryNotesTagsCorelation);
+    const queryTags = `
+    SELECT id, name, color
+    FROM tags
+    WHERE user_id = ($1);
+    `
+    const queryNotesTagsCorelation =`
+    SELECT *
+    FROM note_tags;`
+    const resultNotesTagsCorelation = await db.query(queryNotesTagsCorelation);
 
-const resultUserTags = await db.query(queryTags, [currentUserId]);
+    const resultUserTags = await db.query(queryTags, [currentUserId]);
 
-const queryNotes = `
-SELECT *
-FROM notes
-WHERE user_id = ($1);
-`;
-const resultUserNotes = await db.query(queryNotes,[currentUserId]);
+    const queryNotes = `
+    SELECT *
+    FROM notes
+    WHERE user_id = ($1);
+    `;
+    const resultUserNotes = await db.query(queryNotes,[currentUserId]);
 
-const data = {
-    user: resultUsers.rows[0].username,
-    resources: resultUserResources.rows,
-    categories: resultUserCategories.rows,
-    tags: resultUserTags.rows,
-    notes: resultUserNotes.rows,
-    notes_tags_corel: resultNotesTagsCorelation.rows,
-    showElement: false
-};
-globalHelperData = {
-    notesTagsCorel: resultNotesTagsCorelation.rows,
-};
+    const data = {
+        user: resultUsers.rows[0].username,
+        resources: resultUserResources.rows,
+        categories: resultUserCategories.rows,
+        tags: resultUserTags.rows,
+        notes: resultUserNotes.rows,
+        notes_tags_corel: resultNotesTagsCorelation.rows,
+        showElement: false
+    };
+    globalHelperData = {
+        notesTagsCorel: resultNotesTagsCorelation.rows,
+    };
 
-// return userResourcesFull;
-// console.log("TAGS PRE FUNCTION: ", data.tags);
-data.tags.forEach(element => {
-    appendInvertedColor(element);
-});
-data.notes.forEach(note => {
-    dateFormat(note);
-});
-data.resources.forEach(resource => {
-    if (resource.notes.length > 0){ 
-        resource.notes.forEach(note => {
+    // return userResourcesFull;
+    // console.log("TAGS PRE FUNCTION: ", data.tags);
+    data.tags.forEach(element => {
+        appendInvertedColor(element);
+    });
+    data.notes.forEach(note => {
         dateFormat(note);
-    })};
-});
-userResourcesFull = data;
-return data;
+    });
+    data.resources.forEach(resource => {
+        if (resource.notes.length > 0){ 
+            resource.notes.forEach(note => {
+            dateFormat(note);
+        })};
+    });
+    userResourcesFull = data;
+    return data;
 }
-///xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+//xxxxxxxxxxxxx SUPER QUERY ALL END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -281,65 +281,6 @@ app.get("/resource/:id", async (req,res) =>{
     res.render("index.ejs", data)
 });
 
-//STARE add note
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-// app.post("/add-note", async (req, res) =>{
-//     const request = req.body.resource_id;
-//     console.log("new add note request");
-
-//     const queryNewNote = `
-//     INSERT INTO notes (user_id, resource_id, note_text, target_pages, target_object)
-//     VALUES ($1, $2, $3, $4, $5)
-//     RETURNING id AS note_id, note_text, created_at, updated_at, target_pages, target_object;
-//     `
-//     const queryAssignTags =`
-//     INSERT INTO note_tags (note_id, tag_id)
-//     SELECT $1, unnest(string_to_array($2, ',')::int[]);
-//     `
-//     const resultNewNote = await db.query(queryNewNote,[currentUserId, request, req.body.note_text, req.body.target_pages, req.body.target_object]);
-//     const newNote = resultNewNote.rows[0];
-//     dateFormat(newNote);
-    
-//     const resultAssignTags = await db.query(queryAssignTags,[newNote.note_id, req.body.selectedTags]);
-
-//     const queryNotesTagsCorelation =`
-//     SELECT *
-//     FROM note_tags;`
-//     const resultNotesTagsCorelation = await db.query(queryNotesTagsCorelation);
-//     globalHelperData = {
-//         notesTagsCorel: resultNotesTagsCorelation.rows,
-//     };
-
-//     //-------- tagi
-//     const newNoteTagsIds = req.body.selectedTags.split(',').map(item => Number(item.trim()));
-//     const newNoteTagsNames = [];
-//     newNoteTagsIds.forEach(id =>{
-//         const tagname = userResourcesFull.tags.find((tagobj) => tagobj.id == id).name;
-//         newNoteTagsNames.push(tagname);
-//     });;
-//     // console.log("All tags: ", userResourcesFull.tags);
-//     // console.log("New note tags IDs: ", newNoteTagsIds);
-//     // console.log("New note tags: " ,newNoteTagsNamesString);
-//     newNote.tags = newNoteTagsNames.join();
-//     console.log("Created note: ", newNote);
-//     const specificResource = userResourcesFull.resources.filter(resource => resource.resource_id == request);
-//     let specificResourceNotesUpdated = appendToDataTree(specificResource[0].notes, newNote);
-//     specificResource[0].notes = specificResourceNotesUpdated;
-//     // Check results
-//     //   console.log("Updated resource notes:", specificResource[0].notes);
-
-//     //----- tagi koniec
-
-//     const data = { ...userResourcesFull, resources: specificResource};
-//     data.notes_tags_corel = globalHelperData.notesTagsCorel;
-//     data.showElement = true;
-//     // console.log("SPECIFIC RESOURCE", util.inspect(specificResource, { depth: null, colors: true }));
-//     // console.log("SPECIFIC RESOURCE", specificResource);
-
-//     res.render("index.ejs", data);
-// });
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
 app.post("/add-note", async (req, res) =>{
     const resourceId = req.body.resource_id;
     console.log("new add note request");
@@ -362,22 +303,6 @@ app.post("/add-note", async (req, res) =>{
     res.redirect(`/resource/${resourceId}`);
 });
 
-
-// STARE DELETE
-// app.post("/delete-note", async (req,res)=>{
-//     const resourceId = req.body.resource_id;
-//     const queryDeleteNote = `
-//     DELETE 
-//     FROM notes 
-//     WHERE id=$1
-//     `;
-//     const deleteResult = await db.query(queryDeleteNote,[req.body.item_id]);
-
-//     const data = await getAllData();
-
-//     res.redirect(`/resource/${resourceId}`);
-
-// });
 
 app.post("/delete-note", async (req,res) => {
     try {
