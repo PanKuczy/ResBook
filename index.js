@@ -195,7 +195,7 @@ const data = {
     categories: resultUserCategories.rows,
     tags: resultUserTags.rows,
     notes: resultUserNotes.rows,
-    notes_tags_corel: "",
+    notes_tags_corel: resultNotesTagsCorelation.rows,
     showElement: false
 };
 globalHelperData = {

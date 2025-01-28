@@ -4,35 +4,41 @@
 
 <script>
 // TOGGLE RESOURCE
-function toggleResource(id) {
-        console.log("Clicked ID: ", id);
+// forceDirection can have "up" or "down" values
+function toggleResource(id, forceDirection) {
+        // console.log("Clicked ID: ", id);
         const rollout = document.getElementById("notesbox-" + id);
-        // change icon
         let icon = document.getElementById('toggle-notes-icon-' + id);
-        if (icon.classList.value === 'fa-solid fa-circle-chevron-down') {
-            icon.classList.value = 'fa-solid fa-circle-chevron-up';
-        } else {
-            icon.classList.value = 'fa-solid fa-circle-chevron-down';
-        }
+        // check forced direction
+        if (!forceDirection) {
+            if (icon.classList.value === 'fa-solid fa-circle-chevron-down') {
+                icon.classList.value = 'fa-solid fa-circle-chevron-up';
+            } else {
+                icon.classList.value = 'fa-solid fa-circle-chevron-down';
+            }
 
-        // Check the current display style and toggle between 'none' and 'flex'
-        // if (rollout.style.display === 'none' || rollout.style.display === '') {
-        //     rollout.style.display = 'block';
-        // } else {
-        //     rollout.style.display = 'none';
-        // }
-        console.log(rollout.classList);
-        if (rollout.classList.value == "notes-box hidden" || rollout.classList.value === '') {
+            // console.log(rollout.classList);
+            if (rollout.classList.value == "notes-box hidden" || rollout.classList.value === '') {
+                rollout.classList.remove("hidden");
+                rollout.classList.add("visible");
+            } else {
+                rollout.classList.add("hidden");
+                rollout.classList.remove("visible");
+            }
+        } else if (forceDirection === "down") {
+            icon.classList.value = 'fa-solid fa-circle-chevron-up';
             rollout.classList.remove("hidden");
             rollout.classList.add("visible");
-        } else {
+        } else if (forceDirection === "up") {
+            icon.classList.value = 'fa-solid fa-circle-chevron-down';
             rollout.classList.add("hidden");
             rollout.classList.remove("visible");
         }
     }
 
 
-// ONCLICKS
+
+// ONCLICKS ale tylko niektore. te submity chyba beda do wywalenia - sprawdzic.
 
     function handler(id) {
         console.log(id);
@@ -59,7 +65,61 @@ function toggleResource(id) {
         this.style.height = (this.scrollHeight) + 'px';
     });
 
-    // FUNCTION TO ADD TAGS TO NOTE --- chyba na razie nie używam i trzeba będzie jakoś zmienić
+
+
+// FILTERING BASIC FUNCTIONS
+    let filtered = false;
+    // const frontEndResources = <%-// JSON.stringify(resources) %>; //to chyba jednak nie bedzie potrzbene jak i cale zbieranie zasobow. niech ta funkcja opreuje tylko na DOM id'sach
+
+    let filteredResourcesIds = [];
+    let filteredResourcesDomIds = [];
+
+    // zebranie wszystkich ksiazek
+    const userBooks = document.getElementsByClassName('user-book');
+    // zebranie DOMid wszystkich ksiazek
+    let userBooksDomIds = [];
+    for (let book of userBooks) {
+        userBooksDomIds.push(book.id);
+    };
+    // console.log("User books DOM IDs: ", userBooksDomIds);
+    filteredResourcesDomIds = [...userBooksDomIds];
+    // console.log("filteredResourcesDomIds: ", filteredResourcesDomIds);
+
+    function filterResources(add, remove, isolate) {
+        // console.log("filtrowanie: ", add, remove, isolate);
+
+        if (isolate) {
+            filteredResourcesDomIds = [`resource-id-${isolate}`];
+            toggleResource(isolate, "down");
+
+            } else if(add) {
+                const newId = `resource-id-${add}`;
+                if (!filteredResourcesDomIds.includes(newId)) {
+                    filteredResourcesDomIds.push(newId); // Only add if it doesn't exist already
+                }
+            } else if(remove) {
+                const indexToRemove = filteredResourcesDomIds.indexOf(`resource-id-${remove}`);
+                // console.log("Remove item index: ", indexToRemove);
+                if (indexToRemove !== -1) {
+                    filteredResourcesDomIds.splice(indexToRemove, 1);
+                    // console.log("filteredResourcesDomIds: ", filteredResourcesDomIds);
+                }
+            }
+
+        let booksToHide = userBooksDomIds.filter(domId => {
+            return !filteredResourcesDomIds.includes(domId);
+        });
+        console.log("Books DOM IDs to hide: ", booksToHide);
+        for (let bookId of booksToHide) {
+            document.getElementById(bookId).classList.add("hidden")
+            document.getElementById(bookId).classList.remove("visible")
+        }
+    }
+
+
+
+
+// FUNCTION TO ADD TAGS TO NOTE --- chyba na razie nie używam i trzeba będzie jakoś zmienić
 
     let selectedTagIds = [];
 

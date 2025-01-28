@@ -9,13 +9,17 @@
         </form>
 
         <%- include('partials/categories_bar.ejs'); -%>
+
+
         <div class="box" id="main-content">
             <% // console.log(resources);%>
+
             <% for(let item of resources){%>
                 <% const resourceIndex = resources.indexOf(item); %>
     <!-- BOOK -->
-            <div class="user-book deletable-item" id="resource-id-<%= item?.resource_id %>">
-                <a href="/resource/<%= item.resource_id %>" class="book-heading">
+            <div class="user-book deletable-item visible" id="resource-id-<%= item?.resource_id %>">
+                <a class="book-heading" onclick="filterResources(null, null, <%= item?.resource_id %>)">
+                <!-- <a href="/resource/<%=// item.resource_id %>" class="book-heading" >  BACKUP -->
                     <div class="book-cover">
                         <img src="<%= item?.cover_url ?? null %>">
                     </div>
@@ -139,5 +143,6 @@
         </div>
     </div>
     
+
 
 <%- include('partials/footer.ejs'); -%>

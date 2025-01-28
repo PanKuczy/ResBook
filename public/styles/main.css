@@ -114,6 +114,8 @@ margin: 50px 5% 50px 5%;
 }
 
 #categories-list{
+    position: sticky;
+    top: 50px;
     display: block;
     min-width: min-content;
     padding: 0px 10px;
@@ -168,6 +170,7 @@ margin: 50px 5% 50px 5%;
 .user-book:hover{
     border-color: var(--color-hover);
     outline: 1px solid var(--color-hover);
+
 }
 .year-text{
     float: inline-end;
@@ -176,7 +179,9 @@ margin: 50px 5% 50px 5%;
     display: flex;
     height: max-content;
 }
-
+.book-heading:hover{
+    cursor: pointer;
+}
 
 .book-heading-text{
     width: 100%;
@@ -371,18 +376,46 @@ margin: 50px 5% 50px 5%;
     text-align: end;
     align-self: flex-end;
 }
+
+/* CSS for fade in/out animation z GPT axios */
+.deletable-item {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  
+  .deletable-item.fade-out {
+    opacity: 0;
+  }
+  
+  /* Optional: Add smooth transitions for adding new items */
+  .new-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s forwards;
+  }
+  
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* KONIEC CSS for fade in/out animation z GPT axios */
+
 .hidden {
     max-height: 0;
+    min-height: 0;
     opacity: 0;
     overflow: hidden;
-    transition: max-height 1s ease-in-out, opacity 1s ease-in-out;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
     pointer-events: none; /* Optional: Prevent interactions when hidden */
 }
 
 .visible {
-    max-height: 1000px; /* Use a large enough value to accommodate the content */
+    max-height: 2000px; /* Use a large enough value to accommodate the content */
     opacity: 1;
-    transition: max-height 1s ease-in-out, opacity 1s ease-in-out;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
     pointer-events: auto; /* Optional: Re-enable interactions when visible */
 }
 
@@ -416,26 +449,3 @@ footer {
 }
 
 
-/* CSS for fade in/out animation z GPT axios */
-.deletable-item {
-    opacity: 1;
-    transition: opacity 0.3s ease;
-  }
-  
-  .deletable-item.fade-out {
-    opacity: 0;
-  }
-  
-  /* Optional: Add smooth transitions for adding new items */
-  .new-item {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.5s forwards;
-  }
-  
-  @keyframes fadeInUp {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
