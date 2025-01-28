@@ -46,7 +46,7 @@
                                     <div id="tag-rollout-<%= item?.resource_id %>" class="tag-rollout-drawer hidden">
                                         <div id="tag-container-<%= item?.resource_id %>" class="note-heading-row">
                                             <% tags.forEach(tag => { %>
-                                                <span class="tag single-note-tags" data-id="<%= tag.id %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
+                                                <span class="tag single-note-tags" data-id="<%= tag.id %>" data-name="<%= tag.name %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
                                                     <%= tag.name %>
                                                 </span>
                                             <% }); %>
@@ -55,6 +55,7 @@
                                         <button type="button" onclick="addTag()">Add Tag</button>
                                     </div>
                                     <input type="hidden" name="selectedTags" id="selectedNewNoteTags-<%= item?.resource_id %>" />
+                                    <input type="hidden" name="selectedTagsNames" id="selectedNewNoteTagsNames-<%= item?.resource_id %>" />
                             </div>
                             <!-- <input type="text" name="newNoteTags" placeholder="Tags" autocomplete="off" autofocus="true"  id="new-note-pages"/> -->
                             <textarea class="new-note-text" type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text-<%= item?.resource_id %>" required></textarea>
@@ -65,8 +66,8 @@
                                 <input type="text" name="target_object" placeholder="Link" autocomplete="off" autofocus="true" id="new-note-link-<%= item?.resource_id %>"/>
                             </div>
                             <input type="hidden" name="resource_id" value="<%= item.resource_id %>" />
-                            <button class="text-button" type="submit" name="note-submit" onclick="submit('add-new-note-<%= item?.resource_id %>')" value="" >Submit</button>
-                            <button class="text-button" type="reset" name="note-cancel" onclick="cancel('add-new-note-<%= item?.resource_id %>')" value="" >Cancel</button>
+                            <button class="text-button" type="submit" name="note-submit" onclick="submitNewNote('add-new-note-<%= item?.resource_id %>')" value="" >Submit</button>
+                            <button class="text-button" type="reset" name="note-cancel" onclick="cancelNewNote('add-new-note-<%= item?.resource_id %>')" value="" >Cancel</button>
                         </div>
                     </form>
     <!-- ADD NOTE END -->

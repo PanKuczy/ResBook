@@ -281,28 +281,61 @@ app.get("/resource/:id", async (req,res) =>{
     res.render("index.ejs", data)
 });
 
+// BACKUP ADD-NOTE SPRZED RES.JSON
+// app.post("/add-note", async (req, res) =>{
+//     const resourceId = req.body.resource_id;
+//     console.log("new add note request");
+
+//     const queryNewNote = `
+//     INSERT INTO notes (user_id, resource_id, note_text, target_pages, target_object)
+//     VALUES ($1, $2, $3, $4, $5)
+//     RETURNING id AS note_id, note_text, created_at, updated_at, target_pages, target_object;
+//     `
+//     const queryAssignTags =`
+//     INSERT INTO note_tags (note_id, tag_id)
+//     SELECT $1, unnest(string_to_array($2, ',')::int[]);
+//     `
+//     const resultNewNote = await db.query(queryNewNote,[currentUserId, resourceId, req.body.note_text, req.body.target_pages, req.body.target_object]);
+//     const newNote = resultNewNote.rows[0];
+//     const resultAssignTags = await db.query(queryAssignTags,[newNote.note_id, req.body.selectedTags]);
+
+//     const data = await getAllData();
+
+//     res.redirect(`/resource/${resourceId}`);
+// });
+
+//NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
     const resourceId = req.body.resource_id;
-    console.log("new add note request");
+    console.log("new add note request", req.body);
 
-    const queryNewNote = `
-    INSERT INTO notes (user_id, resource_id, note_text, target_pages, target_object)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING id AS note_id, note_text, created_at, updated_at, target_pages, target_object;
-    `
-    const queryAssignTags =`
-    INSERT INTO note_tags (note_id, tag_id)
-    SELECT $1, unnest(string_to_array($2, ',')::int[]);
-    `
-    const resultNewNote = await db.query(queryNewNote,[currentUserId, resourceId, req.body.note_text, req.body.target_pages, req.body.target_object]);
-    const newNote = resultNewNote.rows[0];
-    const resultAssignTags = await db.query(queryAssignTags,[newNote.note_id, req.body.selectedTags]);
+    try {
+        const queryNewNote = `
+        INSERT INTO notes (user_id, resource_id, note_text, target_pages, target_object)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id AS note_id, resource_id, note_text, created_at, updated_at, target_pages, target_object;
+        `
+        const queryAssignTags =`
+        INSERT INTO note_tags (note_id, tag_id)
+        SELECT $1, unnest(string_to_array($2, ',')::int[]);
+        `
+        const resultNewNote = await db.query(queryNewNote,[currentUserId, resourceId, req.body.note_text, req.body.target_pages, req.body.target_object]);
+        const newNote = resultNewNote.rows[0];
+        newNote.tag_ids = req.body.selectedTags;
+        newNote.tag_names = req.body.selectedTagsNames;
+        dateFormat(newNote);
+        const resultAssignTags = await db.query(queryAssignTags,[newNote.note_id, req.body.selectedTags]);
+        console.log("new note after database query and date format: ", newNote);
+        const data = await getAllData();
+        res.status(200).json({ success: true, newNote });
 
-    const data = await getAllData();
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error adding note' });
+    }
+    // res.status(200);
 
-    res.redirect(`/resource/${resourceId}`);
 });
-
 
 app.post("/delete-note", async (req,res) => {
     try {

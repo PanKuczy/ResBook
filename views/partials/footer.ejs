@@ -103,14 +103,15 @@ function toggleResource(id, forceDirection) {
 
 // ADD NEW NOTE
     // Submit or cancel new note form
-    function cancel(id){
+    function cancelNewNote(id){
         document.getElementById(id).classList.add("hidden")
         document.getElementById(id).classList.remove("visible")
     }
-    function submit(id){
-        document.getElementById(id).classList.add("hidden")
-        document.getElementById(id).classList.remove("visible")
-    }
+    // BACKUP - DALEJ JEST NOWA FUNKCJA Z AXIOS
+    // function submitNewNote(id){
+    //     document.getElementById(id).classList.add("hidden")
+    //     document.getElementById(id).classList.remove("visible")
+    // }
 
     // Resize text areas automatically
     const textareas = document.getElementsByClassName('new-note-text');
@@ -127,6 +128,7 @@ function toggleResource(id, forceDirection) {
     // FUNCTION TO ADD TAGS TO NOTE --- chyba na razie nie używam i trzeba będzie jakoś zmienić
 
     let selectedTagIds = [];
+    let selectedTagNames = [];
 
     function newNoteRolloutToggle(id) {
         // event.preventDefault(); // Prevent default form submission - chyba przeszkadzalo
@@ -152,6 +154,7 @@ function toggleResource(id, forceDirection) {
 
     function selectTag(element, resourceId) {
         const tagId = element.getAttribute('data-id');
+        const tagName = element.getAttribute('data-name');
         if (selectedTagIds.includes(tagId)) {
             selectedTagIds = selectedTagIds.filter(id => id !== tagId);
             element.classList.remove('clicked');
@@ -159,7 +162,15 @@ function toggleResource(id, forceDirection) {
             selectedTagIds.push(tagId);
             element.classList.add('clicked');
         }
+        if (selectedTagNames.includes(tagName)) {
+            selectedTagNames = selectedTagNames.filter(name => name !== tagName);
+            // element.classList.remove('clicked');
+        } else {
+            selectedTagNames.push(tagName);
+            // element.classList.add('clicked');
+        }
         document.getElementById('selectedNewNoteTags-' + resourceId).value = selectedTagIds.join(',');
+        document.getElementById('selectedNewNoteTagsNames-' + resourceId).value = selectedTagNames.join(',');
     }
 
     // ta funkcja jeszcze nie testowana i nie dziala
@@ -181,6 +192,85 @@ function toggleResource(id, forceDirection) {
             newTagInput.value = ''; // Clear the input box
         }
     }
+
+
+    //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    // NOWE SUBMIT NOTE Z AXIOS i RES.JSON
+
+    function submitNewNote(formId) {
+    // Prevent default form submission
+    event.preventDefault();
+
+    // Get the form element
+    const form = document.getElementById(formId);
+
+    // Create a FormData object from the form
+    const formData = new FormData(form);
+
+    // Convert FormData to a plain object (or you can directly send FormData)
+    const formObject = {};
+    formData.forEach((value, key) => {
+        formObject[key] = value;
+    });
+
+    // Send the data using axios
+    axios.post('/add-note', formObject)
+        .then((response) => {
+            if (response.data.success) {
+                const newNote = response.data.newNote;
+
+                // Create a new note DOM element
+                const newNoteElement = document.createElement('div');
+                newNoteElement.classList.add('single-note-item', 'deletable-item');
+                newNoteElement.setAttribute('id', `note-id-${newNote.note_id}`);
+                
+                newNoteElement.innerHTML = `
+                <div class="note-heading-row">
+                    <div class="note-date-del-edit-row">
+
+                        <form action="/edit-note" method="post">
+                            <input type="hidden" name="note_id" value="${newNote.note_id}">
+                            <button class="icon-button tooltip-container" type="edit" name="edit-note" onclick="handler('edit-note')">
+                                <i class="fa-solid fa-file-pen" aria-hidden="true"></i><span class="tooltip">edit note</span>
+                            </button>
+                        </form>
+
+                        <button class="icon-button tooltip-container" id="delete-note-${newNote.note_id}" type="button" onclick="showConfirmationPopup('${newNote.note_id}', '/delete-note', '${newNote.resource_id}', 'note-id-${newNote.note_id}')">
+                            <i class="fa-solid fa-trash" aria-hidden="true"></i><span class="tooltip">delete note</span>
+                        </button>
+                        <p class="note-date" value="date" id="note-${newNote.note_id}-date"> ${newNote.formattedDate}</p>
+
+                    </div>
+                    <!-- NOTE HEADING: TAGS -->
+                    <p class="note-tags-row">
+                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="handler('new-tag')">+<span class="tooltip">add tags</span></button><span class="single-note-tags" id="tag-id-3" style="background-color: rgb(255, 160, 122); color: hsl(from rgb(255, 160, 122) h calc(s + 15) calc(l - 35)); border-color: hsl(from rgb(255, 160, 122) h calc(s + 15) calc(l - 35))">DO POPRAWY ${newNote.tag_names}</span>
+                    </p>
+                </div>
+                <p class="single-note-text" id="note-${newNote.note_id}-text">${newNote.note_text}
+                    <span class="single-note-targets" id="note-${newNote.note_id}-target-object">
+                        Link: <a href="${newNote.target_object}" rel="noopener noreferrer" target="_blank">${newNote.target_object}</a>
+                    </span>
+                    <span class="single-note-targets" id="note-${newNote.note_id}-target-pages">
+                        ${newNote.target_pages}
+                    </span>
+                </p>
+                `;
+                // Append the new note element to the container (modify as per your layout)
+                document.getElementById('notesbox-' + newNote.resource_id ).appendChild(newNoteElement);
+
+                // Optionally, reset the form after submission
+                document.getElementById(formId).classList.add("hidden")
+                document.getElementById(formId).classList.remove("visible")
+                form.reset();
+            } else {
+                alert('Error adding note');
+            }
+        })
+        .catch((error) => {
+            console.error('Error posting note:', error);
+            alert('An error occurred while posting the note.');
+        });
+}
 
 
 </script>
