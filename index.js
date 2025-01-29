@@ -100,6 +100,28 @@ function dateFormat(item){
     }                   
 }
 
+function filterData(sourceData, filteringValues, sourcePropertyName) {
+    // sourceData - z dużego obiektu jakaś gałąź zawierająca obiekty, np. data.tags
+    // filteringValues - array (lub string z wartościami oddzielonymi przecinkami) z danymi wg. których mamy filtrować, np. idsy tagów lub ich nazwy
+    // sourcePropertyName - właściwość do porównania, np. tag_id, tag_name
+
+    let filtersArray = [];
+    // transform filterData to array if it's a string
+    if (!Array.isArray(filteringValues)) {
+        filtersArray = JSON.parse('['+filteringValues.replace(/(^|,)\s*([^,]*[^0-9, ][^,]*?)\s*(?=,|$)/g,'$1"$2"')+']');
+    } else {
+        filtersArray = [...filteringValues];
+    }
+    // console.log("All data to be filtered =", sourceData);
+    // console.log("filterArray =", filtersArray);
+
+    // filtering function
+    let filteredData = sourceData.filter(item => filtersArray.includes(item[sourcePropertyName]));
+    // console.log("Filtered data =", filteredData);
+    return filteredData;
+}
+
+
 function appendToDataTree(existingObject, objectToBeAdded) {
     if (!Array.isArray(existingObject)) {
         existingObject = Object.values(existingObject);
@@ -216,10 +238,15 @@ async function getAllData () {
             dateFormat(note);
         })};
     });
+    // console.log(util.inspect(data, { depth: null, colors: true }));
     userResourcesFull = data;
     return data;
 }
 //xxxxxxxxxxxxx SUPER QUERY ALL END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+//temp
+// getAllData ();
+//temp
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -307,7 +334,7 @@ app.get("/resource/:id", async (req,res) =>{
 //NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
     const resourceId = req.body.resource_id;
-    console.log("new add note request", req.body);
+    // console.log("new add note request", req.body);
 
     try {
         const queryNewNote = `
@@ -320,20 +347,32 @@ app.post("/add-note", async (req, res) =>{
         SELECT $1, unnest(string_to_array($2, ',')::int[]);
         `
         const resultNewNote = await db.query(queryNewNote,[currentUserId, resourceId, req.body.note_text, req.body.target_pages, req.body.target_object]);
-        const newNote = resultNewNote.rows[0];
-        newNote.tag_ids = req.body.selectedTags;
+        let newNote = resultNewNote.rows[0];
+        // console.log("newNote zaraz po wyslaniu do db wraz z returning :", newNote);
+        // const resultAssignTags = await db.query(queryAssignTags,[newNote.note_id, req.body.selectedTags]);
+        try {
+            await db.query(queryAssignTags,[newNote.note_id, req.body.selectedTagIds]);
+        } catch (err) {
+            console.error(err);
+        }
+        
+        newNote.tag_ids = req.body.selectedTagIds;
         newNote.tag_names = req.body.selectedTagsNames;
         dateFormat(newNote);
-        const resultAssignTags = await db.query(queryAssignTags,[newNote.note_id, req.body.selectedTags]);
-        console.log("new note after database query and date format: ", newNote);
+        // console.log("new note after database query and date format: ", newNote);
+        
         const data = await getAllData();
-        res.status(200).json({ success: true, newNote });
 
+        // Append selected tags full objects
+        let selectedTagsObjects = filterData(data.tags, newNote.tag_ids, "id");
+        newNote.selectedTags = selectedTagsObjects;
+
+        // console.log("New note after all", newNote);
+        res.status(200).json({ success: true, newNote });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error adding note' });
     }
-    // res.status(200);
 
 });
 

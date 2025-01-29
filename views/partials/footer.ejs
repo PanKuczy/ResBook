@@ -125,10 +125,7 @@ function toggleResource(id, forceDirection) {
     };
 
 
-    // FUNCTION TO ADD TAGS TO NOTE --- chyba na razie nie używam i trzeba będzie jakoś zmienić
-
-    let selectedTagIds = [];
-    let selectedTagNames = [];
+    // NEW NOTE ROLLOUT
 
     function newNoteRolloutToggle(id) {
         // event.preventDefault(); // Prevent default form submission - chyba przeszkadzalo
@@ -152,9 +149,17 @@ function toggleResource(id, forceDirection) {
 
     }
 
+    // NEW NOTE ROLLOUT - SELECT TAGS
+    let selectedTagIds = [];
+    let selectedTagNames = [];
+    let selectedTagColors = [];
+    let selectedTagColorsInv = [];
     function selectTag(element, resourceId) {
         const tagId = element.getAttribute('data-id');
         const tagName = element.getAttribute('data-name');
+        const tagColor = element.getAttribute('data-color');
+        const tagInvertColor = element.getAttribute('data-invert-color');
+        //Ids
         if (selectedTagIds.includes(tagId)) {
             selectedTagIds = selectedTagIds.filter(id => id !== tagId);
             element.classList.remove('clicked');
@@ -162,15 +167,28 @@ function toggleResource(id, forceDirection) {
             selectedTagIds.push(tagId);
             element.classList.add('clicked');
         }
+        //Names
         if (selectedTagNames.includes(tagName)) {
             selectedTagNames = selectedTagNames.filter(name => name !== tagName);
-            // element.classList.remove('clicked');
         } else {
             selectedTagNames.push(tagName);
-            // element.classList.add('clicked');
+        }
+        //Colors
+        if (selectedTagColors.includes(tagColor)) {
+            selectedTagColors = selectedTagColors.filter(color => color !== tagColor);
+        } else {
+            selectedTagColors.push(tagColor);
+        }
+        //Inverted Colors
+        if (selectedTagColorsInv.includes(tagInvertColor)) {
+            selectedTagColorsInv = selectedTagColorsInv.filter(color => color !== tagInvertColor);
+        } else {
+            selectedTagColorsInv.push(tagInvertColor);
         }
         document.getElementById('selectedNewNoteTags-' + resourceId).value = selectedTagIds.join(',');
         document.getElementById('selectedNewNoteTagsNames-' + resourceId).value = selectedTagNames.join(',');
+        document.getElementById('selectedNewNoteTagsColors-' + resourceId).value = selectedTagColors.join(',');
+        document.getElementById('selectedNewNoteTagsColorsInv-' + resourceId).value = selectedTagColorsInv.join(',');
     }
 
     // ta funkcja jeszcze nie testowana i nie dziala
@@ -212,17 +230,30 @@ function toggleResource(id, forceDirection) {
     formData.forEach((value, key) => {
         formObject[key] = value;
     });
+    // console.log("Form object: ", formObject);
 
     // Send the data using axios
     axios.post('/add-note', formObject)
         .then((response) => {
             if (response.data.success) {
                 const newNote = response.data.newNote;
+                // console.log(newNote);
 
                 // Create a new note DOM element
                 const newNoteElement = document.createElement('div');
                 newNoteElement.classList.add('single-note-item', 'deletable-item');
                 newNoteElement.setAttribute('id', `note-id-${newNote.note_id}`);
+
+                // create tags row
+                let tagsRowHtml = "";
+                for (const tag of newNote.selectedTags) {
+                    tagsRowHtml = tagsRowHtml.concat(`<span class="single-note-tags" id="tag-id-${tag.id}" style="background-color: ${tag.color}; color: ${tag.invertColor}; border-color: ${tag.invertColor}">${tag.name}</span>`);
+                }
+                // empty fields check
+                let pagesHtml = ""
+                if (newNote.target_pages) {pagesHtml = `Pages: ${newNote.target_pages}`}
+                let linkHtml = ""
+                if (newNote.target_object) {linkHtml = `Link: <a href="${newNote.target_object}" rel="noopener noreferrer" target="_blank">${newNote.target_object}</a>`}
                 
                 newNoteElement.innerHTML = `
                 <div class="note-heading-row">
@@ -243,15 +274,16 @@ function toggleResource(id, forceDirection) {
                     </div>
                     <!-- NOTE HEADING: TAGS -->
                     <p class="note-tags-row">
-                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="handler('new-tag')">+<span class="tooltip">add tags</span></button><span class="single-note-tags" id="tag-id-3" style="background-color: rgb(255, 160, 122); color: hsl(from rgb(255, 160, 122) h calc(s + 15) calc(l - 35)); border-color: hsl(from rgb(255, 160, 122) h calc(s + 15) calc(l - 35))">DO POPRAWY ${newNote.tag_names}</span>
+                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="handler('new-tag')">+<span class="tooltip">add tags</span></button>
+                        ${tagsRowHtml}
                     </p>
                 </div>
                 <p class="single-note-text" id="note-${newNote.note_id}-text">${newNote.note_text}
                     <span class="single-note-targets" id="note-${newNote.note_id}-target-object">
-                        Link: <a href="${newNote.target_object}" rel="noopener noreferrer" target="_blank">${newNote.target_object}</a>
+                        ${linkHtml}
                     </span>
                     <span class="single-note-targets" id="note-${newNote.note_id}-target-pages">
-                        ${newNote.target_pages}
+                        ${pagesHtml}
                     </span>
                 </p>
                 `;
@@ -259,9 +291,10 @@ function toggleResource(id, forceDirection) {
                 document.getElementById('notesbox-' + newNote.resource_id ).appendChild(newNoteElement);
 
                 // Optionally, reset the form after submission
+                form.reset();
                 document.getElementById(formId).classList.add("hidden")
                 document.getElementById(formId).classList.remove("visible")
-                form.reset();
+
             } else {
                 alert('Error adding note');
             }

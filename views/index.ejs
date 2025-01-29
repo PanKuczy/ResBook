@@ -46,7 +46,7 @@
                                     <div id="tag-rollout-<%= item?.resource_id %>" class="tag-rollout-drawer hidden">
                                         <div id="tag-container-<%= item?.resource_id %>" class="note-heading-row">
                                             <% tags.forEach(tag => { %>
-                                                <span class="tag single-note-tags" data-id="<%= tag.id %>" data-name="<%= tag.name %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
+                                                <span class="tag single-note-tags" data-id="<%= tag.id %>" data-name="<%= tag.name %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
                                                     <%= tag.name %>
                                                 </span>
                                             <% }); %>
@@ -54,8 +54,10 @@
                                         <input type="text" id="new-tag" placeholder="Add new tag" />
                                         <button type="button" onclick="addTag()">Add Tag</button>
                                     </div>
-                                    <input type="hidden" name="selectedTags" id="selectedNewNoteTags-<%= item?.resource_id %>" />
+                                    <input type="hidden" name="selectedTagIds" id="selectedNewNoteTags-<%= item?.resource_id %>" />
                                     <input type="hidden" name="selectedTagsNames" id="selectedNewNoteTagsNames-<%= item?.resource_id %>" />
+                                    <input type="hidden" name="selectedTagsColors" id="selectedNewNoteTagsColors-<%= item?.resource_id %>" />
+                                    <input type="hidden" name="selectedTagsColorsInv" id="selectedNewNoteTagsColorsInv-<%= item?.resource_id %>" />
                             </div>
                             <!-- <input type="text" name="newNoteTags" placeholder="Tags" autocomplete="off" autofocus="true"  id="new-note-pages"/> -->
                             <textarea class="new-note-text" type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text-<%= item?.resource_id %>" required></textarea>
@@ -82,26 +84,26 @@
     <!-- NOTE HEADING -->
                                 <div class="note-heading-row">
                                     <div class="note-date-del-edit-row">
+                                        <!-- ten przycisk raczej do zmiany -->
+                                        <form action="/edit-note" method="post">
+                                            <input type="hidden" name="note_id" value="<%= note?.note_id ?? null %>">
+                                            <button 
+                                                class="icon-button tooltip-container" 
+                                                type="edit" 
+                                                name="edit-note" 
+                                                onclick="handler('edit-note')">
+                                                <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit note</span>
+                                            </button>
+                                        </form>
 
-                                                <form action="/edit-note" method="post">
-                                                    <input type="hidden" name="note_id" value="<%= note?.note_id ?? null %>">
-                                                    <button 
-                                                        class="icon-button tooltip-container" 
-                                                        type="edit" 
-                                                        name="edit-note" 
-                                                        onclick="handler('edit-note')">
-                                                        <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit note</span>
-                                                    </button>
-                                                </form>
-
-                                                    <button 
-                                                        class="icon-button tooltip-container" 
-                                                        id="delete-note-<%= note?.note_id ?? null %>"
-                                                        type="button"
-                                                        onclick="showConfirmationPopup('<%= note?.note_id ?? null %>', '/delete-note', '<%= item.resource_id %>', 'note-id-<%= note?.note_id %>')">
-                                                        <i class="fa-solid fa-trash"></i><span class="tooltip">delete note</span>
-                                                    </button>
-                                            <p class="note-date" value="date" id="note-<%= note?.note_id ?? null %>-date"><%= note?.formattedDate ?? null %></p>
+                                        <button 
+                                            class="icon-button tooltip-container" 
+                                            id="delete-note-<%= note?.note_id ?? null %>"
+                                            type="button"
+                                            onclick="showConfirmationPopup('<%= note?.note_id ?? null %>', '/delete-note', '<%= item.resource_id %>', 'note-id-<%= note?.note_id %>')">
+                                            <i class="fa-solid fa-trash"></i><span class="tooltip">delete note</span>
+                                        </button>
+                                        <p class="note-date" value="date" id="note-<%= note?.note_id ?? null %>-date"><%= note?.formattedDate ?? null %></p>
 
                                     </div>
     <!-- NOTE HEADING: TAGS -->
