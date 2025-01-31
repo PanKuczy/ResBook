@@ -4,6 +4,7 @@
         <form id="delete-form" method="post" style="display:none;">
             <input type="hidden" name="delete_item_id" value="">
             <input type="hidden" name="delete_item_DOMid" value="">
+            <input type="hidden" name="delete_item_DOMid_additional" value="">
             <input type="hidden" name="delete_resource_id" value="">
             <input type="hidden" name="delete_route" value="">
         </form>
@@ -24,7 +25,12 @@
                         <img src="<%= item?.cover_url ?? null %>">
                     </div>
                     <div class="book-heading-text">
-                        <p class="book-categories"><%= item?.resource_categories %></p>
+                        <div class="book-categories-row"> <!-- CATEGORIES -->
+                            <% for(let cat of item?.resource_categories){ %>
+                                <span class="single-category book-with-category-<%=cat?.category_id %>" id="book-<%= item?.resource_id %>-cat-<%=cat?.category_id %>"><%=cat?.category_name %></span>
+                            <%}%>
+                        </div>
+                       
                         <h2><%= item.resource_title %></h2>
                         <h3><%= item?.subtitle ?? null %></h3>
                         <h5><span class="author-text">By <%= item.authors %></span><span class="year-text"><%= item?.publication_year ?? null -%><%if(item?.place){%>,<% } %>

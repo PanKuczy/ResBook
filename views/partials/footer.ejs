@@ -101,6 +101,129 @@ function toggleResource(id, forceDirection) {
 
 
 
+// FILTER BY CATEGORY
+    // na razie skopiowana na chama z tagsow
+    let selectedCatIds = [];
+    let selectedCatNames = [];
+
+    function selectCategory(element, resourceId) {
+        const catId = element.getAttribute('data-id');
+        const catName = element.getAttribute('data-name');
+
+        //Ids
+        if (selectedCatIds.includes(catId)) {
+            selectedCatIds = selectedCatIds.filter(id => id !== catId);
+            element.classList.remove('clicked');
+        } else {
+            selectedCatIds.push(catId);
+            element.classList.add('clicked');
+        }
+        //Names
+        if (selectedCatNames.includes(catName)) {
+            selectedCatNames = selectedCatNames.filter(name => name !== catName);
+        } else {
+            selectedCatNames.push(catName);
+        }
+
+        //tu dalej powinna byc funkcja filtrujaca
+
+        // document.getElementById('selectedNewNoteCats-' + resourceId).value = selectedCatIds.join(',');
+        // document.getElementById('selectedNewNoteCatsNames-' + resourceId).value = selectedCatNames.join(',');
+    }
+
+
+// ADD NEW CATEGORY
+    function addNewCategory() {
+        // Prevent default form submission
+        event.preventDefault();
+        const form = document.getElementById("new-category-form")
+        // Create a FormData object from the form
+        const formData = new FormData(form);
+
+        // Convert FormData to a plain object (or you can directly send FormData)
+        const formObject = {};
+        formData.forEach((value, key) => {
+            formObject[key] = value;
+        });
+        // Check if the input is not empty
+        if (!formObject.newCategoryName) {
+            return false;
+        } else {
+            // axios route
+            axios.post('/add-category', formObject)
+                .then((response) => {
+                    // console.log("Response :" , response.data);
+                    if (response.data.success) {
+                        const newCategoryResponse = response.data.newCategory;
+                        // console.log("Response data :", response.data);
+                        // CREATE ELEMENTS
+                        // non editable list
+                        let newCategoryElement = document.createElement('li');
+                        newCategoryElement.classList.add('categories-item');
+                        newCategoryElement.setAttribute('id', `category-id-${newCategoryResponse.id}`);
+                        newCategoryElement.setAttribute('data-id', `${newCategoryResponse.id}`); 
+                        newCategoryElement.setAttribute('data-name', `${formObject.newCategoryName}`); 
+                        newCategoryElement.setAttribute('onclick', `selectCategory(this, ${newCategoryResponse.id})`); 
+                        newCategoryElement.innerHTML = formObject.newCategoryName;
+                        document.getElementById('categories-list').appendChild(newCategoryElement);
+                        // editable list
+                        let newCategoryEditableElement = document.createElement('div');
+                        newCategoryEditableElement.classList.add('deletable-item', 'visible');
+                        newCategoryEditableElement.setAttribute('id', `editable-category-row-${newCategoryResponse.id}`);
+
+                        newCategoryEditableElement.innerHTML = `
+                        <button 
+                        class="icon-button tooltip-container" 
+                        id="delete-category-${newCategoryResponse.id}"
+                        type="button"
+                        onclick="showConfirmationPopup('${newCategoryResponse.id}', '/delete-category', null, 'editable-category-row-${newCategoryResponse.id}', 'category-id-${newCategoryResponse.id}')">
+                        <i class="fa-solid fa-trash"></i><span class="tooltip">delete category</span>
+                        </button><li class="categories-item" data-id="${newCategoryResponse.id}" data-name="${formObject.newCategoryName}" ><input type="text" id="editable-category-${newCategoryResponse.id}" value="${formObject.newCategoryName}" required></li>
+                        `;
+                        // newCategoryEditableElement.classList.add('categories-item-editable', 'deletable-item', 'visible'); // zm
+                        // newCategoryEditableElement.setAttribute('data-id', `${newCategoryResponse.id}`); //zm
+                        // newCategoryEditableElement.setAttribute('data-name', `${formObject.newCategoryName}`); //zm
+                        // newCategoryEditableElement.setAttribute('onclick', `selectCategory(this, ${newCategoryResponse.id})`); //zm
+                        // newCategoryEditableElement.innerHTML = formObject.newCategoryName;
+                        document.getElementById('categories-list-editable').appendChild(newCategoryEditableElement); //ok
+
+                        form.reset();
+                    } else {
+                        alert('Error adding category (response).');
+                    }
+  
+                })
+                .catch((error) => {
+                    console.error('Error adding category:', error);
+                    alert('Error adding category (catch).');
+                });
+
+        }
+    }
+
+// EDIT & DELETE CATEGORIES
+function editCategoriesToggle(){
+    let categoriesListDisplay = document.getElementById('categories-list').style.display;
+    let form = document.getElementById('edit-categories-form');
+    // let categoriesEditListDisplay = document.getElementById('categories-list-editable').style.display;
+    if (categoriesListDisplay == 'block') {
+        document.getElementById('categories-list').style.display = 'none';
+        document.getElementById('categories-list-editable').style.display = 'block'
+        document.getElementById('edit-categories-submit-button').removeAttribute('disabled');
+        document.getElementById('edit-categories-cancel-button').removeAttribute('disabled');
+    } else {
+        document.getElementById('categories-list').style.display = 'block';
+        document.getElementById('categories-list-editable').style.display = 'none'
+        document.getElementById('edit-categories-submit-button').disabled ='true';
+        document.getElementById('edit-categories-cancel-button').disabled ='true';
+        form.reset();
+    }
+}
+
+
+
+
+
 // ADD NEW NOTE
     // Submit or cancel new note form
     function cancelNewNote(id){
@@ -241,7 +364,7 @@ function toggleResource(id, forceDirection) {
 
                 // Create a new note DOM element
                 const newNoteElement = document.createElement('div');
-                newNoteElement.classList.add('single-note-item', 'deletable-item');
+                newNoteElement.classList.add('cateegories-item', 'deletable-item');
                 newNoteElement.setAttribute('id', `note-id-${newNote.note_id}`);
 
                 // create tags row
@@ -311,11 +434,12 @@ function toggleResource(id, forceDirection) {
 <!-- +++++++++++++++++++ NOWE FUNKCJE NON-RELOADING Z UZYCIEM AXIOS I RES.JSON, docelowo zastąpią większość routów z form i submit buttonow-->
 <script>
     // Function to show confirmation popup and set the item ID, route, resource_id, type
-    function showConfirmationPopup(itemId, route, resourceId, itemDOMid) {
+    function showConfirmationPopup(itemId, route, resourceId, itemDOMid, additionalDomIdToDelete) {
         // Set the hidden item_id for deletion in the form dynamically
         document.querySelector('input[name="delete_item_id"]').value = itemId;
         // Set the hidden item_type for deletion in the form dynamically
         document.querySelector('input[name="delete_item_DOMid"]').value = itemDOMid;
+        document.querySelector('input[name="delete_item_DOMid_additional"]').value = additionalDomIdToDelete;
         // Set the hidden resource_id for the item in the form dynamically
         document.querySelector('input[name="delete_resource_id"]').value = resourceId;
         // Set the action (route) dynamically
@@ -338,13 +462,15 @@ function confirmDelete() {
     document.getElementById('confirmation-popup').style.display = 'none';
 
     const itemDomId = document.getElementById('delete-form').delete_item_DOMid.value;
+    const additionalItemDomId = document.getElementById('delete-form').delete_item_DOMid_additional.value;
     const itemElement = document.getElementById(itemDomId);
+    const additionalItemElement = document.getElementById(additionalItemDomId);
     const itemId = document.getElementById('delete-form').delete_item_id.value;
     const itemResourceId = document.getElementById('delete-form').delete_resource_id.value;
     const route = document.getElementById('delete-form').delete_route.value;
     // Adding a fade-out class for animation
     itemElement.classList.add('fade-out');
-    // console.log("FE Delete request sent: ", itemDomId, itemId, itemResourceId, route);
+    console.log("FE Delete request sent: ", itemDomId, additionalItemDomId, itemId, itemResourceId, route);
     
     // do data bedzie mozna dodawac kolejne opcje jezeli beda potrzebne, np. note_id przy kasowaniu tagow
     const data = {
@@ -359,6 +485,13 @@ function confirmDelete() {
         if (response.data.success) {
             // Remove the item from the DOM
             itemElement.remove();
+            additionalItemElement.remove();
+            // Additinal DOM operations for categories
+            if (route == "/delete-category") {
+                // const bookHeadingsToUpdate = document.getElementsByClassName(`.book-with-category-${itemId}`);
+                document.querySelectorAll(`.book-with-category-${itemId}`).forEach(element => element.remove());
+                // console.log("bookHeadingsToUpdate: ",bookHeadingsToUpdate);
+            }
         }
         })
         .catch(error => {

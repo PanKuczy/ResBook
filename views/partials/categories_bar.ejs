@@ -1,9 +1,65 @@
-<div class="box" id="categories-list">
-    <h3>Categories:</h3>
-    <ul>
+<div class="box" id="categories-list-box">
+    <div class="heading-with-buttons">
+        <h3>Categories:</h3>
+        <div>
+            <button 
+            class="icon-button tooltip-container" 
+            type="edit" 
+            name="edit-categories-toggle" 
+            onclick="editCategoriesToggle()">
+            <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit categories</span>
+            </button>
+            <button 
+            disabled
+            id="edit-categories-submit-button"
+            class="icon-button tooltip-container" 
+            type="submit" 
+            name="edit-categories-submit" 
+            onclick="editCategoriesSubmit()">
+            <i class="fa-solid fa-floppy-disk"></i><span class="tooltip">save changes</span>
+            </button>
+            <button 
+            disabled
+            id="edit-categories-cancel-button"
+            class="icon-button tooltip-container" 
+            type="reset" 
+            name="edit-categories-cancel" 
+            onclick="editCategoriesToggle()">
+            <i class="fa-solid fa-rotate-left"></i><span class="tooltip">discard changes</span>
+            </button>
+        </div>
+    </div>
+    <ul id="categories-list" style="display: block;">
     <% for(let item of categories){%>
-        <li class="categories-item"><%= item?.name ?? null %></li>
+        <li class="categories-item" id="category-id-<%= item.id %>" data-id="<%= item.id %>" data-name="<%= item.name %>" onclick="selectCategory(this, <%= item.id %>)"><%= item?.name ?? null %></li>
     <% } %>
-        <li class="categories-item">+</li>
     </ul>
+    <!-- EDIT AND DELETE FORM -->
+    <form id="edit-categories-form">
+        <ul id="categories-list-editable" style="display: none;">
+            <% for(let item of categories){%>
+                <div id="editable-category-row-<%= item.id %>" class="deletable-item visible">
+                    <button 
+                    class="icon-button tooltip-container" 
+                    id="delete-category-<%= item.id %>"
+                    type="button"
+                    onclick="showConfirmationPopup('<%= item.id %>', '/delete-category', null, 'editable-category-row-<%= item.id %>', 'category-id-<%= item.id %>')">
+                    <i class="fa-solid fa-trash"></i><span class="tooltip">delete category</span>
+                    </button><li class="categories-item" data-id="<%= item.id %>" data-name="<%= item.name %>" ><input type="text" id="editable-category-<%= item.id %>" value="<%= item?.name ?? null %>" required></li>
+                </div>
+            <% } %>
+        </ul>
+    </form>
+
+        <form id="new-category-form">
+            <button class="button tooltip-container"
+                id="new-category-button"
+                type="submit"
+                onclick="addNewCategory()">
+                +
+                <span class="tooltip">create new category</span>
+            </button>
+            <input class="categories-item" type="text" placeholder="New category" name="newCategoryName" autocomplete="off" autofocus="false" required>
+        </form>
+
 </div>

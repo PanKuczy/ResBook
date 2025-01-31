@@ -42,8 +42,9 @@ ON CONFLICT (name, user_id) DO NOTHING; -- Prevent duplicates for the same user
 
 --Add a Category
 INSERT INTO categories (name, user_id)
-VALUES ('Science', 1), ('Technology', 1)
-ON CONFLICT (name, user_id) DO NOTHING; -- Prevent duplicates for the same user
+VALUES ($1, $2)
+ON CONFLICT (name, user_id) DO NOTHING -- Prevent duplicates for the same user
+RETURNING id; 
 
 --Link a Tag to a Note
 INSERT INTO note_tags (note_id, tag_id)
@@ -128,3 +129,44 @@ WHERE c.name = ($1) AND c.user_id = ($2);
     WHERE ur.user_id = $1
     GROUP BY r.id;
     
+
+-- BACKUP SUPER QUERY 2025.01.31
+    SELECT 
+        r.id AS resource_id,
+        r.title AS resource_title,
+        r.authors,
+        r.resource_type,
+        r.isbn,
+        r.doi,
+        r.created_at AS resource_created_at,
+        r.subtitle,
+        r.place,
+        r.cover_url,
+        r.publication_year,
+        STRING_AGG(DISTINCT c.name, ', ') AS resource_categories,
+        json_agg(
+            DISTINCT jsonb_build_object(
+                'note_id', n.id,
+                'note_text', n.note_text,
+                'created_at', n.created_at,
+                'updated_at', n.updated_at,
+                'target_pages', n.target_pages,
+                'target_object', n.target_object,
+                'tags', nt.tags
+            )
+        ) AS notes
+    FROM resources r
+    JOIN user_resources ur ON r.id = ur.resource_id
+    LEFT JOIN resource_categories rc ON r.id = rc.resource_id
+    LEFT JOIN categories c ON rc.category_id = c.id
+    LEFT JOIN notes n ON n.resource_id = r.id AND n.user_id = ur.user_id
+    LEFT JOIN (
+        SELECT 
+            nt.note_id, 
+            STRING_AGG(t.name, ', ') AS tags
+        FROM note_tags nt
+        JOIN tags t ON nt.tag_id = t.id
+        GROUP BY nt.note_id
+    ) nt ON n.id = nt.note_id
+    WHERE ur.user_id = $1
+    GROUP BY r.id;

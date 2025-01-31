@@ -151,7 +151,12 @@ async function getAllData () {
         r.place,
         r.cover_url,
         r.publication_year,
-        STRING_AGG(DISTINCT c.name, ', ') AS resource_categories,
+        json_agg(
+            DISTINCT jsonb_build_object(
+                'category_id', c.id,
+                'category_name', c.name
+            )
+        ) AS resource_categories,
         json_agg(
             DISTINCT jsonb_build_object(
                 'note_id', n.id,
@@ -291,6 +296,7 @@ app.get("/", async (req, res) => {
 
 });
 
+// TO JUZ RACZEJ NIE POTRZEBNE, BO ZMIENILEM NA RES.JSON
 app.get("/resource/:id", async (req,res) =>{
     const request = req.params.id;
     // console.log("BEFORE", userResourcesFull);
@@ -308,28 +314,35 @@ app.get("/resource/:id", async (req,res) =>{
     res.render("index.ejs", data)
 });
 
-// BACKUP ADD-NOTE SPRZED RES.JSON
-// app.post("/add-note", async (req, res) =>{
-//     const resourceId = req.body.resource_id;
-//     console.log("new add note request");
+//ADD CATEGORY
+app.post("/add-category", async (req,res) => {
+    const request = req.body;
 
-//     const queryNewNote = `
-//     INSERT INTO notes (user_id, resource_id, note_text, target_pages, target_object)
-//     VALUES ($1, $2, $3, $4, $5)
-//     RETURNING id AS note_id, note_text, created_at, updated_at, target_pages, target_object;
-//     `
-//     const queryAssignTags =`
-//     INSERT INTO note_tags (note_id, tag_id)
-//     SELECT $1, unnest(string_to_array($2, ',')::int[]);
-//     `
-//     const resultNewNote = await db.query(queryNewNote,[currentUserId, resourceId, req.body.note_text, req.body.target_pages, req.body.target_object]);
-//     const newNote = resultNewNote.rows[0];
-//     const resultAssignTags = await db.query(queryAssignTags,[newNote.note_id, req.body.selectedTags]);
+    console.log("Server got request :",request);
+    try {
+        const queryNewCategory =`
+        INSERT INTO categories (name, user_id)
+        VALUES ($1, $2)
+        ON CONFLICT (name, user_id) DO NOTHING -- Prevent duplicates for the same user
+        RETURNING id; 
+        `;
 
-//     const data = await getAllData();
+        const resultNewCategory = await db.query(queryNewCategory, [request.newCategoryName, currentUserId]);
 
-//     res.redirect(`/resource/${resourceId}`);
-// });
+        const newCategory = {
+        name: request.newCategoryName,
+        id: resultNewCategory.rows[0].id
+        };
+
+        console.log("New Category object :",newCategory);
+        res.status(200).json({ success: true, newCategory });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error adding category' });
+    }
+
+});
+
 
 //NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
@@ -390,6 +403,24 @@ app.post("/delete-note", async (req,res) => {
         res.status(500).json({ success: false, error: 'Error deleting item' });
       }
     res.status(200);
+});
+
+app.post("/delete-category", async (req,res) => {
+    const request = req.body;
+    console.log("Delete category request: ", request);
+
+    try {
+        const queryDeleteCategory = `
+        DELETE 
+        FROM categories 
+        WHERE id=$1
+        `;
+        await db.query(queryDeleteCategory,[req.body.item_id]);
+        res.json({ success: true, itemId: req.body.item_id });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error deleting item' });
+      }
 });
 
 
