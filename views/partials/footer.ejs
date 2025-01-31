@@ -485,12 +485,11 @@ function confirmDelete() {
         if (response.data.success) {
             // Remove the item from the DOM
             itemElement.remove();
-            additionalItemElement.remove();
+
             // Additinal DOM operations for categories
             if (route == "/delete-category") {
-                // const bookHeadingsToUpdate = document.getElementsByClassName(`.book-with-category-${itemId}`);
+                additionalItemElement.remove();
                 document.querySelectorAll(`.book-with-category-${itemId}`).forEach(element => element.remove());
-                // console.log("bookHeadingsToUpdate: ",bookHeadingsToUpdate);
             }
         }
         })
