@@ -20,6 +20,15 @@
         .sort((a, b) => a.querySelector('li').getAttribute('data-name').localeCompare(b.querySelector('li').getAttribute('data-name'), undefined, {sensitivity: 'base'}))
         .forEach(node => editableList.appendChild(node));
 
+        //bookheadings
+        const bookHeadings = document.getElementsByClassName('book-categories-row');
+        for (const item of bookHeadings) {
+            [...item.children]
+            .sort((a, b) => a.innerText.localeCompare(b.innerText, undefined, {sensitivity: 'base'}))
+            .forEach(node => item.appendChild(node));
+            }
+
+
     }
     function sortNotesToggle(order, singleResource){
         // trzeba jeszcze dodac togglowanie przy klikaniu ikony ze strzalka lub wyborze z listy
