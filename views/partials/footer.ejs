@@ -187,12 +187,7 @@ function toggleResource(id, forceDirection) {
                         <i class="fa-solid fa-trash"></i><span class="tooltip">delete category</span>
                         </button><li class="categories-item" data-id="${newCategoryResponse.id}" data-name="${formObject.newCategoryName}" ><input type="text" id="editable-category-${newCategoryResponse.id}" value="${formObject.newCategoryName}" required></li>
                         `;
-                        // newCategoryEditableElement.classList.add('categories-item-editable', 'deletable-item', 'visible'); // zm
-                        // newCategoryEditableElement.setAttribute('data-id', `${newCategoryResponse.id}`); //zm
-                        // newCategoryEditableElement.setAttribute('data-name', `${formObject.newCategoryName}`); //zm
-                        // newCategoryEditableElement.setAttribute('onclick', `selectCategory(this, ${newCategoryResponse.id})`); //zm
-                        // newCategoryEditableElement.innerHTML = formObject.newCategoryName;
-                        document.getElementById('categories-list-editable').appendChild(newCategoryEditableElement); //ok
+                        document.getElementById('categories-list-editable').appendChild(newCategoryEditableElement);
 
                         form.reset();
                     } else {
@@ -208,24 +203,24 @@ function toggleResource(id, forceDirection) {
         }
     }
 
-// EDIT & DELETE CATEGORIES
-function editCategoriesToggle(){
-    let categoriesListDisplay = document.getElementById('categories-list').style.display;
-    let form = document.getElementById('edit-categories-form');
-    // let categoriesEditListDisplay = document.getElementById('categories-list-editable').style.display;
-    if (categoriesListDisplay == 'block') {
-        document.getElementById('categories-list').style.display = 'none';
-        document.getElementById('categories-list-editable').style.display = 'block'
-        document.getElementById('edit-categories-submit-button').removeAttribute('disabled');
-        document.getElementById('edit-categories-cancel-button').removeAttribute('disabled');
-    } else {
-        document.getElementById('categories-list').style.display = 'block';
-        document.getElementById('categories-list-editable').style.display = 'none'
-        document.getElementById('edit-categories-submit-button').disabled ='true';
-        document.getElementById('edit-categories-cancel-button').disabled ='true';
-        form.reset();
+// EDIT CATEGORIES
+    function editCategoriesToggle(){
+        let categoriesListDisplay = document.getElementById('categories-list').style.display;
+        let form = document.getElementById('edit-categories-form');
+        // let categoriesEditListDisplay = document.getElementById('categories-list-editable').style.display;
+        if (categoriesListDisplay == 'block') {
+            document.getElementById('categories-list').style.display = 'none';
+            document.getElementById('categories-list-editable').style.display = 'block'
+            document.getElementById('edit-categories-submit-button').removeAttribute('disabled');
+            document.getElementById('edit-categories-cancel-button').removeAttribute('disabled');
+        } else {
+            document.getElementById('categories-list').style.display = 'block';
+            document.getElementById('categories-list-editable').style.display = 'none'
+            document.getElementById('edit-categories-submit-button').disabled ='true';
+            document.getElementById('edit-categories-cancel-button').disabled ='true';
+            form.reset();
+        }
     }
-}
 
 
     // EDIT CATEGORIES
@@ -233,14 +228,11 @@ function editCategoriesToggle(){
         // Prevent default form submission
         event.preventDefault();
 
-
         // Get the form element
-        const form = document.getElementById(formId);
+        // const form = document.getElementById(formId); chyba niepotrzbene juz
         // Get data from inputs, collect items to change
         const editableList = document.getElementById('categories-list-editable');
-        // const nonEditableList = document.getElementById('categories-list');
         const editableListItems = editableList.querySelectorAll('li.categories-item');
-        // const nonEditableListItems = nonEditableList.querySelectorAll('li.categories-item');
 
         // console.log(editableListItems);
         let formObject = [];
@@ -251,9 +243,8 @@ function editCategoriesToggle(){
             });
 
         });
-        console.log("formObject array :", formObject);
+        // console.log("formObject array :", formObject);
 
-        // NOWY ROUTE NA BAZIE ADD CATEGORY - PRZEROBIC
         // Check if there are no empty inputs
         if (formObject.find((item) => item.name == "")) {
             alert("Invalid category name!")
@@ -262,43 +253,47 @@ function editCategoriesToggle(){
             // axios route
             axios.put('/edit-categories', formObject)
                 .then((response) => {
-                    console.log("Response :" , response.data);
+                    // console.log("Response :" , response.data);
                     if (response.data.success) {
                         const newCategoryResponse = response.data.newCategory;
                         // console.log("Response data :", response.data);
 
                         // UPDATE HTML ELEMENTS
                         formObject.forEach(formItem => {
-                            // non editable list
+                            // non editable categories list
                             const nonEditableListItem = document.getElementById('categories-list').querySelector(`li[data-id="${formItem.id}"]`);
                             if (nonEditableListItem) {
                                 nonEditableListItem.setAttribute('data-name', formItem.name);
                                 nonEditableListItem.innerHTML = formItem.name;
                             }
-                            // editable list
+                            // editable categories list
                             const editableListItem = document.getElementById('categories-list-editable').querySelector(`li[data-id="${formItem.id}"]`);
                             if (editableListItem) {
                                 editableListItem.setAttribute('data-name', formItem.name);
                                 const inputElement = editableListItem.querySelector('input');
                                 inputElement.setAttribute('value', formItem.name);
                             }
+                            // books
+                            const booksCategories = document.getElementsByClassName(`book-with-category-${formItem.id}`);
+                            if (booksCategories) {
+                                for (const classInstance of booksCategories) {
+                                    classInstance.innerHTML = formItem.name;
+                                }
+                            }
                         });
-
+                        // toggle back the buttons
                         editCategoriesToggle()
-                        // form.reset();
+
                     } else {
-                        alert('Error adding category (response).');
+                        alert('Error updating categories (response).');
                     }
   
                 })
                 .catch((error) => {
-                    console.error('Error adding category:', error);
-                    alert('Error adding category (catch).');
+                    console.error('Error updating categories:', error);
+                    alert('Error updating categories (catch).');
                 });
-            console.log("ok");
         }
-
-
     }
 
 
@@ -415,19 +410,17 @@ function editCategoriesToggle(){
     }
 
 
-    //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    // NOWE SUBMIT NOTE Z AXIOS i RES.JSON
-
+// NOWE SUBMIT NOTE Z AXIOS i RES.JSON
     function submitNewNote(formId) {
-    // Prevent default form submission
-    event.preventDefault();
+        // Prevent default form submission
+        event.preventDefault();
 
-    // Get the form element
-    const form = document.getElementById(formId);
-    const formObject = formToObject(formId);
+        // Get the form element
+        const form = document.getElementById(formId);
+        const formObject = formToObject(formId);
 
-    // Send the data using axios
-    axios.post('/add-note', formObject)
+        // Send the data using axios
+        axios.post('/add-note', formObject)
         .then((response) => {
             if (response.data.success) {
                 const newNote = response.data.newNote;
@@ -497,12 +490,12 @@ function editCategoriesToggle(){
             console.error('Error posting note:', error);
             alert('An error occurred while posting the note.');
         });
-}
+    }
 
 
 </script>
 
-<!-- +++++++++++++++++++ NOWE FUNKCJE NON-RELOADING Z UZYCIEM AXIOS I RES.JSON, docelowo zastąpią większość routów z form i submit buttonow-->
+<!-- DELETE ITEMS - GLOBAL FUNCTIONS -->
 <script>
     // Function to show confirmation popup and set the item ID, route, resource_id, type
     function showConfirmationPopup(itemId, route, resourceId, itemDOMid, additionalDomIdToDelete) {

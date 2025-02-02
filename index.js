@@ -345,7 +345,7 @@ app.post("/add-category", async (req,res) => {
 
 //EDIT CATEGORIES
 app.put("/edit-categories", async (req, res) => {
-    console.log(req.body);
+    // console.log(req.body);
     try {
         const requestCategories = req.body;
         // Start building the query
