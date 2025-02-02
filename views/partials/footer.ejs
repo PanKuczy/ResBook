@@ -3,18 +3,61 @@
 </footer>
 
 <script>
+// SORT
+
+    function sortCategoriesList(){
+        //non ediatble list
+        const nonEditList = document.querySelector('#categories-list');
+
+        [...nonEditList.children]
+        .sort((a, b) => a.innerText.localeCompare(b.innerText, undefined, {sensitivity: 'base'}))
+        .forEach(node => nonEditList.appendChild(node));
+
+        //editable list
+        const editableList = document.querySelector('#categories-list-editable');
+
+        [...editableList.children]
+        .sort((a, b) => a.querySelector('li').getAttribute('data-name').localeCompare(b.querySelector('li').getAttribute('data-name'), undefined, {sensitivity: 'base'}))
+        .forEach(node => editableList.appendChild(node));
+
+    }
+    function sortNotesToggle(order, singleResource){
+        // trzeba jeszcze dodac togglowanie przy klikaniu ikony ze strzalka lub wyborze z listy
+        const notesBoxes = singleResource?.getElementsByClassName('notes-box') ?? document.getElementsByClassName('notes-box');
+
+        if (order == 'date-ascending') {
+            for (const item of notesBoxes) {
+            [...item.querySelectorAll('.single-note-item')]
+            .sort((a, b) => a.querySelector('.note-date').innerText.localeCompare(b.querySelector('.note-date').innerText, undefined, {sensitivity: 'base'}))
+            .forEach(node => item.appendChild(node));
+            }
+        } else {
+            for (const item of notesBoxes) {
+            [...item.querySelectorAll('.single-note-item')]
+            .sort((b, a) => a.querySelector('.note-date').innerText.localeCompare(b.querySelector('.note-date').innerText, undefined, {sensitivity: 'base'}))
+            .forEach(node => item.appendChild(node));
+            }   
+        }
+
+    }
+    //call sorting on page load
+    sortCategoriesList();
+    sortNotesToggle('date-descending', null);
+    // a.localeCompare(b, undefined, {sensitivity: 'base'})
+
+
 // FORM TO OBJECT CONVERT - REUSABLE FUNCTION
-function formToObject(formDomId){
-    const form = document.getElementById(formDomId);
-    // Create a FormData object from the form
-    const formData = new FormData(form);
-    // Convert FormData to a plain object (or you can directly send FormData)
-    const formObjectData = {};
-    formData.forEach((value, key) => {
-        formObjectData[key] = value;
-    });
-    return formObjectData;
-}
+    function formToObject(formDomId){
+        const form = document.getElementById(formDomId);
+        // Create a FormData object from the form
+        const formData = new FormData(form);
+        // Convert FormData to a plain object (or you can directly send FormData)
+        const formObjectData = {};
+        formData.forEach((value, key) => {
+            formObjectData[key] = value;
+        });
+        return formObjectData;
+    }
 
 // TOGGLE RESOURCE
 // forceDirection can have "up" or "down" values
@@ -190,6 +233,7 @@ function toggleResource(id, forceDirection) {
                         document.getElementById('categories-list-editable').appendChild(newCategoryEditableElement);
 
                         form.reset();
+                        sortCategoriesList()
                     } else {
                         alert('Error adding category (response).');
                     }
@@ -281,7 +325,10 @@ function toggleResource(id, forceDirection) {
                                 }
                             }
                         });
+
+                        sortCategoriesList()
                         // toggle back the buttons
+                        
                         editCategoriesToggle()
 
                     } else {
@@ -428,7 +475,7 @@ function toggleResource(id, forceDirection) {
 
                 // Create a new note DOM element
                 const newNoteElement = document.createElement('div');
-                newNoteElement.classList.add('cateegories-item', 'deletable-item');
+                newNoteElement.classList.add('single-note-item', 'deletable-item', 'hidden');
                 newNoteElement.setAttribute('id', `note-id-${newNote.note_id}`);
 
                 // create tags row
@@ -476,7 +523,10 @@ function toggleResource(id, forceDirection) {
                 `;
                 // Append the new note element to the container (modify as per your layout)
                 document.getElementById('notesbox-' + newNote.resource_id ).appendChild(newNoteElement);
-
+                sortNotesToggle();
+                // fade in animation
+                document.getElementById(`note-id-${newNote.note_id}`).classList.remove("hidden");
+                document.getElementById(`note-id-${newNote.note_id}`).classList.add("visible");
                 // Optionally, reset the form after submission
                 form.reset();
                 document.getElementById(formId).classList.add("hidden")
