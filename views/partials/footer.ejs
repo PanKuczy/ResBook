@@ -220,6 +220,7 @@ function toggleResource(id, forceDirection) {
                         let newCategoryElement = document.createElement('li');
                         newCategoryElement.classList.add('categories-item');
                         newCategoryElement.setAttribute('id', `category-id-${newCategoryResponse.id}`);
+                        newCategoryElement.setAttribute('draggable', 'true');
                         newCategoryElement.setAttribute('data-id', `${newCategoryResponse.id}`); 
                         newCategoryElement.setAttribute('data-name', `${formObject.newCategoryName}`); 
                         newCategoryElement.setAttribute('onclick', `selectCategory(this, ${newCategoryResponse.id})`); 
@@ -351,6 +352,10 @@ function toggleResource(id, forceDirection) {
                 });
         }
     }
+
+
+
+
 
 
 
@@ -624,7 +629,63 @@ function confirmDelete() {
 }
 
 
+//ADD (DRAG) CATEGORY TO A RESOURCE
+    let categoriesItemsList = document.getElementById('categories-list').querySelectorAll('.categories-item');
+    let resourcesDropTargets = document.querySelectorAll('.user-book');
 
+    categoriesItemsList.forEach(item => {
+        console.log(item);
+        item.addEventListener('dragstart', (event) => {
+            event.target.classList.add('dragging');
+            //remove pointer events from book children
+            resourcesDropTargets.forEach(book => {
+                let children = book.querySelectorAll('*');
+                children.forEach(child => {
+                    child.style.pointerEvents = 'none';
+                });
+            });
+            console.log("drag started");
+        });
+        item.addEventListener('dragend', (event) => {
+            event.target.classList.remove('dragging');
+            //remove pointer events from book children
+            resourcesDropTargets.forEach(item => {
+                let children = item.querySelectorAll('*');
+                children.forEach(child => {
+                    child.style.pointerEvents = '';
+                });
+            });
+            console.log("drag ended");
+        });
+    });
+
+
+    resourcesDropTargets.forEach(item => {
+        // console.log(item);
+        item.addEventListener('dragenter', (event) => {
+            event.preventDefault();
+            event.target.classList.add('dragover');
+            // console.log("drag started");
+        });
+        item.addEventListener('dragleave', (event) => {
+            event.target.classList.remove('dragover');
+            // console.log("drag ended");
+        });
+        
+    //     let bookHeading = item.querySelector('.book-heading');
+    //     if (bookHeading) {
+    //     bookHeading.addEventListener('dragenter', (event) => {
+    //         event.preventDefault();
+    //         // Optionally add additional styles when dragging over the book-heading specifically
+    //         item.classList.add('dragover');  // Ensure the parent gets the class
+    //     });
+
+    //     bookHeading.addEventListener('dragleave', (event) => {
+    //         event.preventDefault();
+    //         item.classList.remove('dragover');
+    //     });
+    // }
+    });
 
 </script>
 
