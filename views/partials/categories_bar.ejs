@@ -15,7 +15,7 @@
             class="icon-button tooltip-container" 
             type="submit" 
             name="edit-categories-submit" 
-            onclick="editCategoriesSubmit()">
+            onclick="editCategoriesSubmit('edit-categories-form')">
             <i class="fa-solid fa-floppy-disk"></i><span class="tooltip">save changes</span>
             </button>
             <button 
@@ -45,7 +45,7 @@
                     type="button"
                     onclick="showConfirmationPopup('<%= item.id %>', '/delete-category', null, 'editable-category-row-<%= item.id %>', 'category-id-<%= item.id %>')">
                     <i class="fa-solid fa-trash"></i><span class="tooltip">delete category</span>
-                    </button><li class="categories-item" data-id="<%= item.id %>" data-name="<%= item.name %>" ><input type="text" id="editable-category-<%= item.id %>" value="<%= item?.name ?? null %>" required></li>
+                    </button><li class="categories-item" data-id="<%= item.id %>" data-name="<%= item.name %>" ><input type="text" id="editable-category-<%= item.id %>" name="category_name" value="<%= item?.name ?? null %>" required></li>
                 </div>
             <% } %>
         </ul>
@@ -55,7 +55,7 @@
             <button class="button tooltip-container"
                 id="new-category-button"
                 type="submit"
-                onclick="addNewCategory()">
+                onclick="addNewCategory('new-category-form')">
                 +
                 <span class="tooltip">create new category</span>
             </button>

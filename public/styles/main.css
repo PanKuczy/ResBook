@@ -290,26 +290,32 @@ margin: 50px 5% 50px 5%;
 }
 
 .book-categories-row {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
     max-width: 50%;
-    text-wrap-style: pretty;
     float: inline-end;
-    text-align: right;
+    /* text-align: right; */
     /* padding: 3px 10px; */
     margin-bottom: -5px;
     margin-left: 30px;
     margin-top: 20px;
     line-height: 30px;
 }
+
 .single-category{
     background-color: var(--color-beige1);
     color: var(--color-graymid);
     border-radius: 15px;
     padding: 3px 10px;
+    height: 20px;
+    line-height: 20px;
+    margin: 1.5px;
 }
 
 .resource-expand{
     position: absolute;
-    right: 18px;
+    right: 20px;
     bottom: 1px;
 }
 
@@ -544,4 +550,12 @@ footer {
     justify-content: center;
 }
 
-
+@media (max-width: 1280px) {
+    .container{
+        margin: 50px 1% 50px 1%;
+    }
+    #main-content{
+        padding: 30px 1%;
+    }
+    
+}

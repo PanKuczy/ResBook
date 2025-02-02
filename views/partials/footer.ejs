@@ -3,6 +3,19 @@
 </footer>
 
 <script>
+// FORM TO OBJECT CONVERT - REUSABLE FUNCTION
+function formToObject(formDomId){
+    const form = document.getElementById(formDomId);
+    // Create a FormData object from the form
+    const formData = new FormData(form);
+    // Convert FormData to a plain object (or you can directly send FormData)
+    const formObjectData = {};
+    formData.forEach((value, key) => {
+        formObjectData[key] = value;
+    });
+    return formObjectData;
+}
+
 // TOGGLE RESOURCE
 // forceDirection can have "up" or "down" values
 function toggleResource(id, forceDirection) {
@@ -133,18 +146,12 @@ function toggleResource(id, forceDirection) {
 
 
 // ADD NEW CATEGORY
-    function addNewCategory() {
+    function addNewCategory(formId) {
         // Prevent default form submission
         event.preventDefault();
-        const form = document.getElementById("new-category-form")
-        // Create a FormData object from the form
-        const formData = new FormData(form);
+        const form = document.getElementById(formId);
+        const formObject = formToObject(formId);
 
-        // Convert FormData to a plain object (or you can directly send FormData)
-        const formObject = {};
-        formData.forEach((value, key) => {
-            formObject[key] = value;
-        });
         // Check if the input is not empty
         if (!formObject.newCategoryName) {
             return false;
@@ -220,6 +227,79 @@ function editCategoriesToggle(){
     }
 }
 
+
+    // EDIT CATEGORIES
+    function editCategoriesSubmit(formId){
+        // Prevent default form submission
+        event.preventDefault();
+
+
+        // Get the form element
+        const form = document.getElementById(formId);
+        // Get data from inputs, collect items to change
+        const editableList = document.getElementById('categories-list-editable');
+        // const nonEditableList = document.getElementById('categories-list');
+        const editableListItems = editableList.querySelectorAll('li.categories-item');
+        // const nonEditableListItems = nonEditableList.querySelectorAll('li.categories-item');
+
+        // console.log(editableListItems);
+        let formObject = [];
+        editableListItems.forEach(cat => {
+            formObject.push({
+                id: cat.getAttribute('data-id'),
+                name: cat.querySelector('input').value
+            });
+
+        });
+        console.log("formObject array :", formObject);
+
+        // NOWY ROUTE NA BAZIE ADD CATEGORY - PRZEROBIC
+        // Check if there are no empty inputs
+        if (formObject.find((item) => item.name == "")) {
+            alert("Invalid category name!")
+            return false;
+        } else {
+            // axios route
+            axios.put('/edit-categories', formObject)
+                .then((response) => {
+                    console.log("Response :" , response.data);
+                    if (response.data.success) {
+                        const newCategoryResponse = response.data.newCategory;
+                        // console.log("Response data :", response.data);
+
+                        // UPDATE HTML ELEMENTS
+                        formObject.forEach(formItem => {
+                            // non editable list
+                            const nonEditableListItem = document.getElementById('categories-list').querySelector(`li[data-id="${formItem.id}"]`);
+                            if (nonEditableListItem) {
+                                nonEditableListItem.setAttribute('data-name', formItem.name);
+                                nonEditableListItem.innerHTML = formItem.name;
+                            }
+                            // editable list
+                            const editableListItem = document.getElementById('categories-list-editable').querySelector(`li[data-id="${formItem.id}"]`);
+                            if (editableListItem) {
+                                editableListItem.setAttribute('data-name', formItem.name);
+                                const inputElement = editableListItem.querySelector('input');
+                                inputElement.setAttribute('value', formItem.name);
+                            }
+                        });
+
+                        editCategoriesToggle()
+                        // form.reset();
+                    } else {
+                        alert('Error adding category (response).');
+                    }
+  
+                })
+                .catch((error) => {
+                    console.error('Error adding category:', error);
+                    alert('Error adding category (catch).');
+                });
+            console.log("ok");
+        }
+
+
+    }
 
 
 
@@ -344,16 +424,7 @@ function editCategoriesToggle(){
 
     // Get the form element
     const form = document.getElementById(formId);
-
-    // Create a FormData object from the form
-    const formData = new FormData(form);
-
-    // Convert FormData to a plain object (or you can directly send FormData)
-    const formObject = {};
-    formData.forEach((value, key) => {
-        formObject[key] = value;
-    });
-    // console.log("Form object: ", formObject);
+    const formObject = formToObject(formId);
 
     // Send the data using axios
     axios.post('/add-note', formObject)

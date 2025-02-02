@@ -343,6 +343,34 @@ app.post("/add-category", async (req,res) => {
 
 });
 
+//EDIT CATEGORIES
+app.put("/edit-categories", async (req, res) => {
+    console.log(req.body);
+    try {
+        const requestCategories = req.body;
+        // Start building the query
+        const queryUpdateCategories = `
+            UPDATE categories
+            SET name = CASE
+                ${requestCategories.map((category, index) => `
+                    WHEN id = $${index * 2 + 1} THEN $${index * 2 + 2}
+                `).join('')}
+            END
+            WHERE id IN (${requestCategories.map((category, index) => `$${index * 2 + 1}`).join(', ')});
+        `;
+
+        // Flatten the values array
+        const values = requestCategories.flatMap((category) => [category.id, category.name]);
+
+        // Execute the batch update query
+        await db.query(queryUpdateCategories, values);
+
+        res.status(200).json({ success: true});
+    } catch (error) {
+        console.error(err);
+    }
+});
+
 
 //NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
