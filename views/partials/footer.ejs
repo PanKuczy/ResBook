@@ -258,6 +258,7 @@ function toggleResource(id, forceDirection) {
     }
 
 // EDIT CATEGORIES
+    // Buttons toggle
     function editCategoriesToggle(){
         let categoriesListDisplay = document.getElementById('categories-list').style.display;
         let form = document.getElementById('edit-categories-form');
@@ -561,6 +562,14 @@ function toggleResource(id, forceDirection) {
 
 <!-- DELETE ITEMS - GLOBAL FUNCTIONS -->
 <script>
+    // Removal popup
+    function showRemovePopup() {
+        document.getElementById('remove-popup').style.display = 'flex';
+    }
+    function hideRemovePopup() {
+        document.getElementById('remove-popup').style.display = 'none';
+    }
+
     // Function to show confirmation popup and set the item ID, route, resource_id, type
     function showConfirmationPopup(itemId, route, resourceId, itemDOMid, additionalDomIdToDelete) {
         // Set the hidden item_id for deletion in the form dynamically
@@ -622,8 +631,8 @@ function confirmDelete() {
             }
         })
         .catch(error => {
-        console.error('Error deleting item:', error);
-        alert('Error deleting item');
+            console.error('Error deleting item:', error);
+            alert('Error deleting item');
         });
     }, 300); // Wait for animation to complete before sending DELETE request
 }
@@ -632,7 +641,7 @@ function confirmDelete() {
 //ADD (DRAG) CATEGORY TO A RESOURCE
     let categoriesItemsList = document.getElementById('categories-list').querySelectorAll('.categories-item');
     let resourcesDropTargets = document.querySelectorAll('.user-book');
-
+    // event listeners for draggable categories
     categoriesItemsList.forEach(item => {
         
         item.addEventListener('dragstart', (event) => {
@@ -640,9 +649,10 @@ function confirmDelete() {
             event.dataTransfer.clearData();
             const categoryData = {
                 id: item.getAttribute('data-id'),
-                name: item.getAttribute('data-name')
+                name: item.getAttribute('data-name'),
+                draggable_cat_to_book: true
             };
-            console.log("category data send: ", categoryData);
+            // console.log("category data send: ", categoryData);
             event.dataTransfer.setData("text/plain", JSON.stringify(categoryData) );
 
             //remove pointer events from book children
@@ -652,24 +662,24 @@ function confirmDelete() {
                     child.style.pointerEvents = 'none';
                 });
             });
-            console.log("drag started for :", item);
+            // console.log("drag started for :", item);
         });
         item.addEventListener('dragend', (event) => {
             event.target.classList.remove('dragging');
-            //remove pointer events from book children
+            //restore pointer events for book children
             resourcesDropTargets.forEach(item => {
                 let children = item.querySelectorAll('*');
                 children.forEach(child => {
                     child.style.pointerEvents = '';
                 });
             });
-            console.log("drag ended");
+            // console.log("drag ended");
         });
     });
 
-
+    // event listeners for resources
     resourcesDropTargets.forEach(item => {
-        console.log(item);
+        // console.log(item);
         item.addEventListener('dragenter', (event) => {
             event.preventDefault();
             event.target.classList.add('dragover');
@@ -696,46 +706,29 @@ function confirmDelete() {
             addCategoryToResource(dataReceived);
             event.target.classList.remove('dragover');
         });
-        
-    //     let bookHeading = item.querySelector('.book-heading');
-    //     if (bookHeading) {
-    //     bookHeading.addEventListener('dragenter', (event) => {
-    //         event.preventDefault();
-    //         // Optionally add additional styles when dragging over the book-heading specifically
-    //         item.classList.add('dragover');  // Ensure the parent gets the class
-    //     });
-
-    //     bookHeading.addEventListener('dragleave', (event) => {
-    //         event.preventDefault();
-    //         item.classList.remove('dragover');
-    //     });
-    // }
     });
 
     //AFTER DROP FUNCTION WITH AXIOS ROUTE
     function addCategoryToResource(droppedData) {
-        console.log("dropped data:", droppedData);
+        // console.log("dropped data:", droppedData);
         const selectedResource = document.querySelector(`#resource-id-${droppedData.resource_id}`)
-        console.log(selectedResource);
+        // console.log(selectedResource);
         let selectedResourceCategories = selectedResource.querySelector('.book-categories-row');
-        // for (const element of selectedResourceCategories) {
-        //     console.log("that book has category ", element);
-        // }
-        //check if the category is already present
-        if (selectedResourceCategories.querySelector(`#book-${droppedData.resource_id}-cat-${droppedData.id}`)) {
-            console.log("This category exists", );
+
+        //check if the category is already present or if it's a proper draggable object
+        if (selectedResourceCategories.querySelector(`#book-${droppedData.resource_id}-cat-${droppedData.id}`) || !droppedData.draggable_cat_to_book) {
             return false;
         } else {
-            console.log("This category not exists");
             //axios route
             axios.post("/assign-category", droppedData)
             .then(response => {
                 if (response.data.success) {
-                    console.log("response success");
+                    // console.log("response success");
                     // build html span element
                     let newHtmlElement = document.createElement('span');
                     newHtmlElement.classList.add('single-category', `book-with-category-${droppedData.id}`, 'hidden-horizontal');
                     newHtmlElement.setAttribute('id', `book-${droppedData.resource_id}-cat-${droppedData.id}`);
+                    newHtmlElement.setAttribute('data-id', droppedData.id);
                     newHtmlElement.setAttribute('draggable', 'true');
                     newHtmlElement.innerText = droppedData.name;
                     selectedResourceCategories.appendChild(newHtmlElement);
@@ -744,8 +737,6 @@ function confirmDelete() {
                         document.getElementById(`book-${droppedData.resource_id}-cat-${droppedData.id}`).classList.remove("hidden-horizontal")
                         document.getElementById(`book-${droppedData.resource_id}-cat-${droppedData.id}`).classList.add("visible-horizontal")
                     }, 10); //time out żeby się animacje odpalały
-                } else {
-                    console.log("response wrong");
                 }
             })
             .catch(error => {
@@ -753,7 +744,113 @@ function confirmDelete() {
             alert('Error assigning category');
             });
         }
-        
+    }
+
+//REMOVE (DRAG) CATEGORY FROM RESOURCE
+    // event listeners for draggable categories
+    const bucketButton = document.querySelector('#remove-item-bucket');
+    resourcesDropTargets.forEach(book => {
+        let bookCategories = book.querySelectorAll('.single-category');
+        bookCategories.forEach(category =>{
+            // console.log(category);
+
+            //drag start
+            category.addEventListener('dragstart', (event) => {
+                bucketButton.style.pointerEvents = 'auto';
+                event.target.classList.add('draggingdelete');
+                event.dataTransfer.clearData();
+                const categoryData = {
+                    resource_id: book.getAttribute('data-id'),
+                    category_id: category.getAttribute('data-id'),
+                    draggable_cat_to_trash: true
+                };
+                // console.log("category data: ", categoryData);
+                event.dataTransfer.setData("text/plain", JSON.stringify(categoryData) );
+
+                //remove pointer events from book children
+                resourcesDropTargets.forEach(book => {
+                    book.style.pointerEvents = 'none';
+                    let children = book.querySelectorAll('*:not(.single-category)');
+                    children.forEach(child => {
+                        child.style.pointerEvents = 'none';
+                    });
+                });
+                showRemovePopup();
+            });
+
+            //drag end
+            category.addEventListener('dragend', (event) => {
+                bucketButton.style.pointerEvents = '';
+                event.target.classList.remove('draggingdelete');
+                //restore pointer events for book children
+                resourcesDropTargets.forEach(book => {
+                    book.style.pointerEvents = '';
+                    let children = book.querySelectorAll('*:not(.single-category)');
+                    children.forEach(child => {
+                        child.style.pointerEvents = '';
+                    });
+                });
+                hideRemovePopup();
+            });
+
+        });
+    });
+
+    //BUCKET LISTENERS
+
+    bucketButton.addEventListener('dragenter', (event) => {
+        event.preventDefault();
+        event.target.classList.add('dragover');
+        // console.log("drag started");
+    });
+    bucketButton.addEventListener('dragleave', (event) => {
+        event.preventDefault();
+        event.target.classList.remove('dragover');
+        // console.log("drag ended");
+    });
+
+    // Make sure to allow the drop by preventing the default behavior during dragover
+    bucketButton.addEventListener('dragover', (event) => {
+        event.preventDefault();  // This allows the drop event to be triggered
+    });
+    // drop
+    bucketButton.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const dataReceived = JSON.parse(event.dataTransfer.getData("text/plain"));
+        // dataReceived.resource_id = item.id.slice(12);
+        console.log("Data received", dataReceived);
+        // console.log("drop");
+        removeCategoryFromResource(dataReceived);
+        event.target.classList.remove('dragover');
+    });
+
+    //AFTER DROP FUNCTION WITH AXIOS ROUTE
+    function removeCategoryFromResource(droppedData) {
+        // console.log("dropped data:", droppedData);
+        let itemToRemove = document.querySelector(`#book-${droppedData.resource_id}-cat-${droppedData.category_id}`)
+
+        //check if it's a proper draggable object
+        if (!droppedData.draggable_cat_to_trash) {
+            return false;
+        } else {
+            //axios route
+            axios.post("/strip-category", droppedData)
+            .then(response => {
+                if (response.data.success) {
+                    // console.log("response success");
+                    itemToRemove.classList.add("hidden-horizontal");
+                    itemToRemove.classList.remove("visible-horizontal");
+                    setTimeout(() => {
+                        itemToRemove.remove();
+                        sortCategoriesList();
+                    }, 500); //time out żeby się animacje odpalały
+                }
+            })
+            .catch(error => {
+            console.error('Error assigning category:', error);
+            alert('Error assigning category');
+            });
+        }
     }
 
 </script>

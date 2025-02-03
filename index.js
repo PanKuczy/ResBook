@@ -390,6 +390,24 @@ app.post("/assign-category", async (req,res) =>{
 
 });
 
+//REMOVE CATEGORY FROM RESOURCE
+app.post("/strip-category", async (req,res) =>{
+    const request = req.body;
+    console.log("strip category request", request);
+    try {
+        // const queryStripCategory = `
+        // DELETE FROM resource_categories
+        // WHERE resource_id = $1 AND category_id = $2;
+        // `;
+        // await db.query(queryStripCategory,[request.resource_id, request.category_id]);
+        res.status(200).json({success: true});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error assigning category' });
+    }
+
+});
+
 //NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
     const resourceId = req.body.resource_id;

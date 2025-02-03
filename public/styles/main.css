@@ -7,6 +7,7 @@
     --color-hover: rgb(215, 230, 250);
     --color-pink: rgb(250, 215, 248);
     --color-green: rgb(215, 250, 218);
+    --color-red: rgb(255, 139, 139);
 }
 
 body {
@@ -342,6 +343,9 @@ margin: 50px 5% 50px 5%;
     line-height: 20px;
     margin: 1.5px;
 }
+.single-category.draggingdelete{
+    background-color: var(--color-red);
+}
 
 .resource-expand{
     position: absolute;
@@ -558,8 +562,8 @@ margin: 50px 5% 50px 5%;
     max-width: 0;
     min-width: 0;
     opacity: 0;
-    padding-top: 0px;
-    padding-bottom: 0px; 
+    /* padding-left: 0px; */
+    /* padding-right: 0px;  */
     overflow: hidden;
     transition: max-width 0.5s ease-in-out, opacity 0.5s ease-in-out;
     pointer-events: none; /* Optional: Prevent interactions when hidden */
@@ -582,7 +586,18 @@ margin: 50px 5% 50px 5%;
     justify-content: center;
     align-items: center;
 }
-
+#remove-popup{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 20%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    /* pointer-events: none; Optional: Prevent interactions when hidden */
+}
 .popup-content {
     background-color: var(--color-graymid);
     padding: 20px;
@@ -593,7 +608,12 @@ margin: 50px 5% 50px 5%;
 .popup-content button {
     margin: 10px;
 }
-
+#remove-item-bucket{
+    font-size: 50px;
+}
+#remove-item-bucket.dragover{
+    color: brown;
+}
 
 footer {
     display: flex;
