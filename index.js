@@ -372,6 +372,24 @@ app.put("/edit-categories", async (req, res) => {
 });
 
 
+//ASSIGN CATEGORY TO RESOURCE
+app.post("/assign-category", async (req,res) =>{
+    const request = req.body;
+    console.log("assign category request", request);
+    try {
+        const queryAssignCategory = `
+        INSERT INTO resource_categories (resource_id, category_id)
+        VALUES ($1, $2)
+        `;
+        await db.query(queryAssignCategory,[request.resource_id, request.id]);
+        res.status(200).json({success: true});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error assigning category' });
+    }
+
+});
+
 //NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
     const resourceId = req.body.resource_id;

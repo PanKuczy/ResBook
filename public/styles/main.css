@@ -235,11 +235,19 @@ margin: 50px 5% 50px 5%;
 
 /* RESOURCES */
 
-#main-content{
+/* #main-content{
     display: grid;
     justify-content: center;
     padding: 30px 10%;
+} */
+#main-content {
+    display: flex;
+    justify-content: flex-start;
+    padding: 30px 10%;
+    flex-direction: column;
+    align-items: center;
 }
+
 
 .box {
     margin: 10px;
@@ -253,7 +261,8 @@ margin: 50px 5% 50px 5%;
     align-content: start;
     justify-content: left;
     background-color: var(--color-graymid);
-    min-width: 50vw;
+    /* min-width: 50vw; */
+    width: 100%;
     min-height: 80px;
     margin: 5px;
     padding: 0px 25px;
@@ -530,9 +539,12 @@ margin: 50px 5% 50px 5%;
     opacity: 0;
     padding-top: 0px;
     padding-bottom: 0px; 
+    margin-top: 0;
+    margin-bottom: 0;
     overflow: hidden;
     transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
     pointer-events: none; /* Optional: Prevent interactions when hidden */
+
 }
 
 .visible {
@@ -594,6 +606,9 @@ footer {
     }
     #main-content{
         padding: 30px 1%;
+    }
+    .user-book{
+        width: 90%;
     }
     
 }

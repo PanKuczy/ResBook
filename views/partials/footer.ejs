@@ -610,16 +610,16 @@ function confirmDelete() {
     setTimeout(() => {
         axios.post(route, data)
         .then(response => {
-        if (response.data.success) {
-            // Remove the item from the DOM
-            itemElement.remove();
+            if (response.data.success) {
+                // Remove the item from the DOM
+                itemElement.remove();
 
-            // Additinal DOM operations for categories
-            if (route == "/delete-category") {
-                additionalItemElement.remove();
-                document.querySelectorAll(`.book-with-category-${itemId}`).forEach(element => element.remove());
+                // Additinal DOM operations for categories
+                if (route == "/delete-category") {
+                    additionalItemElement.remove();
+                    document.querySelectorAll(`.book-with-category-${itemId}`).forEach(element => element.remove());
+                }
             }
-        }
         })
         .catch(error => {
         console.error('Error deleting item:', error);
@@ -718,18 +718,42 @@ function confirmDelete() {
         const selectedResource = document.querySelector(`#resource-id-${droppedData.resource_id}`)
         console.log(selectedResource);
         let selectedResourceCategories = selectedResource.querySelector('.book-categories-row');
-        console.log(selectedResourceCategories);
-        let newHtmlElement = document.createElement('span');
-        newHtmlElement.classList.add('single-category', `book-with-category-${droppedData.id}`, 'hidden-horizontal');
-        newHtmlElement.setAttribute('id', `book-${droppedData.resource_id}-cat-${droppedData.id}`);
-        newHtmlElement.setAttribute('draggable', 'true');
-        newHtmlElement.innerText = droppedData.name;
-        selectedResourceCategories.appendChild(newHtmlElement);
-        sortCategoriesList();
-        setTimeout(() => {
-            document.getElementById(`book-${droppedData.resource_id}-cat-${droppedData.id}`).classList.remove("hidden-horizontal")
-            document.getElementById(`book-${droppedData.resource_id}-cat-${droppedData.id}`).classList.add("visible-horizontal")
-        }, 10); //time out żeby się animacje odpalały
+        // for (const element of selectedResourceCategories) {
+        //     console.log("that book has category ", element);
+        // }
+        //check if the category is already present
+        if (selectedResourceCategories.querySelector(`#book-${droppedData.resource_id}-cat-${droppedData.id}`)) {
+            console.log("This category exists", );
+            return false;
+        } else {
+            console.log("This category not exists");
+            //axios route
+            axios.post("/assign-category", droppedData)
+            .then(response => {
+                if (response.data.success) {
+                    console.log("response success");
+                    // build html span element
+                    let newHtmlElement = document.createElement('span');
+                    newHtmlElement.classList.add('single-category', `book-with-category-${droppedData.id}`, 'hidden-horizontal');
+                    newHtmlElement.setAttribute('id', `book-${droppedData.resource_id}-cat-${droppedData.id}`);
+                    newHtmlElement.setAttribute('draggable', 'true');
+                    newHtmlElement.innerText = droppedData.name;
+                    selectedResourceCategories.appendChild(newHtmlElement);
+                    sortCategoriesList();
+                    setTimeout(() => {
+                        document.getElementById(`book-${droppedData.resource_id}-cat-${droppedData.id}`).classList.remove("hidden-horizontal")
+                        document.getElementById(`book-${droppedData.resource_id}-cat-${droppedData.id}`).classList.add("visible-horizontal")
+                    }, 10); //time out żeby się animacje odpalały
+                } else {
+                    console.log("response wrong");
+                }
+            })
+            .catch(error => {
+            console.error('Error assigning category:', error);
+            alert('Error assigning category');
+            });
+        }
+        
     }
 
 </script>
