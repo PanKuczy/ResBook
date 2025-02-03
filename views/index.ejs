@@ -27,7 +27,7 @@
                     <div class="book-heading-text">
                         <div class="book-categories-row"> <!-- CATEGORIES -->
                             <% for(let cat of item?.resource_categories){ %>
-                                <span class="single-category book-with-category-<%=cat?.category_id %>" id="book-<%= item?.resource_id %>-cat-<%=cat?.category_id %>"><%=cat?.category_name %></span>
+                                <span class="single-category book-with-category-<%=cat?.category_id %> visible-horizontal" id="book-<%= item?.resource_id %>-cat-<%=cat?.category_id %>" draggable="true"><%=cat?.category_name %></span>
                             <%}%>
                         </div>
                        
