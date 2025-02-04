@@ -606,7 +606,7 @@ function confirmDelete() {
     const itemResourceId = document.getElementById('delete-form').delete_resource_id.value;
     const route = document.getElementById('delete-form').delete_route.value;
     // Adding a fade-out class for animation
-    itemElement.classList.add('fade-out');
+
     console.log("FE Delete request sent: ", itemDomId, additionalItemDomId, itemId, itemResourceId, route);
     
     // do data bedzie mozna dodawac kolejne opcje jezeli beda potrzebne, np. note_id przy kasowaniu tagow
@@ -615,26 +615,58 @@ function confirmDelete() {
         item_id: itemId
     };
 
-    // After the animation, make the DELETE request
-    setTimeout(() => {
-        axios.post(route, data)
-        .then(response => {
-            if (response.data.success) {
-                // Remove the item from the DOM
-                itemElement.remove();
+    // // After the animation, make the DELETE request BACKUP
+    // setTimeout(() => {
+    //     axios.post(route, data)
+    //     .then(response => {
+    //         if (response.data.success) {
+    //             // Remove the item from the DOM
+    //             itemElement.remove();
 
-                // Additinal DOM operations for categories
-                if (route == "/delete-category") {
+    //             // Additinal DOM operations for categories
+    //             if (route == "/delete-category") {
+    //                 additionalItemElement.remove();
+    //                 document.querySelectorAll(`.book-with-category-${itemId}`).forEach(element => element.remove());
+    //             }
+    //         }
+    //     })
+    //     .catch(error => {
+    //         console.error('Error deleting item:', error);
+    //         alert('Error deleting item');
+    //     });
+    // }, 300); // Wait for animation to complete before sending DELETE request
+
+    // After the animation, make the DELETE request
+
+    axios.post(route, data)
+    .then(response => {
+        if (response.data.success) {
+
+            if (route == "/delete-category") { //animation and delete for categories
+                itemElement.classList.add('fade-out');
+                additionalItemElement.classList.add("hidden-horizontal");
+                additionalItemElement.classList.remove("visible-horizontal");
+                const categoriesOnBooks = document.querySelectorAll(`.book-with-category-${itemId}`);
+                categoriesOnBooks.forEach(element => element.classList.add("hidden-horizontal"));
+                categoriesOnBooks.forEach(element => element.classList.remove("visible-horizontal"));
+                setTimeout(() => {
+                    itemElement.remove();
                     additionalItemElement.remove();
                     document.querySelectorAll(`.book-with-category-${itemId}`).forEach(element => element.remove());
-                }
+                }, 500);
+            } else if (route == "/delete-note") { //animation and delete for notes
+                itemElement.classList.add('fade-out');
+                setTimeout(() => {
+                    itemElement.remove();
+                }, 300);
             }
-        })
-        .catch(error => {
-            console.error('Error deleting item:', error);
-            alert('Error deleting item');
-        });
-    }, 300); // Wait for animation to complete before sending DELETE request
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting item:', error);
+        alert('Error deleting item');
+    });
+
 }
 
 

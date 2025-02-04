@@ -461,12 +461,11 @@ app.post("/delete-note", async (req,res) => {
         WHERE id=$1
         `;
         await db.query(queryDeleteNote,[req.body.item_id]);
-        res.json({ success: true, itemId: req.body.item_id });
+        res.status(200).json({ success: true, itemId: req.body.item_id });
       } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error deleting item' });
       }
-    res.status(200);
 });
 
 app.post("/delete-category", async (req,res) => {
@@ -480,7 +479,7 @@ app.post("/delete-category", async (req,res) => {
         WHERE id=$1
         `;
         await db.query(queryDeleteCategory,[req.body.item_id]);
-        res.json({ success: true, itemId: req.body.item_id });
+        res.status(200).json({ success: true, itemId: req.body.item_id });
       } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error deleting item' });
