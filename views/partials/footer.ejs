@@ -731,6 +731,7 @@ function confirmDelete() {
                     newHtmlElement.setAttribute('data-id', droppedData.id);
                     newHtmlElement.setAttribute('draggable', 'true');
                     newHtmlElement.innerText = droppedData.name;
+                    addBookCatListeners(newHtmlElement, selectedResource);
                     selectedResourceCategories.appendChild(newHtmlElement);
                     sortCategoriesList();
                     setTimeout(() => {
@@ -746,53 +747,59 @@ function confirmDelete() {
         }
     }
 
-//REMOVE (DRAG) CATEGORY FROM RESOURCE
+
+//REMOVE (DRAG) CATEGORY FROM RESOURCE NOWA WERSJA Z FUNKCJA ZEWNETRZNA
     // event listeners for draggable categories
     const bucketButton = document.querySelector('#remove-item-bucket');
+    // add listeners to one category function - needs calling elsewere
+    function addBookCatListeners (categoryObj, bookObj){
+        //drag start
+        categoryObj.addEventListener('dragstart', (event) => {
+            bucketButton.style.pointerEvents = 'auto'; //to prevent the hidden popup from interfering with category dragging
+            event.target.classList.add('draggingdelete');
+            event.dataTransfer.clearData();
+            const categoryData = {
+                resource_id: bookObj.getAttribute('data-id'),
+                category_id: categoryObj.getAttribute('data-id'),
+                draggable_cat_to_trash: true
+            };
+            // console.log("category data: ", categoryData);
+            event.dataTransfer.setData("text/plain", JSON.stringify(categoryData) );
+
+            //remove pointer events from book children
+            resourcesDropTargets.forEach(book => {
+                book.style.pointerEvents = 'none';  
+                let children = book.querySelectorAll('*:not(.single-category)');
+                children.forEach(child => {
+                    child.style.pointerEvents = 'none';
+                });
+            });
+            showRemovePopup();
+        });
+
+        //drag end
+        categoryObj.addEventListener('dragend', (event) => {
+            bucketButton.style.pointerEvents = ''; //restore popup pointer events
+            event.target.classList.remove('draggingdelete');
+            //restore pointer events for book children
+            resourcesDropTargets.forEach(book => {
+                book.style.pointerEvents = '';
+                let children = book.querySelectorAll('*:not(.single-category)');
+                children.forEach(child => {
+                    child.style.pointerEvents = '';
+                });
+            });
+            hideRemovePopup();
+        });
+
+    }
+
+    // on page load assign listeners to each category item on each book
     resourcesDropTargets.forEach(book => {
         let bookCategories = book.querySelectorAll('.single-category');
         bookCategories.forEach(category =>{
             // console.log(category);
-
-            //drag start
-            category.addEventListener('dragstart', (event) => {
-                bucketButton.style.pointerEvents = 'auto';
-                event.target.classList.add('draggingdelete');
-                event.dataTransfer.clearData();
-                const categoryData = {
-                    resource_id: book.getAttribute('data-id'),
-                    category_id: category.getAttribute('data-id'),
-                    draggable_cat_to_trash: true
-                };
-                // console.log("category data: ", categoryData);
-                event.dataTransfer.setData("text/plain", JSON.stringify(categoryData) );
-
-                //remove pointer events from book children
-                resourcesDropTargets.forEach(book => {
-                    book.style.pointerEvents = 'none';
-                    let children = book.querySelectorAll('*:not(.single-category)');
-                    children.forEach(child => {
-                        child.style.pointerEvents = 'none';
-                    });
-                });
-                showRemovePopup();
-            });
-
-            //drag end
-            category.addEventListener('dragend', (event) => {
-                bucketButton.style.pointerEvents = '';
-                event.target.classList.remove('draggingdelete');
-                //restore pointer events for book children
-                resourcesDropTargets.forEach(book => {
-                    book.style.pointerEvents = '';
-                    let children = book.querySelectorAll('*:not(.single-category)');
-                    children.forEach(child => {
-                        child.style.pointerEvents = '';
-                    });
-                });
-                hideRemovePopup();
-            });
-
+            addBookCatListeners(category, book);
         });
     });
 
