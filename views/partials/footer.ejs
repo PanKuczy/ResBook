@@ -3,6 +3,40 @@
 </footer>
 
 <script>
+// COLOR PICKER AND INVERTER
+let colorPickerInverted = "red";
+function colorPickerData(data) {
+    const color = data.toRGBString();
+    console.log("Base color", color);
+    const invertedColor = invertColor(color);
+    console.log("Inverted color: ", invertedColor);
+    colorPickerInverted = invertedColor;
+    let buttonsClasses = document.querySelectorAll('.color-selector-button');
+    buttonsClasses.forEach(element => {
+        element.style.color = colorPickerInverted;
+        element.style.borderColor = colorPickerInverted;
+    });
+    return invertedColor;
+}
+
+function invertColor (color) {
+    const regex = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/;
+    const result = color.match(regex);
+    let invertColor = "";
+    if (result) {
+        const colorSum = parseInt(result[1], 10) + parseInt(result[2], 10) + parseInt(result[3], 10);
+        if (colorSum>382){
+            invertColor =  `hsl(from ${color} h calc(s + 15) calc(l - 35))`;
+            return invertColor;
+        } else {
+            invertColor =  `hsl(from ${color} h 100 calc(l + 35))`;
+            return invertColor;
+        }
+    } else {
+        throw new Error("Invalid RGB string");
+    }
+}
+
 // SORT
 
     function sortCategoriesList(){
@@ -157,7 +191,7 @@ function toggleResource(id, forceDirection) {
         let booksToHide = userBooksDomIds.filter(domId => {
             return !filteredResourcesDomIds.includes(domId);
         });
-        console.log("Books DOM IDs to hide: ", booksToHide);
+        // console.log("Books DOM IDs to hide: ", booksToHide);
         for (let bookId of booksToHide) {
             document.getElementById(bookId).classList.add("hidden")
             document.getElementById(bookId).classList.remove("visible")
@@ -451,24 +485,58 @@ function toggleResource(id, forceDirection) {
         document.getElementById('selectedNewNoteTagsColorsInv-' + resourceId).value = selectedTagColorsInv.join(',');
     }
 
+//////////////////////////////////////////////////////////////////////
+
     // ta funkcja jeszcze nie testowana i nie dziala
-    function addTag() {
-        const newTagInput = document.getElementById('new-tag');
-        const newTagName = newTagInput.value.trim();
-        if (newTagName) {
-            const newTagId = new Date().getTime(); // Generate a unique ID for the new tag
-            const tagContainer = document.getElementById('tag-container');
+    function addTag(resourceId, noteId) {
+        // check if it's called from new note or existing note
+        let newTagRollout = "";
+        let newTagInput = "";
+        let newTagColorInput = "";
+        if (!noteId) {
+            newTagRollout = document.querySelector(`#tag-rollout-${resourceId}`);
+            newTagInput = newTagRollout.querySelector('.add-new-tag-input');
+            newTagColor = newTagRollout.querySelector('.color-selector-button');
+        } else {
             
-            const newTagElement = document.createElement('span');
-            newTagElement.className = 'tag single-note-tags';
-            newTagElement.setAttribute('data-id', newTagId);
-            newTagElement.textContent = newTagName;
-            newTagElement.onclick = function() { selectTag(this); };
-            
-            tagContainer.appendChild(newTagElement);
-            
-            newTagInput.value = ''; // Clear the input box
         }
+        //check if name is provided
+        if (!newTagInput.value) {
+            return false;
+        } else {
+            console.log("New tag name:",newTagInput.value);
+            // console.log("New tag color picker element ", newTagColor);
+            console.log("New tag color: ", newTagColor.getAttribute('data-current-color'));
+            const newCategoryColor = newTagColor.getAttribute('data-current-color');
+            const newCategoryInvertedColor = invertColor(newCategoryColor);
+            const tempId = 666; // do wywalenia docelowo
+
+            let allTagsRows = document.querySelectorAll('.all-tags-row');
+            // console.log(allTagsRows);
+            // this must go in a loop beacause the append child works only once per node
+            allTagsRows.forEach(element => {
+                let newCategoryElement = document.createElement('span');
+                newCategoryElement.classList.add('tag', 'single-note-tags');
+                newCategoryElement.setAttribute('data-id', tempId); // do zmiany na id z responsu
+                newCategoryElement.setAttribute('data-name', newTagInput.value);
+                newCategoryElement.setAttribute('data-color', newCategoryColor);
+                newCategoryElement.setAttribute('data-invert-color', newCategoryInvertedColor); // do zmiany na kolor z responsu
+                newCategoryElement.style.backgroundColor = newCategoryColor;
+                newCategoryElement.style.color = newCategoryInvertedColor; // do zmiany na kolor z responsu
+                newCategoryElement.style.borderColor = newCategoryInvertedColor; // do zmiany na kolor z responsu
+                newCategoryElement.setAttribute('onclick', `selectTag(this, ${resourceId})`);
+                newCategoryElement.innerText = newTagInput.value;
+                // console.log("new tag element :", newCategoryElement);
+
+                // console.log(element);
+                element.appendChild(newCategoryElement);
+            });
+
+            //clear the input
+            newTagInput.value = ""
+        }
+
+
     }
 
 
@@ -641,7 +709,7 @@ function confirmDelete() {
     axios.post(route, data)
     .then(response => {
         if (response.data.success) {
-
+            // result depending on route
             if (route == "/delete-category") { //animation and delete for categories
                 itemElement.classList.add('fade-out');
                 additionalItemElement.classList.add("hidden-horizontal");
@@ -675,7 +743,7 @@ function confirmDelete() {
     let resourcesDropTargets = document.querySelectorAll('.user-book');
     // event listeners for draggable categories
     categoriesItemsList.forEach(item => {
-        
+        // drag start
         item.addEventListener('dragstart', (event) => {
             event.target.classList.add('dragging');
             event.dataTransfer.clearData();
@@ -694,8 +762,8 @@ function confirmDelete() {
                     child.style.pointerEvents = 'none';
                 });
             });
-            // console.log("drag started for :", item);
         });
+        // drag end
         item.addEventListener('dragend', (event) => {
             event.target.classList.remove('dragging');
             //restore pointer events for book children
@@ -711,7 +779,6 @@ function confirmDelete() {
 
     // event listeners for resources
     resourcesDropTargets.forEach(item => {
-        // console.log(item);
         item.addEventListener('dragenter', (event) => {
             event.preventDefault();
             event.target.classList.add('dragover');
@@ -723,7 +790,7 @@ function confirmDelete() {
             // console.log("drag ended");
         });
 
-        // Make sure to allow the drop by preventing the default behavior during dragover
+        // to allow the drop by preventing the default behavior during dragover
         item.addEventListener('dragover', (event) => {
             event.preventDefault();  // This allows the drop event to be triggered
         });
@@ -733,8 +800,7 @@ function confirmDelete() {
             event.preventDefault();
             const dataReceived = JSON.parse(event.dataTransfer.getData("text/plain"));
             dataReceived.resource_id = item.id.slice(12);
-            console.log("Data received", dataReceived);
-            // console.log("drop");
+            // console.log("Data received", dataReceived);
             addCategoryToResource(dataReceived);
             event.target.classList.remove('dragover');
         });
@@ -755,7 +821,6 @@ function confirmDelete() {
             axios.post("/assign-category", droppedData)
             .then(response => {
                 if (response.data.success) {
-                    // console.log("response success");
                     // build html span element
                     let newHtmlElement = document.createElement('span');
                     newHtmlElement.classList.add('single-category', `book-with-category-${droppedData.id}`, 'hidden-horizontal');
@@ -773,8 +838,8 @@ function confirmDelete() {
                 }
             })
             .catch(error => {
-            console.error('Error assigning category:', error);
-            alert('Error assigning category');
+                console.error('Error assigning category:', error);
+                alert('Error assigning category');
             });
         }
     }
@@ -848,7 +913,7 @@ function confirmDelete() {
         // console.log("drag ended");
     });
 
-    // Make sure to allow the drop by preventing the default behavior during dragover
+    // to allow the drop by preventing the default behavior during dragover
     bucketButton.addEventListener('dragover', (event) => {
         event.preventDefault();  // This allows the drop event to be triggered
     });
@@ -856,9 +921,7 @@ function confirmDelete() {
     bucketButton.addEventListener('drop', (event) => {
         event.preventDefault();
         const dataReceived = JSON.parse(event.dataTransfer.getData("text/plain"));
-        // dataReceived.resource_id = item.id.slice(12);
-        console.log("Data received", dataReceived);
-        // console.log("drop");
+        // console.log("Data received", dataReceived);
         removeCategoryFromResource(dataReceived);
         event.target.classList.remove('dragover');
     });
@@ -886,8 +949,8 @@ function confirmDelete() {
                 }
             })
             .catch(error => {
-            console.error('Error assigning category:', error);
-            alert('Error assigning category');
+                console.error('Error assigning category:', error);
+                alert('Error assigning category');
             });
         }
     }

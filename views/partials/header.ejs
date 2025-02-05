@@ -12,7 +12,20 @@
     <script src="https://kit.fontawesome.com/4b1644e470.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- <script src="/scripts/scripts.js" defer></script> -->
-
+    <!-- <script src="jscolor.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.5.2/jscolor.min.js"></script>
+    <script>
+        // These options apply to all color pickers on the page
+        jscolor.presets.default = {
+            format:'rgb', previewSize:90, previewPadding:-84, alphaChannel:false, 
+            backgroundColor:'rgb(61,61,61)', borderColor:'rgb(250,235,215)', 
+            borderRadius:5, padding:6, width:180, height:120, 
+            controlBorderColor:'rgb(250,235,215)', 
+            pointerBorderColor:'rgb(250,235,215)', 
+            shadowColor:'rgba(0,0,0,0.1)', shadowBlur:10,
+            onChange: 'colorPickerData(this)'
+        };
+    </script>
 </head>
 <body>
     <header>    
