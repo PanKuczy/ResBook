@@ -297,22 +297,22 @@ app.get("/", async (req, res) => {
 });
 
 // TO JUZ RACZEJ NIE POTRZEBNE, BO ZMIENILEM NA RES.JSON
-app.get("/resource/:id", async (req,res) =>{
-    const request = req.params.id;
-    // console.log("BEFORE", userResourcesFull);
-    const specificResource = userResourcesFull.resources.filter(resource => resource.resource_id == request);
-    // console.log("SPECIFIC RESOURCE", specificResource);
-    // userResourcesFull.resources = userResourcesFull.resources;
-    const data = { ...userResourcesFull, resources: specificResource};
-    data.notes_tags_corel = globalHelperData.notesTagsCorel;
-    data.showElement = true;
-    // console.log("AFTER", data);
-    // console.log("AFTER", util.inspect(data, { depth: null, colors: true }));
-    // console.log("GLOBAL HELPER DATA", globalHelperData);
-    // const tagIds = data.notes_tags_corel.filter((id) => id.note_id == data.notes[0].id)[0].tag_id;
-    // console.log("note tags", tagIds);
-    res.render("index.ejs", data)
-});
+// app.get("/resource/:id", async (req,res) =>{
+//     const request = req.params.id;
+//     // console.log("BEFORE", userResourcesFull);
+//     const specificResource = userResourcesFull.resources.filter(resource => resource.resource_id == request);
+//     // console.log("SPECIFIC RESOURCE", specificResource);
+//     // userResourcesFull.resources = userResourcesFull.resources;
+//     const data = { ...userResourcesFull, resources: specificResource};
+//     data.notes_tags_corel = globalHelperData.notesTagsCorel;
+//     data.showElement = true;
+//     // console.log("AFTER", data);
+//     // console.log("AFTER", util.inspect(data, { depth: null, colors: true }));
+//     // console.log("GLOBAL HELPER DATA", globalHelperData);
+//     // const tagIds = data.notes_tags_corel.filter((id) => id.note_id == data.notes[0].id)[0].tag_id;
+//     // console.log("note tags", tagIds);
+//     res.render("index.ejs", data)
+// });
 
 //ADD CATEGORY
 app.post("/add-category", async (req,res) => {
@@ -404,6 +404,24 @@ app.post("/strip-category", async (req,res) =>{
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error assigning category' });
+    }
+
+});
+
+// ADD TAG
+app.post("/add-new-tag", async (req,res) =>{
+    // console.log(req.body);
+    try {
+        const queryNewTag = `
+        INSERT INTO tags (name, user_id, color)
+        VALUES ($1, $2, $3)
+        RETURNING id;
+        `;
+        const queryNewTagResult = await db.query(queryNewTag,[req.body.name, currentUserId, req.body.color]);
+        res.status(200).json({success: true, id: queryNewTagResult.rows[0].id});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: 'Error adding new tag' });
     }
 
 });

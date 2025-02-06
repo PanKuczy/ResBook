@@ -433,12 +433,12 @@ function toggleResource(id, forceDirection) {
         }
 
         // Toggle tags rollouts
-        if (rollout.classList.value == "tag-rollout-drawer hidden" || rollout.classList.value === '') {
-            rollout.classList.remove("hidden");
-            rollout.classList.add("visible");
+        if (rollout.classList.value == "tag-rollout-drawer hidden-fast" || rollout.classList.value === '') {
+            rollout.classList.remove("hidden-fast");
+            rollout.classList.add("visible-fast");
         } else {
-            rollout.classList.add("hidden");
-            rollout.classList.remove("visible");
+            rollout.classList.add("hidden-fast");
+            rollout.classList.remove("visible-fast");
         }
 
     }
@@ -457,9 +457,11 @@ function toggleResource(id, forceDirection) {
         if (selectedTagIds.includes(tagId)) {
             selectedTagIds = selectedTagIds.filter(id => id !== tagId);
             element.classList.remove('clicked');
+            element.style.boxShadow = '';
         } else {
             selectedTagIds.push(tagId);
             element.classList.add('clicked');
+            element.style.boxShadow = `0 0 0 3px ${tagColor}`;
         }
         //Names
         if (selectedTagNames.includes(tagName)) {
@@ -489,10 +491,11 @@ function toggleResource(id, forceDirection) {
 
     // ta funkcja jeszcze nie testowana i nie dziala
     function addTag(resourceId, noteId) {
-        // check if it's called from new note or existing note
+
         let newTagRollout = "";
         let newTagInput = "";
         let newTagColorInput = "";
+        // check if it's called from new note or existing note
         if (!noteId) {
             newTagRollout = document.querySelector(`#tag-rollout-${resourceId}`);
             newTagInput = newTagRollout.querySelector('.add-new-tag-input');
@@ -509,31 +512,46 @@ function toggleResource(id, forceDirection) {
             console.log("New tag color: ", newTagColor.getAttribute('data-current-color'));
             const newCategoryColor = newTagColor.getAttribute('data-current-color');
             const newCategoryInvertedColor = invertColor(newCategoryColor);
-            const tempId = 666; // do wywalenia docelowo
+            // const tempId = 666; // do wywalenia docelowo
+            const data = {
+                name: newTagInput.value,
+                color: newCategoryColor
+            };
 
-            let allTagsRows = document.querySelectorAll('.all-tags-row');
-            // console.log(allTagsRows);
-            // this must go in a loop beacause the append child works only once per node
-            allTagsRows.forEach(element => {
-                let newCategoryElement = document.createElement('span');
-                newCategoryElement.classList.add('tag', 'single-note-tags');
-                newCategoryElement.setAttribute('data-id', tempId); // do zmiany na id z responsu
-                newCategoryElement.setAttribute('data-name', newTagInput.value);
-                newCategoryElement.setAttribute('data-color', newCategoryColor);
-                newCategoryElement.setAttribute('data-invert-color', newCategoryInvertedColor); // do zmiany na kolor z responsu
-                newCategoryElement.style.backgroundColor = newCategoryColor;
-                newCategoryElement.style.color = newCategoryInvertedColor; // do zmiany na kolor z responsu
-                newCategoryElement.style.borderColor = newCategoryInvertedColor; // do zmiany na kolor z responsu
-                newCategoryElement.setAttribute('onclick', `selectTag(this, ${resourceId})`);
-                newCategoryElement.innerText = newTagInput.value;
-                // console.log("new tag element :", newCategoryElement);
+            axios.post("/add-new-tag", data)
+            .then(response => {
+                if (response.data.success) {
+                    let allTagsRows = document.querySelectorAll('.all-tags-row');
+                    // console.log(allTagsRows);
+                    // this must go in a loop beacause the append child works only once per node
+                    allTagsRows.forEach(element => {
+                        let newCategoryElement = document.createElement('span');
+                        newCategoryElement.classList.add('tag', 'single-note-tags');
+                        newCategoryElement.setAttribute('data-id', response.data.id); // do zmiany na id z responsu
+                        newCategoryElement.setAttribute('data-name', newTagInput.value);
+                        newCategoryElement.setAttribute('data-color', newCategoryColor);
+                        newCategoryElement.setAttribute('data-invert-color', newCategoryInvertedColor); // do zmiany na kolor z responsu
+                        newCategoryElement.style.backgroundColor = newCategoryColor;
+                        newCategoryElement.style.color = newCategoryInvertedColor; // do zmiany na kolor z responsu
+                        newCategoryElement.style.borderColor = newCategoryInvertedColor; // do zmiany na kolor z responsu
+                        newCategoryElement.setAttribute('onclick', `selectTag(this, ${resourceId})`);
+                        newCategoryElement.innerText = newTagInput.value;
+                        // console.log("new tag element :", newCategoryElement);
 
-                // console.log(element);
-                element.appendChild(newCategoryElement);
+                        // console.log(element);
+                        element.appendChild(newCategoryElement);
+                    });
+
+                    //clear the input
+                    newTagInput.value = ""
+                }
+            })
+            .catch(error => {
+                console.error('Error creating new tag:', error);
+                alert('Error creating new tag');
             });
 
-            //clear the input
-            newTagInput.value = ""
+
         }
 
 

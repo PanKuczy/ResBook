@@ -49,7 +49,7 @@
                         <div class="new-note-box">
                             <div class="tags-rollout">
                                 <button onclick="newNoteRolloutToggle(<%= item?.resource_id %>)" type="button">Select Tags <i id="triangle-icon-<%= item?.resource_id %>" class="fa-solid fa-square-caret-right"></i></button>
-                                    <div id="tag-rollout-<%= item?.resource_id %>" class="tag-rollout-drawer hidden">
+                                    <div id="tag-rollout-<%= item?.resource_id %>" class="tag-rollout-drawer hidden-fast">
                                         <div id="tag-container-<%= item?.resource_id %>" class="all-tags-row">
                                             <% tags.forEach(tag => { %>
                                                 <span class="tag single-note-tags" data-id="<%= tag.id %>" data-name="<%= tag.name %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
