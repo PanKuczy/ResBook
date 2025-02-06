@@ -404,10 +404,13 @@ margin: 50px 5% 50px 5%;
     border-radius: 3px;
     border: 0.1px dashed;
 }
-.note-tags-row{
+.note-tags-row {
+    position: relative;
     text-align: right;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 .single-note-text{
     margin-top: 0;
@@ -442,6 +445,7 @@ margin: 50px 5% 50px 5%;
     color: var(--color-hover);
 }
 .icon-button-tags{
+    position: relative;
     size: 16px 16px;
     font-size: 14px;
     font-weight: normal;
@@ -461,7 +465,12 @@ margin: 50px 5% 50px 5%;
 }
 .new-note-box{
     margin-bottom: 25px;
+    position: relative;
 }
+.new-note-tag-rollout-button{
+    position: relative;
+}
+
 .new-note-box textarea{
     width: 100%;
     height: auto; /* Let the textarea adjust its height */
@@ -501,11 +510,13 @@ margin: 50px 5% 50px 5%;
     border: 1px solid var(--color-beige1);
     border-radius: 5px;
     position: absolute;
-    left: 120px;
+    top: 100%;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
+    box-shadow: 1px 1px 20px 0px rgba(0, 0, 0, 0.7);
+    z-index: 1000;
 }
 .add-new-tag-miniform{
     display: flex;
@@ -520,6 +531,9 @@ margin: 50px 5% 50px 5%;
     width: 90px;
     border-radius: 3px;
     border: 1px dashed;
+}
+.assign-tags-confirm{
+    width: 100%;
 }
 .color-selector-button:hover{
     color: initial;
@@ -601,7 +615,7 @@ margin: 50px 5% 50px 5%;
     margin-top: 0;
     margin-bottom: 0;
     overflow: hidden;
-    transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    /* transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out; */
     pointer-events: none; /* Optional: Prevent interactions when hidden */
 }
 
@@ -614,7 +628,7 @@ margin: 50px 5% 50px 5%;
 .visible-fast {
     max-height: 2000px; /* Use a large enough value to accommodate the content */
     opacity: 1;
-    transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    /* transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out; */
     pointer-events: auto; /* Optional: Re-enable interactions when visible */
 }
 

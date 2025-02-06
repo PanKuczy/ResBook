@@ -62,8 +62,36 @@ function invertColor (color) {
             .forEach(node => item.appendChild(node));
             }
 
+    }
+
+    function sortTagsRow(){
+        //non editable list
+        const nonEditLists = document.querySelectorAll('.all-tags-row, .note-tags-row');
+        nonEditLists.forEach(tagsRowContainer =>{
+            [...tagsRowContainer.children]
+            .sort((a, b) => a.innerText.localeCompare(b.innerText, undefined, {sensitivity: 'base'}))
+            .forEach(node => tagsRowContainer.appendChild(node));
+        });
+
+
+        // //editable list
+        // const editableList = document.querySelector('#categories-list-editable');
+
+        // [...editableList.children]
+        // .sort((a, b) => a.querySelector('li').getAttribute('data-name').localeCompare(b.querySelector('li').getAttribute('data-name'), undefined, {sensitivity: 'base'}))
+        // .forEach(node => editableList.appendChild(node));
+
+        // //bookheadings
+        // const bookHeadings = document.getElementsByClassName('book-categories-row');
+        // for (const item of bookHeadings) {
+        //     [...item.children]
+        //     .sort((a, b) => a.innerText.localeCompare(b.innerText, undefined, {sensitivity: 'base'}))
+        //     .forEach(node => item.appendChild(node));
+        //     }
 
     }
+
+
     function sortNotesToggle(order, singleResource){
         // trzeba jeszcze dodac togglowanie przy klikaniu ikony ze strzalka lub wyborze z listy
         const notesBoxes = singleResource?.getElementsByClassName('notes-box') ?? document.getElementsByClassName('notes-box');
@@ -86,6 +114,7 @@ function invertColor (color) {
     //call sorting on page load
     sortCategoriesList();
     sortNotesToggle('date-descending', null);
+    sortTagsRow();
     // a.localeCompare(b, undefined, {sensitivity: 'base'})
 
 
@@ -421,27 +450,64 @@ function toggleResource(id, forceDirection) {
 
     // NEW NOTE ROLLOUT
 
-    function newNoteRolloutToggle(id) {
-        // event.preventDefault(); // Prevent default form submission - chyba przeszkadzalo
-        const rollout = document.getElementById('tag-rollout-' + id);
-        // change icon
-        let triangle = document.getElementById('triangle-icon-' + id);
+    function newNoteRolloutToggle(button, resourceId, noteId) {
+    console.log(button);
+    let rollout = undefined;
+    if (!noteId) {
+        rollout = document.getElementById('tag-rollout-' + resourceId);
+        // Change icon
+        let triangle = document.getElementById('triangle-icon-' + resourceId);
         if (triangle.classList.value === 'fa-solid fa-square-caret-right') {
             triangle.classList.value = 'fa-solid fa-square-caret-down';
         } else {
             triangle.classList.value = 'fa-solid fa-square-caret-right';
         }
+    } else {
+        rollout = document.getElementById('tag-rollout-' + resourceId + '-' + noteId);
+    }
 
-        // Toggle tags rollouts
-        if (rollout.classList.value == "tag-rollout-drawer hidden-fast" || rollout.classList.value === '') {
-            rollout.classList.remove("hidden-fast");
-            rollout.classList.add("visible-fast");
-        } else {
-            rollout.classList.add("hidden-fast");
-            rollout.classList.remove("visible-fast");
+    // Toggle tags rollouts
+    if (rollout.classList.value == "tag-rollout-drawer hidden-fast" || rollout.classList.value === '') {
+        rollout.classList.remove("hidden-fast");
+        rollout.classList.add("visible-fast");
+
+        // Get the button's position and size relative to the viewport
+        const buttonRect = button.getBoundingClientRect();
+        console.log(buttonRect);
+        const popupRect = rollout.getBoundingClientRect();
+        console.log(popupRect);
+
+        // Set the initial position of the popup below the button
+        let topPosition = 32;
+        let leftPosition = 0; 
+
+        // Get the viewport dimensions
+        const viewportHeight = window.innerHeight;
+        // const viewportWidth = window.innerWidth;
+        const viewportWidth = document.body.clientWidth;
+        // console.log("viewport w", viewportWidth);
+
+        // Check if the popup will overflow vertically
+        if (buttonRect.bottom + popupRect.height > viewportHeight + window.scrollY) {
+            // If it will, position the popup above the button
+            topPosition = buttonRect.top + window.scrollY - popupRect.height;
         }
 
+        // Check if the popup will overflow horizontally (if needed)
+        if (buttonRect.left + popupRect.width > viewportWidth) {
+            // If it will, adjust the popup to stay within the screen width
+            leftPosition = viewportWidth - buttonRect.left - popupRect.width;
+        }
+
+        // Apply the adjusted positions
+        rollout.style.top = `${topPosition}px`;
+        rollout.style.left = `${leftPosition}px`;
+    } else {
+        rollout.classList.add("hidden-fast");
+        rollout.classList.remove("visible-fast");
     }
+}
+
 
     // NEW NOTE ROLLOUT - SELECT TAGS
     let selectedTagIds = [];
@@ -489,7 +555,7 @@ function toggleResource(id, forceDirection) {
 
 //////////////////////////////////////////////////////////////////////
 
-    // ta funkcja jeszcze nie testowana i nie dziala
+    // ADD NEW TAG - IN NEW NOTE AND EXISTING NOTE
     function addTag(resourceId, noteId) {
 
         let newTagRollout = "";
@@ -541,7 +607,7 @@ function toggleResource(id, forceDirection) {
                         // console.log(element);
                         element.appendChild(newCategoryElement);
                     });
-
+                    sortTagsRow();
                     //clear the input
                     newTagInput.value = ""
                 }
@@ -557,6 +623,10 @@ function toggleResource(id, forceDirection) {
 
     }
 
+// ASSIGN TAGS TO NOTE
+    function assignTags(){
+        
+    }
 
 // NOWE SUBMIT NOTE Z AXIOS i RES.JSON
     function submitNewNote(formId) {
