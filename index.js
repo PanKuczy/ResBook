@@ -426,6 +426,32 @@ app.post("/add-new-tag", async (req,res) =>{
 
 });
 
+// ASSIGN TAG TO NOTE
+app.post("/assign-tags", async (req, res) => {
+    console.log("Assign tags request: ", req.body);
+    try {
+        const tagIdsInt = req.body.tags_ids.map(Number);
+        const queryClearTags = `
+            DELETE FROM note_tags
+            WHERE note_id = $1;
+        `;
+        const queryAssignTags = `
+            INSERT INTO note_tags (note_id, tag_id)
+            SELECT $1, unnest($2::int[]);
+        `;
+        await db.query(queryClearTags, [req.body.note_id]);
+        const queryResult = await db.query(queryAssignTags, [req.body.note_id, tagIdsInt]);
+        
+        ///  TU DODAC QUERY CALOSCI I ZACIAGNIECIE TAGOW DANEJ NOTATKI I WYSLANIE JAKO ODPOWIEDZI
+
+        res.status(200).json({success: true});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: 'Error assigning tags' });
+    }
+
+});
+
 //NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
     const resourceId = req.body.resource_id;

@@ -35,7 +35,12 @@ button{
 button:enabled:hover{
     background-color: var(--color-hover);
     color: var(--color-graymid);
+    border-color: var(--color-hover);
+} 
+.text-button{
+    border: 1px solid var(--color-beige1);
 }
+
 .tooltip-container{
     position: relative;
 }

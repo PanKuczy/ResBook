@@ -73,6 +73,7 @@ function invertColor (color) {
             .forEach(node => tagsRowContainer.appendChild(node));
         });
 
+        // do dodania bedzie dla listy edytowalnej jak zrobie form do tego
 
         // //editable list
         // const editableList = document.querySelector('#categories-list-editable');
@@ -166,16 +167,12 @@ function toggleResource(id, forceDirection) {
 
 
 
-// ONCLICKS ale tylko niektore. te submity chyba beda do wywalenia - sprawdzic.
+// ONCLICKS ale tylko niektore
 
     function handler(id) {
         console.log(id);
         document.getElementById("add-" + id).classList.remove("hidden")
         document.getElementById("add-" + id).classList.add("visible")
-        // document.getElementById("title" + id).setAttribute("hidden", true)
-        // document.getElementById("edit" + id).setAttribute("hidden", true)
-        // document.getElementById("done" + id).removeAttribute("hidden")
-        // document.getElementById("input" + id).removeAttribute("hidden")
     }
 
 // FILTERING RESOURCES BASIC FUNCTIONS
@@ -425,16 +422,15 @@ function toggleResource(id, forceDirection) {
 
 
 // ADD NEW NOTE
-    // Submit or cancel new note form
+    // Cancel new note form
     function cancelNewNote(id){
-        document.getElementById(id).classList.add("hidden")
-        document.getElementById(id).classList.remove("visible")
+        document.getElementById(id).classList.add("hidden");
+        document.getElementById(id).classList.remove("visible");
+        document.getElementById(`tag-rollout-${id.slice(13)}`).classList.add("hidden-fast");
+        document.getElementById(`tag-rollout-${id.slice(13)}`).classList.remove("visible-fast");
+        document.getElementById(`tag-rollout-${id.slice(13)}`).classList.remove("active-rollout");
+        clearSelectedTags();
     }
-    // BACKUP - DALEJ JEST NOWA FUNKCJA Z AXIOS
-    // function submitNewNote(id){
-    //     document.getElementById(id).classList.add("hidden")
-    //     document.getElementById(id).classList.remove("visible")
-    // }
 
     // Resize text areas automatically
     const textareas = document.getElementsByClassName('new-note-text');
@@ -448,77 +444,132 @@ function toggleResource(id, forceDirection) {
     };
 
 
-    // NEW NOTE ROLLOUT
-
-    function newNoteRolloutToggle(button, resourceId, noteId) {
-    console.log(button);
-    let rollout = undefined;
-    if (!noteId) {
-        rollout = document.getElementById('tag-rollout-' + resourceId);
-        // Change icon
-        let triangle = document.getElementById('triangle-icon-' + resourceId);
-        if (triangle.classList.value === 'fa-solid fa-square-caret-right') {
-            triangle.classList.value = 'fa-solid fa-square-caret-down';
-        } else {
-            triangle.classList.value = 'fa-solid fa-square-caret-right';
-        }
-    } else {
-        rollout = document.getElementById('tag-rollout-' + resourceId + '-' + noteId);
-    }
-
-    // Toggle tags rollouts
-    if (rollout.classList.value == "tag-rollout-drawer hidden-fast" || rollout.classList.value === '') {
-        rollout.classList.remove("hidden-fast");
-        rollout.classList.add("visible-fast");
-
-        // Get the button's position and size relative to the viewport
-        const buttonRect = button.getBoundingClientRect();
-        console.log(buttonRect);
-        const popupRect = rollout.getBoundingClientRect();
-        console.log(popupRect);
-
-        // Set the initial position of the popup below the button
-        let topPosition = 32;
-        let leftPosition = 0; 
-
-        // Get the viewport dimensions
-        const viewportHeight = window.innerHeight;
-        // const viewportWidth = window.innerWidth;
-        const viewportWidth = document.body.clientWidth;
-        // console.log("viewport w", viewportWidth);
-
-        // Check if the popup will overflow vertically
-        if (buttonRect.bottom + popupRect.height > viewportHeight + window.scrollY) {
-            // If it will, position the popup above the button
-            topPosition = buttonRect.top + window.scrollY - popupRect.height;
-        }
-
-        // Check if the popup will overflow horizontally (if needed)
-        if (buttonRect.left + popupRect.width > viewportWidth) {
-            // If it will, adjust the popup to stay within the screen width
-            leftPosition = viewportWidth - buttonRect.left - popupRect.width;
-        }
-
-        // Apply the adjusted positions
-        rollout.style.top = `${topPosition}px`;
-        rollout.style.left = `${leftPosition}px`;
-    } else {
-        rollout.classList.add("hidden-fast");
-        rollout.classList.remove("visible-fast");
-    }
-}
-
-
-    // NEW NOTE ROLLOUT - SELECT TAGS
+// SELECT TAGS ROLLOUT, FOR NEW NOTE AND EXISTING NOTE
     let selectedTagIds = [];
     let selectedTagNames = [];
     let selectedTagColors = [];
     let selectedTagColorsInv = [];
-    function selectTag(element, resourceId) {
+    //helper function
+    function clearSelectedTags(){
+        const globalTagsCollection = document.querySelectorAll('.single-note-tags');
+        globalTagsCollection.forEach(element =>{
+            element.classList.remove('clicked');
+            element.style.boxShadow = '';
+        });
+    }
+
+    function selectTagsRolloutToggle(button, resourceId, noteId) {
+        // console.log(button);
+        // prep all rollouts
+        const allRollouts = document.querySelectorAll('.tag-rollout-drawer');
+        allRollouts.forEach(element => {
+            element.classList.remove('active-rollout');
+        });
+
+        // clear ids array
+        selectedTagIds.length = 0;       
+        let rollout = undefined;
+        //check if called from new note box or existing note
+        if (!noteId) {
+            rollout = document.getElementById('tag-rollout-' + resourceId);
+            // Change icon in new note box
+            let triangle = document.getElementById('triangle-icon-' + resourceId);
+            if (triangle.classList.value === 'fa-solid fa-square-caret-right') {
+                triangle.classList.value = 'fa-solid fa-square-caret-down';
+            } else {
+                triangle.classList.value = 'fa-solid fa-square-caret-right';
+            }
+        } else {
+            // clear all .clicked classes
+            clearSelectedTags()
+
+            rollout = document.getElementById('tag-rollout-' + resourceId + '-' + noteId);
+            
+            // get list of current tag ids
+            const currentTags = document.getElementById('note-id-' + noteId).querySelectorAll('.note-tags-row > .single-note-tags');
+            console.log("current tags", currentTags);
+            currentTags.forEach(element =>{
+                selectedTagIds.push(element.getAttribute('data-id'));
+            });
+            console.log("current tag ids: ", selectedTagIds);
+        }
+        rollout.classList.add("active-rollout"); //prevent from closing
+        // close all other rollouts
+        const otherRollouts = document.querySelectorAll('.tag-rollout-drawer:not(.active-rollout)');
+        // console.log(otherRollouts);
+        otherRollouts.forEach(element => {
+            element.classList.add("hidden-fast");
+            element.classList.remove("visible-fast");
+        }) ;
+        
+        // Toggle tags rollouts
+        if (rollout.classList.value == "tag-rollout-drawer hidden-fast active-rollout" || rollout.classList.value === '') {
+            rollout.classList.remove("hidden-fast");
+            rollout.classList.add("visible-fast");
+
+            // Get the button's position and size relative to the viewport
+            const buttonRect = button.getBoundingClientRect();
+            // console.log(buttonRect);
+            const popupRect = rollout.getBoundingClientRect();
+            // console.log(popupRect);
+
+            // Set the initial position of the popup below the button
+            let topPosition = 32;
+            let leftPosition = 0; 
+
+            // Get the viewport dimensions
+            const viewportHeight = window.innerHeight;
+            // const viewportWidth = window.innerWidth;
+            const viewportWidth = document.body.clientWidth;
+            // console.log("viewport w", viewportWidth);
+
+            // Check if the popup will overflow vertically
+            if (buttonRect.bottom + popupRect.height > viewportHeight + window.scrollY) {
+                // If it will, position the popup above the button
+                topPosition = buttonRect.top + window.scrollY - popupRect.height;
+            }
+
+            // Check if the popup will overflow horizontally (if needed)
+            if (buttonRect.left + popupRect.width > viewportWidth) {
+                // If it will, adjust the popup to stay within the screen width
+                leftPosition = viewportWidth - buttonRect.left - popupRect.width;
+            }
+
+            // Apply the adjusted positions
+            rollout.style.top = `${topPosition}px`;
+            rollout.style.left = `${leftPosition}px`;
+
+
+            // Mark existing tags as clicked
+            const allTagsCollection = rollout.querySelectorAll('.single-note-tags');
+            Array.from(allTagsCollection).forEach(tag => {
+                const tagId = tag.getAttribute('data-id');
+                const tagColor = tag.getAttribute('data-color');
+                if (selectedTagIds.includes(tagId)) {
+                    tag.classList.add('clicked'); // Add the 'clicked' class
+                    tag.style.boxShadow = `0 0 0 3px ${tagColor}`;
+                }
+            });
+            // console.log(filteredTags);
+
+        } else {
+            rollout.classList.add("hidden-fast");
+            rollout.classList.remove("visible-fast");
+            rollout.classList.remove("active-rollout");
+            selectedTagIds.length = 0;
+            console.log(selectedTagIds);
+        }
+    }
+
+
+    // NEW NOTE ROLLOUT - SELECT TAGS
+
+    function selectTag(element, resourceId, noteId) {
         const tagId = element.getAttribute('data-id');
         const tagName = element.getAttribute('data-name');
         const tagColor = element.getAttribute('data-color');
         const tagInvertColor = element.getAttribute('data-invert-color');
+
         //Ids
         if (selectedTagIds.includes(tagId)) {
             selectedTagIds = selectedTagIds.filter(id => id !== tagId);
@@ -567,7 +618,9 @@ function toggleResource(id, forceDirection) {
             newTagInput = newTagRollout.querySelector('.add-new-tag-input');
             newTagColor = newTagRollout.querySelector('.color-selector-button');
         } else {
-            
+            newTagRollout = document.querySelector(`#tag-rollout-${resourceId}-${noteId}`);
+            newTagInput = newTagRollout.querySelector('.add-new-tag-input');
+            newTagColor = newTagRollout.querySelector('.color-selector-button');
         }
         //check if name is provided
         if (!newTagInput.value) {
@@ -578,7 +631,7 @@ function toggleResource(id, forceDirection) {
             console.log("New tag color: ", newTagColor.getAttribute('data-current-color'));
             const newCategoryColor = newTagColor.getAttribute('data-current-color');
             const newCategoryInvertedColor = invertColor(newCategoryColor);
-            // const tempId = 666; // do wywalenia docelowo
+
             const data = {
                 name: newTagInput.value,
                 color: newCategoryColor
@@ -624,8 +677,23 @@ function toggleResource(id, forceDirection) {
     }
 
 // ASSIGN TAGS TO NOTE
-    function assignTags(){
-        
+    function assignTags(button, resourceId, noteId){
+        console.log("Tags assignment client request. Note: ", noteId, " Tag Ids: ", selectedTagIds);
+        const data = {
+            note_id: noteId,
+            tags_ids: selectedTagIds
+        };
+        axios.post("/assign-tags", data)
+        .then(response =>{
+            if (response.data.success) {
+                console.log(response.data);
+            }
+        })
+        .catch(error => {
+                console.error('Error assigning tags:', error);
+                alert('Error assigning tags');
+        });
+
     }
 
 // NOWE SUBMIT NOTE Z AXIOS i RES.JSON
@@ -654,6 +722,7 @@ function toggleResource(id, forceDirection) {
                 for (const tag of newNote.selectedTags) {
                     tagsRowHtml = tagsRowHtml.concat(`<span class="single-note-tags" id="tag-id-${tag.id}" style="background-color: ${tag.color}; color: ${tag.invertColor}; border-color: ${tag.invertColor}">${tag.name}</span>`);
                 }
+
                 // empty fields check
                 let pagesHtml = ""
                 if (newNote.target_pages) {pagesHtml = `Pages: ${newNote.target_pages}`}
@@ -678,10 +747,31 @@ function toggleResource(id, forceDirection) {
 
                     </div>
                     <!-- NOTE HEADING: TAGS -->
-                    <p class="note-tags-row">
-                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="handler('new-tag')">+<span class="tooltip">add tags</span></button>
+                    <div class="note-tags-row">
+                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="selectTagsRolloutToggle(this, '${newNote.resource_id}', '${newNote.note_id}')">+<span class="tooltip">add tags</span></button>
+                        <div id="tag-rollout-${newNote.resource_id}-${newNote.note_id}" class="tag-rollout-drawer hidden-fast">
+                            <div id="tag-container-${newNote.resource_id}-${newNote.note_id}" class="all-tags-row">
+                                <% tags.forEach(tag => { %>
+                                    <span class="tag single-note-tags" data-id="<%= tag.id %>" data-name="<%= tag.name %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, ${newNote.resource_id}, ${newNote.note_id})">
+                                        <%= tag.name %>
+                                    </span>
+                                <% }); %>
+                            </div>
+                            <div class="add-new-tag-miniform">
+                                <input class="add-new-tag-input" type="text" placeholder="New tag name..." />
+                                <button class="color-selector-button" data-jscolor="{value:'#5ED8FF'}" >color</button>
+                                <button type="button" onclick="addTag(${newNote.resource_id}, ${newNote.note_id})">Add New Tag</button>
+                            </div>
+                            <div>
+                                <button class="assign-tags-confirm" type="button" onclick="assignTags(this, ${newNote.resource_id}, ${newNote.note_id})">Confirm Tags</button>
+                            </div>
+                            <input type="hidden" name="selectedTagIds" id="selectedNewNoteTags-${newNote.resource_id}-${newNote.note_id}" />
+                            <input type="hidden" name="selectedTagsNames" id="selectedNewNoteTagsNames-${newNote.resource_id}-${newNote.note_id}" />
+                            <input type="hidden" name="selectedTagsColors" id="selectedNewNoteTagsColors-${newNote.resource_id}-${newNote.note_id}" />
+                            <input type="hidden" name="selectedTagsColorsInv" id="selectedNewNoteTagsColorsInv-${newNote.resource_id}-${newNote.note_id}" />
+                        </div>
                         ${tagsRowHtml}
-                    </p>
+                    </div>
                 </div>
                 <p class="single-note-text" id="note-${newNote.note_id}-text">${newNote.note_text}
                     <span class="single-note-targets" id="note-${newNote.note_id}-target-object">
@@ -694,6 +784,7 @@ function toggleResource(id, forceDirection) {
                 `;
                 // Append the new note element to the container (modify as per your layout)
                 document.getElementById('notesbox-' + newNote.resource_id ).appendChild(newNoteElement);
+                jscolor.install('body'); // it's needed to initialize the newly created color picker
                 sortNotesToggle();
                 // fade in animation
                 document.getElementById(`note-id-${newNote.note_id}`).classList.remove("hidden");

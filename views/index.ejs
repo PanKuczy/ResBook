@@ -48,7 +48,7 @@
                     <form class="new-note hidden" action="/add-note" method="post" id="add-new-note-<%= item?.resource_id %>">
                         <div class="new-note-box">
                             <!-- <div class="tags-rollout"> -->
-                                <button class="new-note-tag-rollout-button" onclick="newNoteRolloutToggle(this, <%= item?.resource_id %>, null)" type="button">Select Tags <i id="triangle-icon-<%= item?.resource_id %>" class="fa-solid fa-square-caret-right"></i></button>
+                                <button class="new-note-tag-rollout-button" onclick="selectTagsRolloutToggle(this, <%= item?.resource_id %>, null)" type="button">Select Tags <i id="triangle-icon-<%= item?.resource_id %>" class="fa-solid fa-square-caret-right"></i></button>
                                 <div id="tag-rollout-<%= item?.resource_id %>" class="tag-rollout-drawer hidden-fast">
                                     <div id="tag-container-<%= item?.resource_id %>" class="all-tags-row">
                                         <% tags.forEach(tag => { %>
@@ -119,11 +119,11 @@
                                     </div>
     <!-- NOTE HEADING: TAGS -->
                                     <div class="note-tags-row">
-                                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="newNoteRolloutToggle(this, <%= item?.resource_id %>, <%= note?.note_id ?? null %>)">+<span class="tooltip">add tags</span></button>
+                                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="selectTagsRolloutToggle(this, <%= item?.resource_id %>, <%= note?.note_id ?? null %>)">+<span class="tooltip">add tags</span></button>
                                         <div id="tag-rollout-<%= item?.resource_id %>-<%= note?.note_id ?? null %>" class="tag-rollout-drawer hidden-fast">
                                             <div id="tag-container-<%= item?.resource_id %>-<%= note?.note_id ?? null %>" class="all-tags-row">
                                                 <% tags.forEach(tag => { %>
-                                                    <span class="tag single-note-tags" data-id="<%= tag.id %>" data-name="<%= tag.name %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
+                                                    <span class="tag single-note-tags" data-id="<%= tag.id %>" data-name="<%= tag.name %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>, <%= note?.note_id ?? null %>)">
                                                         <%= tag.name %>
                                                     </span>
                                                 <% }); %>
@@ -131,10 +131,10 @@
                                             <div class="add-new-tag-miniform">
                                                 <input class="add-new-tag-input" type="text" placeholder="New tag name..." />
                                                 <button class="color-selector-button" data-jscolor="{value:'#5ED8FF'}" >color</button>
-                                                <button type="button" onclick="addTag(<%= item?.resource_id %>, <%= note?.note_id ?? null %>)">Add New Tag</button>
+                                                <button class="text-button" type="button" onclick="addTag(<%= item?.resource_id %>, <%= note?.note_id ?? null %>)">Add New Tag</button>
                                             </div>
                                             <div>
-                                                <button class="assign-tags-confirm" type="button" onclick="assignTags(<%= item?.resource_id %>, <%= note?.note_id ?? null %>)">Confirm Tags</button>
+                                                <button class="text-button assign-tags-confirm" type="button" onclick="assignTags(this, <%= item?.resource_id %>, <%= note?.note_id ?? null %>)">Confirm Selection</button>
                                             </div>
                                             <input type="hidden" name="selectedTagIds" id="selectedNewNoteTags-<%= item?.resource_id %>-<%= note?.note_id ?? null %>" />
                                             <input type="hidden" name="selectedTagsNames" id="selectedNewNoteTagsNames-<%= item?.resource_id %>-<%= note?.note_id ?? null %>" />
@@ -144,8 +144,9 @@
                                         <% for(let tag of filteredArray){ %>
                                             <% const tagId = tag.tag_id; %>
                                             <% const filteredTags = tags.filter((item) => item.id == tagId ) %> 
-                                            <span class="single-note-tags" id="tag-id-<%=tag.tag_id %>" style="background-color: <%= filteredTags[0].color %>; color: <%= filteredTags[0].invertColor %>; border-color: <%= filteredTags[0].invertColor %>"><%= filteredTags[0].name %></span>
-                                        <%}%></div>
+                                            <span class="single-note-tags" id="tag-id-<%=tag.tag_id %>" data-id="<%= tag.tag_id %>" data-name="<%= filteredTags[0].name %>" data-color="<%= filteredTags[0].color %>" data-invert-color="<%= filteredTags[0].invertColor %>" style="background-color: <%= filteredTags[0].color %>; color: <%= filteredTags[0].invertColor %>; border-color: <%= filteredTags[0].invertColor %>"><%= filteredTags[0].name %></span>
+                                        <%}%>
+                                    </div>
                                 </div>
     <!-- NOTE TEXT -->
                                 <p class="single-note-text" id="note-<%= note?.note_id ?? null %>-text"><%= note.note_text %>
