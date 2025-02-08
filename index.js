@@ -234,6 +234,16 @@ async function getAllData () {
     data.tags.forEach(element => {
         appendInvertedColor(element);
     });
+
+    // add assigned tag objects under each note under each resource (only on data.resources.notes and not on data.notes)
+    data.resources.forEach(resObj => {
+        resObj.notes.forEach(noteObj => {
+            const filteredTagIds = resultNotesTagsCorelation.rows.filter((row) => row.note_id == noteObj.note_id).map(({note_id, tag_id}) => (tag_id));
+            const filteredTagObjects = filterData(data.tags, filteredTagIds, 'id');
+            noteObj.tags_objects = filteredTagObjects;
+        });
+    });
+
     data.notes.forEach(note => {
         dateFormat(note);
     });
@@ -248,10 +258,6 @@ async function getAllData () {
     return data;
 }
 //xxxxxxxxxxxxx SUPER QUERY ALL END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-//temp
-// getAllData ();
-//temp
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -440,11 +446,12 @@ app.post("/assign-tags", async (req, res) => {
             SELECT $1, unnest($2::int[]);
         `;
         await db.query(queryClearTags, [req.body.note_id]);
-        const queryResult = await db.query(queryAssignTags, [req.body.note_id, tagIdsInt]);
+        await db.query(queryAssignTags, [req.body.note_id, tagIdsInt]);
         
-        ///  TU DODAC QUERY CALOSCI I ZACIAGNIECIE TAGOW DANEJ NOTATKI I WYSLANIE JAKO ODPOWIEDZI
-
-        res.status(200).json({success: true});
+        const allData = await getAllData();
+        const tagsObjects = allData.resources.find((resource) => resource.resource_id == req.body.resource_id).notes.find((note) => note.note_id == req.body.note_id).tags_objects;
+        console.log("tags:", tagsObjects);
+        res.status(200).json({success: true, tags_obj: tagsObjects});
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, error: 'Error assigning tags' });

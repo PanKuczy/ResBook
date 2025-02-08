@@ -680,13 +680,44 @@ function toggleResource(id, forceDirection) {
     function assignTags(button, resourceId, noteId){
         console.log("Tags assignment client request. Note: ", noteId, " Tag Ids: ", selectedTagIds);
         const data = {
+            resource_id: resourceId,
             note_id: noteId,
             tags_ids: selectedTagIds
         };
         axios.post("/assign-tags", data)
         .then(response =>{
             if (response.data.success) {
-                console.log(response.data);
+                // console.log(response.data.tags_obj);
+                const noteTagsRow = document.querySelector(`#note-id-${noteId}`).querySelector('.note-tags-row');
+                const oldTags = noteTagsRow.querySelectorAll(':scope > span');
+                console.log(oldTags);
+                oldTags.forEach(element => {
+                    element.remove();
+                });
+                // console.log("note tags row" ,noteTagsRow);
+                response.data.tags_obj.forEach(tagObj =>{
+                    console.log(tagObj);
+                    const newTagElement = document.createElement('span');
+                    newTagElement.classList.add('single-note-tags');
+                    newTagElement.setAttribute('data-id', tagObj.id);
+                    newTagElement.setAttribute('data-name', tagObj.name);
+                    newTagElement.setAttribute('data-color', tagObj.color);
+                    newTagElement.setAttribute('data-invert-color', tagObj.invertColor);
+                    newTagElement.style.backgroundColor = tagObj.color;
+                    newTagElement.style.color = tagObj.invertColor;
+                    newTagElement.style.borderColor = tagObj.invertColor;
+                    newTagElement.innerText = tagObj.name;
+                    noteTagsRow.appendChild(newTagElement);
+                });
+                
+                sortTagsRow();
+                //toggle off tags rollout
+                const rollout = document.getElementById('tag-rollout-' + resourceId + '-' + noteId);
+                rollout.classList.add("hidden-fast");
+                rollout.classList.remove("visible-fast");
+                rollout.classList.remove("active-rollout");
+                selectedTagIds.length = 0;
+
             }
         })
         .catch(error => {

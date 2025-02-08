@@ -144,7 +144,7 @@
                                         <% for(let tag of filteredArray){ %>
                                             <% const tagId = tag.tag_id; %>
                                             <% const filteredTags = tags.filter((item) => item.id == tagId ) %> 
-                                            <span class="single-note-tags" id="tag-id-<%=tag.tag_id %>" data-id="<%= tag.tag_id %>" data-name="<%= filteredTags[0].name %>" data-color="<%= filteredTags[0].color %>" data-invert-color="<%= filteredTags[0].invertColor %>" style="background-color: <%= filteredTags[0].color %>; color: <%= filteredTags[0].invertColor %>; border-color: <%= filteredTags[0].invertColor %>"><%= filteredTags[0].name %></span>
+                                            <span class="single-note-tags" data-id="<%= tag.tag_id %>" data-name="<%= filteredTags[0].name %>" data-color="<%= filteredTags[0].color %>" data-invert-color="<%= filteredTags[0].invertColor %>" style="background-color: <%= filteredTags[0].color %>; color: <%= filteredTags[0].invertColor %>; border-color: <%= filteredTags[0].invertColor %>"><%= filteredTags[0].name %></span>
                                         <%}%>
                                     </div>
                                 </div>
