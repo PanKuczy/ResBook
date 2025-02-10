@@ -436,7 +436,7 @@ app.post("/add-new-tag", async (req,res) =>{
 app.post("/assign-tags", async (req, res) => {
     console.log("Assign tags request: ", req.body);
     try {
-        const tagIdsInt = req.body.tags_ids.map(Number);
+        const tagIdsInt = req.body.tags_ids.map(Number); // conversion is needed bc the array from the request is an array of strings eg. '1', '2'...
         const queryClearTags = `
             DELETE FROM note_tags
             WHERE note_id = $1;
@@ -496,7 +496,7 @@ app.post("/add-note", async (req, res) =>{
         newNote.selectedTags = selectedTagsObjects;
 
         // console.log("New note after all", newNote);
-        res.status(200).json({ success: true, newNote });
+        res.status(200).json({ success: true, newNote});
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error adding note' });

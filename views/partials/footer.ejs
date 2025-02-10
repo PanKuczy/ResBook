@@ -547,7 +547,7 @@ function toggleResource(id, forceDirection) {
                 const tagColor = tag.getAttribute('data-color');
                 if (selectedTagIds.includes(tagId)) {
                     tag.classList.add('clicked'); // Add the 'clicked' class
-                    tag.style.boxShadow = `0 0 0 3px ${tagColor}`;
+                    tag.style.boxShadow = `0 0 0 4px ${tagColor}`;
                 }
             });
             // console.log(filteredTags);
@@ -578,7 +578,7 @@ function toggleResource(id, forceDirection) {
         } else {
             selectedTagIds.push(tagId);
             element.classList.add('clicked');
-            element.style.boxShadow = `0 0 0 3px ${tagColor}`;
+            element.style.boxShadow = `0 0 0 4px ${tagColor}`;
         }
         //Names
         if (selectedTagNames.includes(tagName)) {
@@ -646,7 +646,7 @@ function toggleResource(id, forceDirection) {
                     allTagsRows.forEach(element => {
                         let newCategoryElement = document.createElement('span');
                         newCategoryElement.classList.add('tag', 'single-note-tags');
-                        newCategoryElement.setAttribute('data-id', response.data.id); // do zmiany na id z responsu
+                        newCategoryElement.setAttribute('data-id', response.data.id);
                         newCategoryElement.setAttribute('data-name', newTagInput.value);
                         newCategoryElement.setAttribute('data-color', newCategoryColor);
                         newCategoryElement.setAttribute('data-invert-color', newCategoryInvertedColor); // do zmiany na kolor z responsu
@@ -709,7 +709,7 @@ function toggleResource(id, forceDirection) {
                     newTagElement.innerText = tagObj.name;
                     noteTagsRow.appendChild(newTagElement);
                 });
-                
+
                 sortTagsRow();
                 //toggle off tags rollout
                 const rollout = document.getElementById('tag-rollout-' + resourceId + '-' + noteId);
@@ -742,6 +742,7 @@ function toggleResource(id, forceDirection) {
             if (response.data.success) {
                 const newNote = response.data.newNote;
                 // console.log(newNote);
+                console.log("response", response.data);
 
                 // Create a new note DOM element
                 const newNoteElement = document.createElement('div');
@@ -751,8 +752,11 @@ function toggleResource(id, forceDirection) {
                 // create tags row
                 let tagsRowHtml = "";
                 for (const tag of newNote.selectedTags) {
-                    tagsRowHtml = tagsRowHtml.concat(`<span class="single-note-tags" id="tag-id-${tag.id}" style="background-color: ${tag.color}; color: ${tag.invertColor}; border-color: ${tag.invertColor}">${tag.name}</span>`);
+                    tagsRowHtml = tagsRowHtml.concat(`<span class="single-note-tags" data-id="${tag.id}" data-name="${tag.name}" data-color="${tag.color}" data-invert-color="${tag.invertColor}" style="background-color: ${tag.color}; color: ${tag.invertColor}; border-color: ${tag.invertColor}">${tag.name}</span>`);
                 }
+                // copy all tags row for the assign tags rollout
+                const newAllTagsRow = document.querySelector(`#tag-container-${newNote.resource_id}`).cloneNode(true);
+                newAllTagsRow.id = `tag-container-${newNote.resource_id}-${newNote.note_id}`;
 
                 // empty fields check
                 let pagesHtml = ""
@@ -781,20 +785,14 @@ function toggleResource(id, forceDirection) {
                     <div class="note-tags-row">
                         <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="selectTagsRolloutToggle(this, '${newNote.resource_id}', '${newNote.note_id}')">+<span class="tooltip">add tags</span></button>
                         <div id="tag-rollout-${newNote.resource_id}-${newNote.note_id}" class="tag-rollout-drawer hidden-fast">
-                            <div id="tag-container-${newNote.resource_id}-${newNote.note_id}" class="all-tags-row">
-                                <% tags.forEach(tag => { %>
-                                    <span class="tag single-note-tags" data-id="<%= tag.id %>" data-name="<%= tag.name %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, ${newNote.resource_id}, ${newNote.note_id})">
-                                        <%= tag.name %>
-                                    </span>
-                                <% }); %>
-                            </div>
+                            ${newAllTagsRow.outerHTML}
                             <div class="add-new-tag-miniform">
                                 <input class="add-new-tag-input" type="text" placeholder="New tag name..." />
                                 <button class="color-selector-button" data-jscolor="{value:'#5ED8FF'}" >color</button>
                                 <button type="button" onclick="addTag(${newNote.resource_id}, ${newNote.note_id})">Add New Tag</button>
                             </div>
                             <div>
-                                <button class="assign-tags-confirm" type="button" onclick="assignTags(this, ${newNote.resource_id}, ${newNote.note_id})">Confirm Tags</button>
+                                <button class="assign-tags-confirm" type="button" onclick="assignTags(this, ${Number(newNote.resource_id)}, ${Number(newNote.note_id)})">Confirm Tags</button>
                             </div>
                             <input type="hidden" name="selectedTagIds" id="selectedNewNoteTags-${newNote.resource_id}-${newNote.note_id}" />
                             <input type="hidden" name="selectedTagsNames" id="selectedNewNoteTagsNames-${newNote.resource_id}-${newNote.note_id}" />
@@ -816,6 +814,7 @@ function toggleResource(id, forceDirection) {
                 // Append the new note element to the container (modify as per your layout)
                 document.getElementById('notesbox-' + newNote.resource_id ).appendChild(newNoteElement);
                 jscolor.install('body'); // it's needed to initialize the newly created color picker
+                sortTagsRow();
                 sortNotesToggle();
                 // fade in animation
                 document.getElementById(`note-id-${newNote.note_id}`).classList.remove("hidden");

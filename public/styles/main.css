@@ -115,7 +115,11 @@ input:focus, textarea:focus{
 display: flex;
 margin: 50px 5% 50px 5%;
 }
-
+.separator-2{
+    width: 100%;
+    margin: 5px 0px;
+    border-top: 2px solid var(--color-beige1);
+}
 .utilities-bar{
     padding: 0px 100px;
     display: flex;
@@ -461,11 +465,11 @@ margin: 50px 5% 50px 5%;
     border-radius: 3px;
     border: 0.1px dashed;
     background-color: transparent;
-    outline: 2px solid transparent;
+    outline: 3px solid transparent;
 }
 .icon-button-tags:enabled:hover{
     background-color: transparent;
-    outline: 2px solid var(--color-beige1);
+    outline: 3px solid var(--color-beige1);
     color: var(--color-hover);
 }
 .new-note-box{
@@ -526,7 +530,7 @@ margin: 50px 5% 50px 5%;
 .add-new-tag-miniform{
     display: flex;
     justify-content: space-between;
-    border-top: 1px solid var(--color-beige1);
+    /* border-top: 1px solid var(--color-beige1); */
 }
 .add-new-tag-input{
     flex: auto;
@@ -558,13 +562,13 @@ margin: 50px 5% 50px 5%;
     cursor: pointer;
     font-size: smaller;
     line-height: 16px;
-    outline: 2px solid transparent;
+    outline: 3px solid transparent;
 }
 .tag.clicked {
-    outline: 2px solid;
+    outline: 3px solid;
 }
 .tag:hover {
-    outline: 2px solid var(--color-beige1);
+    outline: 3px solid var(--color-beige1);
 }
 
 .flex-end{
