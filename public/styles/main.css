@@ -37,6 +37,7 @@ button:enabled:hover{
     color: var(--color-graymid);
     border-color: var(--color-hover);
 } 
+
 .text-button{
     border: 1px solid var(--color-beige1);
 }
@@ -56,7 +57,7 @@ button:enabled:hover{
     padding: 5px;
     color: var(--color-graydark);
     display : none;
-
+    -webkit-text-stroke: 0;
     animation: moveup 0.1s linear;
 }
 
@@ -116,8 +117,8 @@ display: flex;
 margin: 50px 5% 50px 5%;
 }
 .separator-2{
-    width: 100%;
-    margin: 5px 0px;
+    /* width: 100%; */
+    margin: 5px -15px;
     border-top: 2px solid var(--color-beige1);
 }
 .utilities-bar{
@@ -145,7 +146,9 @@ margin: 50px 5% 50px 5%;
     justify-content: space-between;
     align-items: center;
 }
-
+.heading-with-buttons > h4{
+    margin: 0;
+}
 .categories-item{
     list-style: none;
     max-width: min-content;
@@ -452,7 +455,9 @@ margin: 50px 5% 50px 5%;
 .icon-button:enabled:hover{
     background-color: transparent;
     color: var(--color-hover);
+    -webkit-text-stroke: 0.2px var(--color-graymid);
 }
+
 .icon-button-tags{
     position: relative;
     size: 16px 16px;
@@ -472,6 +477,12 @@ margin: 50px 5% 50px 5%;
     outline: 3px solid var(--color-beige1);
     color: var(--color-hover);
 }
+.icon-button-tags.clicked{
+    background-color: transparent;
+    outline: 3px solid var(--color-beige1);
+    color: var(--color-hover);
+}
+
 .new-note-box{
     margin-bottom: 25px;
     position: relative;
@@ -501,7 +512,7 @@ margin: 50px 5% 50px 5%;
     border-color: var(--color-beige1);
     background: var(--color-graymid);
     padding: 10px;
-    z-index: 1000;
+    z-index: 10;
 }
 .all-tags-row{
     display: flex;
@@ -515,6 +526,7 @@ margin: 50px 5% 50px 5%;
 .tag-rollout-drawer {
     max-width: 50%;
     min-width: 360px;
+    padding: 15px;
     background-color: var(--color-graymid);
     border: 1px solid var(--color-beige1);
     border-radius: 5px;
@@ -525,12 +537,16 @@ margin: 50px 5% 50px 5%;
     align-items: stretch;
     justify-content: flex-start;
     box-shadow: 1px 1px 20px 0px rgba(0, 0, 0, 0.7);
-    z-index: 1000;
+    z-index: 10;
 }
+.tag-rollout-drawer > .heading-with-buttons{
+    margin-bottom: 10px;
+}
+
 .add-new-tag-miniform{
     display: flex;
     justify-content: space-between;
-    /* border-top: 1px solid var(--color-beige1); */
+    margin-bottom: 5px;
 }
 .add-new-tag-input{
     flex: auto;
@@ -542,6 +558,7 @@ margin: 50px 5% 50px 5%;
     border: 1px dashed;
 }
 .assign-tags-confirm{
+    margin-top: 10px;
     width: 100%;
 }
 .color-selector-button:hover{
@@ -553,6 +570,16 @@ margin: 50px 5% 50px 5%;
     color: initial;
     background-color: transparent;
 }
+.color-selector-icon{
+
+    padding: 1px 1px;
+    width: 20px;
+}
+.color-selector-icon::before {
+    content: "\f53f"; 
+    font-family: "Font Awesome 6 Free"; 
+    font-weight: 900; 
+  }
 
 #tag-container {
     display: flex;
@@ -560,21 +587,40 @@ margin: 50px 5% 50px 5%;
 }
 .tag {
     cursor: pointer;
-    font-size: smaller;
+    font-size: small;
     line-height: 16px;
     outline: 3px solid transparent;
 }
 .tag.clicked {
     outline: 3px solid;
 }
-.tag:hover {
+.tag:not(.editable-tag-row, .editable):hover {
     outline: 3px solid var(--color-beige1);
 }
-
+.editable{
+    cursor: initial;
+    margin: 0px 0px 0px 5px;
+}
+.editable-tag-row{
+    font-weight: normal;
+    padding: 0;
+}
+.editable-tag-row input{
+    font-weight: normal;
+}
+.editable-tag-row input:focus{
+    outline: none;
+}
+.editable-tag-row > button:not(.tooltip){
+    color: var(--color-graymid);
+    line-height: 18px;
+    -webkit-text-stroke: 0.2px var(--color-beige1);
+}
 .flex-end{
     text-align: end;
     align-self: flex-end;
 }
+
 
 /* CSS for fade in/out animation z GPT axios */
 .deletable-item {
@@ -624,7 +670,7 @@ margin: 50px 5% 50px 5%;
     margin-top: 0;
     margin-bottom: 0;
     overflow: hidden;
-    /* transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out; */
+    transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out;
     pointer-events: none; /* Optional: Prevent interactions when hidden */
 }
 
@@ -637,7 +683,7 @@ margin: 50px 5% 50px 5%;
 .visible-fast {
     max-height: 2000px; /* Use a large enough value to accommodate the content */
     opacity: 1;
-    /* transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out; */
+    transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out;
     pointer-events: auto; /* Optional: Re-enable interactions when visible */
 }
 
@@ -668,6 +714,7 @@ margin: 50px 5% 50px 5%;
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 100;
 }
 #remove-popup{
     position: fixed;
@@ -697,7 +744,12 @@ margin: 50px 5% 50px 5%;
 #remove-item-bucket.dragover{
     color: brown;
 }
-
+.delete-button:enabled:hover{
+    background-color: transparent;
+    color: var(--color-red);
+    -webkit-text-stroke: 0.2px red;
+    /* border-color: var(--color-red); */
+} 
 footer {
     display: flex;
     justify-content: center;

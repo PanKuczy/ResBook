@@ -40,7 +40,7 @@
             <% for(let item of categories){%>
                 <div id="editable-category-row-<%= item.id %>" class="deletable-item visible">
                     <button 
-                    class="icon-button tooltip-container" 
+                    class="delete-button icon-button tooltip-container" 
                     id="delete-category-<%= item.id %>"
                     type="button"
                     onclick="showConfirmationPopup('<%= item.id %>', '/delete-category', null, 'editable-category-row-<%= item.id %>', 'category-id-<%= item.id %>')">

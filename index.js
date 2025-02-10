@@ -537,6 +537,22 @@ app.post("/delete-category", async (req,res) => {
       }
 });
 
+app.post("/delete-tag", async (req, res) =>{
+    console.log("Delete tag request " , req.body);
+    try {
+        const queryDeleteTag =`
+        DELETE FROM tags
+        WHERE id=$1
+        `;
+        await db.query(queryDeleteTag,[req.body.item_id]);
+        res.status(200).json({success: true});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error deleting item' });
+      }
+
+
+});
 
 // db.end();
 app.listen(port, () =>  {

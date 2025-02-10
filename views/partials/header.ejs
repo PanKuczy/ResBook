@@ -17,12 +17,13 @@
     <script>
         // These options apply to all color pickers on the page
         jscolor.presets.default = {
-            format:'rgb', previewSize:90, previewPadding:-84, alphaChannel:false, 
+            format:'rgb', previewSize:0, previewPadding:-84, alphaChannel:false, 
             backgroundColor:'rgb(61,61,61)', borderColor:'rgb(250,235,215)', 
             borderRadius:5, padding:6, width:180, height:120, 
             controlBorderColor:'rgb(250,235,215)', 
             pointerBorderColor:'rgb(250,235,215)', 
             shadowColor:'rgba(0,0,0,0.1)', shadowBlur:10,
+            smartPosition: true,
             onChange: 'colorPickerData(this)'
         };
     </script>

@@ -3,19 +3,46 @@
 </footer>
 
 <script>
+
+// AUTO FIT INPUT ON PAGE LOAD
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input.editable').forEach(input => {
+        input.size = input.value.length;
+    });
+});
+
 // COLOR PICKER AND INVERTER
 let colorPickerInverted = "red";
 function colorPickerData(data) {
     const color = data.toRGBString();
+    const currentButton = data.previewElement;
+    console.log(data);
+    // console.log(data.previewElement);
     console.log("Base color", color);
     const invertedColor = invertColor(color);
     console.log("Inverted color: ", invertedColor);
     colorPickerInverted = invertedColor;
-    let buttonsClasses = document.querySelectorAll('.color-selector-button');
-    buttonsClasses.forEach(element => {
-        element.style.color = colorPickerInverted;
-        element.style.borderColor = colorPickerInverted;
-    });
+    if (currentButton.classList.contains('color-selector-button')) {
+        currentButton.style.color = colorPickerInverted;
+        currentButton.style.borderColor = colorPickerInverted;
+    } else if (currentButton.classList.contains('color-selector-icon')){
+        const parentDiv = currentButton.parentNode
+        const childInput = parentDiv.querySelector('input');
+        // console.log(currentButton.parentNode);
+        parentDiv.setAttribute('data-color', color);
+        parentDiv.setAttribute('data-invert-color', color);
+        parentDiv.style.color = invertedColor;
+        parentDiv.style.backgroundColor = color;
+        parentDiv.style.borderColor = invertedColor;
+        if (parentDiv.style.boxShadow) {
+            console.log(parentDiv.style.boxShadow);
+            parentDiv.style.boxShadow = `${color} 0px 0px 0px 4px`
+        }
+        childInput.style.color = invertedColor;
+        childInput.style.backgroundColor = color;
+
+    }
+
     return invertedColor;
 }
 
@@ -65,30 +92,23 @@ function invertColor (color) {
     }
 
     function sortTagsRow(){
-        //non editable list
+        // non editable list
         const nonEditLists = document.querySelectorAll('.all-tags-row, .note-tags-row');
+        const editLists = document.querySelectorAll('.edit-tags-form > .all-tags-row , .edit-tags-form > .note-tags-row ');
         nonEditLists.forEach(tagsRowContainer =>{
             [...tagsRowContainer.children]
             .sort((a, b) => a.innerText.localeCompare(b.innerText, undefined, {sensitivity: 'base'}))
             .forEach(node => tagsRowContainer.appendChild(node));
         });
 
-        // do dodania bedzie dla listy edytowalnej jak zrobie form do tego
-
-        // //editable list
-        // const editableList = document.querySelector('#categories-list-editable');
-
-        // [...editableList.children]
-        // .sort((a, b) => a.querySelector('li').getAttribute('data-name').localeCompare(b.querySelector('li').getAttribute('data-name'), undefined, {sensitivity: 'base'}))
-        // .forEach(node => editableList.appendChild(node));
-
-        // //bookheadings
-        // const bookHeadings = document.getElementsByClassName('book-categories-row');
-        // for (const item of bookHeadings) {
-        //     [...item.children]
-        //     .sort((a, b) => a.innerText.localeCompare(b.innerText, undefined, {sensitivity: 'base'}))
-        //     .forEach(node => item.appendChild(node));
-        //     }
+        editLists.forEach(tagsRowContainer =>{
+            [...tagsRowContainer.children]
+            .sort((a, b) => a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'), undefined, {sensitivity: 'base'}))
+            .forEach(node => tagsRowContainer.appendChild(node));
+            // [...tagsRowContainer.children].forEach(el => {
+            //     console.log("Element item" ,el, el.getAttribute('data-name'));
+            // })
+        });
 
     }
 
@@ -116,7 +136,6 @@ function invertColor (color) {
     sortCategoriesList();
     sortNotesToggle('date-descending', null);
     sortTagsRow();
-    // a.localeCompare(b, undefined, {sensitivity: 'base'})
 
 
 // FORM TO OBJECT CONVERT - REUSABLE FUNCTION
@@ -417,10 +436,6 @@ function toggleResource(id, forceDirection) {
 
 
 
-
-
-
-
 // ADD NEW NOTE
     // Cancel new note form
     function cancelNewNote(id){
@@ -465,6 +480,14 @@ function toggleResource(id, forceDirection) {
         allRollouts.forEach(element => {
             element.classList.remove('active-rollout');
         });
+        // clear all buttons
+        document.querySelectorAll('.note-tags-row .icon-button-tags').forEach(element => {
+            element.classList.remove('clicked');
+        });
+        document.querySelectorAll('.new-note-tag-rollout-button .fa-square-caret-down').forEach(element =>{
+            element.classList.remove('fa-square-caret-down');
+            element.classList.add('fa-square-caret-right');
+        });
 
         // clear ids array
         selectedTagIds.length = 0;       
@@ -480,6 +503,9 @@ function toggleResource(id, forceDirection) {
                 triangle.classList.value = 'fa-solid fa-square-caret-right';
             }
         } else {
+            //change button appearance
+            button.classList.add('clicked');
+
             // clear all .clicked classes
             clearSelectedTags()
 
@@ -553,6 +579,11 @@ function toggleResource(id, forceDirection) {
             // console.log(filteredTags);
 
         } else {
+            button.classList.remove('clicked');
+            document.querySelectorAll('.new-note-tag-rollout-button .fa-square-caret-down').forEach(element =>{
+            element.classList.remove('fa-square-caret-down');
+            element.classList.add('fa-square-caret-right');
+            });
             rollout.classList.add("hidden-fast");
             rollout.classList.remove("visible-fast");
             rollout.classList.remove("active-rollout");
@@ -626,9 +657,9 @@ function toggleResource(id, forceDirection) {
         if (!newTagInput.value) {
             return false;
         } else {
-            console.log("New tag name:",newTagInput.value);
+            // console.log("New tag name:",newTagInput.value);
             // console.log("New tag color picker element ", newTagColor);
-            console.log("New tag color: ", newTagColor.getAttribute('data-current-color'));
+            // console.log("New tag color: ", newTagColor.getAttribute('data-current-color'));
             const newCategoryColor = newTagColor.getAttribute('data-current-color');
             const newCategoryInvertedColor = invertColor(newCategoryColor);
 
@@ -640,19 +671,20 @@ function toggleResource(id, forceDirection) {
             axios.post("/add-new-tag", data)
             .then(response => {
                 if (response.data.success) {
-                    let allTagsRows = document.querySelectorAll('.all-tags-row');
+                    //non editable tags rows
+                    let allTagsRows = document.querySelectorAll('.tag-rollout-drawer > .all-tags-row');
                     // console.log(allTagsRows);
                     // this must go in a loop beacause the append child works only once per node
                     allTagsRows.forEach(element => {
                         let newCategoryElement = document.createElement('span');
-                        newCategoryElement.classList.add('tag', 'single-note-tags');
+                        newCategoryElement.classList.add('tag', 'single-note-tags', 'visible-horizontal');
                         newCategoryElement.setAttribute('data-id', response.data.id);
                         newCategoryElement.setAttribute('data-name', newTagInput.value);
                         newCategoryElement.setAttribute('data-color', newCategoryColor);
-                        newCategoryElement.setAttribute('data-invert-color', newCategoryInvertedColor); // do zmiany na kolor z responsu
+                        newCategoryElement.setAttribute('data-invert-color', newCategoryInvertedColor); 
                         newCategoryElement.style.backgroundColor = newCategoryColor;
-                        newCategoryElement.style.color = newCategoryInvertedColor; // do zmiany na kolor z responsu
-                        newCategoryElement.style.borderColor = newCategoryInvertedColor; // do zmiany na kolor z responsu
+                        newCategoryElement.style.color = newCategoryInvertedColor; 
+                        newCategoryElement.style.borderColor = newCategoryInvertedColor; 
                         newCategoryElement.setAttribute('onclick', `selectTag(this, ${resourceId})`);
                         newCategoryElement.innerText = newTagInput.value;
                         // console.log("new tag element :", newCategoryElement);
@@ -660,6 +692,29 @@ function toggleResource(id, forceDirection) {
                         // console.log(element);
                         element.appendChild(newCategoryElement);
                     });
+
+                    //editable tags rows
+                    let allTagsRowsEditable = document.querySelectorAll('.edit-tags-form > .all-tags-row');
+                    allTagsRowsEditable.forEach(element => {
+                        let newCategoryElement = document.createElement('div');
+                        newCategoryElement.classList.add('editable-tag-row', 'tag', 'single-note-tags', 'visible-horizontal');
+                        newCategoryElement.setAttribute('data-name', newTagInput.value);
+                        newCategoryElement.setAttribute('data-id', response.data.id);                        
+                        newCategoryElement.setAttribute('data-color', newCategoryColor);
+                        newCategoryElement.setAttribute('data-invert-color', newCategoryInvertedColor); 
+                        newCategoryElement.style.backgroundColor = newCategoryColor;
+                        newCategoryElement.style.color = newCategoryInvertedColor; 
+                        newCategoryElement.style.borderColor = newCategoryInvertedColor; 
+                        newCategoryElement.innerHTML =`
+                            <input type="text" oninput="this.size = this.value.length" class="tag editable" value="${newTagInput.value}" style="background-color:${newCategoryColor}; color: ${newCategoryInvertedColor};" size="${newTagInput.value.length}" >                                                           
+                            <button class="delete-button icon-button tooltip-container delete-tag-${response.data.id}" type="button" onclick="showConfirmationPopup('${response.data.id}', '/delete-tag', ${resourceId}, null, null)">
+                            <i class="fa-solid fa-trash" aria-hidden="true"></i><span class="tooltip">delete tag</span>
+                            </button>
+                        `;
+
+                        element.appendChild(newCategoryElement);
+                    });
+
                     sortTagsRow();
                     //clear the input
                     newTagInput.value = ""
@@ -679,6 +734,7 @@ function toggleResource(id, forceDirection) {
 // ASSIGN TAGS TO NOTE
     function assignTags(button, resourceId, noteId){
         console.log("Tags assignment client request. Note: ", noteId, " Tag Ids: ", selectedTagIds);
+
         const data = {
             resource_id: resourceId,
             note_id: noteId,
@@ -711,11 +767,13 @@ function toggleResource(id, forceDirection) {
                 });
 
                 sortTagsRow();
-                //toggle off tags rollout
+                
+                //toggle off tags rollout and clear button
                 const rollout = document.getElementById('tag-rollout-' + resourceId + '-' + noteId);
                 rollout.classList.add("hidden-fast");
                 rollout.classList.remove("visible-fast");
                 rollout.classList.remove("active-rollout");
+                document.querySelector(`#note-id-${noteId}`).querySelector('.icon-button-tags').classList.remove('clicked');
                 selectedTagIds.length = 0;
 
             }
@@ -726,6 +784,49 @@ function toggleResource(id, forceDirection) {
         });
 
     }
+
+
+// EDIT AND DELETE TAGS
+    // Buttons toggle
+    function editTagsToggle(resourceId, noteId){
+        let parentRollout = undefined;
+        let tagsContainer = undefined;
+        let editableTagsContainer = undefined;
+        let form = undefined;
+        // let categoriesEditListDisplay = document.getElementById('categories-list-editable').style.display;
+        //check if called from new note or existing note
+        if (!noteId) {
+            // dodac dla nowej notatki
+            tagsContainer = document.querySelector(`#tag-container-${resourceId}`);
+            editableTagsContainer = document.querySelector(`#edit-tag-container-${resourceId}`);
+            parentRollout = document.querySelector(`#tag-rollout-${resourceId}`);
+            return false;
+        } else {
+            tagsContainer = document.querySelector(`#tag-container-${resourceId}-${noteId}`);
+            editableTagsContainer = document.querySelector(`#edit-tag-container-${resourceId}-${noteId}`);
+            parentRollout = document.querySelector(`#tag-rollout-${resourceId}-${noteId}`);
+        }
+        //toggle
+        if (tagsContainer.style.display == 'flex') {
+            tagsContainer.style.display = 'none';
+            editableTagsContainer.style.display = 'flex'
+            parentRollout.querySelector('.edit-tags-submit-button').removeAttribute('disabled');
+            parentRollout.querySelector('.edit-tags-cancel-button').removeAttribute('disabled');
+            parentRollout.querySelectorAll('.separator-2')[1].style.display = 'none';
+            parentRollout.querySelector('.assign-tags-confirm').style.display = 'none';
+            parentRollout.querySelector('h4').innerText = 'Edit Note Tags';
+        } else {
+            tagsContainer.style.display = 'flex';
+            editableTagsContainer.style.display = 'none'
+            parentRollout.querySelector('.edit-tags-submit-button').disabled ='true';
+            parentRollout.querySelector('.edit-tags-cancel-button').disabled ='true';
+            parentRollout.querySelectorAll('.separator-2')[1].style.display = 'block';
+            parentRollout.querySelector('.assign-tags-confirm').style.display = 'inline-block';
+            parentRollout.querySelector('h4').innerText = 'Assign Note Tags';
+            // form.reset();
+        }
+    }
+
 
 // NOWE SUBMIT NOTE Z AXIOS i RES.JSON
     function submitNewNote(formId) {
@@ -783,13 +884,13 @@ function toggleResource(id, forceDirection) {
                     </div>
                     <!-- NOTE HEADING: TAGS -->
                     <div class="note-tags-row">
-                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="selectTagsRolloutToggle(this, '${newNote.resource_id}', '${newNote.note_id}')">+<span class="tooltip">add tags</span></button>
+                        <button class="icon-button-tags tooltip-container" type="add" name="add-tag" onclick="selectTagsRolloutToggle(this, '${newNote.resource_id}', '${newNote.note_id}')">+<span class="tooltip">assign note tags</span></button>
                         <div id="tag-rollout-${newNote.resource_id}-${newNote.note_id}" class="tag-rollout-drawer hidden-fast">
                             ${newAllTagsRow.outerHTML}
                             <div class="add-new-tag-miniform">
                                 <input class="add-new-tag-input" type="text" placeholder="New tag name..." />
                                 <button class="color-selector-button" data-jscolor="{value:'#5ED8FF'}" >color</button>
-                                <button type="button" onclick="addTag(${newNote.resource_id}, ${newNote.note_id})">Add New Tag</button>
+                                <button class="text-button" type="button" onclick="addTag(${newNote.resource_id}, ${newNote.note_id})">Add New Tag</button>
                             </div>
                             <div>
                                 <button class="assign-tags-confirm" type="button" onclick="assignTags(this, ${Number(newNote.resource_id)}, ${Number(newNote.note_id)})">Confirm Tags</button>
@@ -936,6 +1037,20 @@ function confirmDelete() {
                 setTimeout(() => {
                     itemElement.remove();
                 }, 300);
+            } else if (route == "/delete-tag") { //animation and delete for notes
+                const tagElements = document.querySelectorAll(`.single-note-tags[data-id="${itemId}"]`);
+                // const tagElements = [...allTagElements].filter((tag) => tag.getAttribute('data-id') == itemId);
+                console.log(tagElements);
+                tagElements.forEach(element => {
+                    element.classList.add("fade-out");
+                    element.classList.add("hidden-horizontal");
+                    element.classList.remove("visible-horizontal");
+                });
+                setTimeout(() => {
+                    tagElements.forEach(element => {
+                        element.remove();
+                    });
+                }, 500);
             }
         }
     })
