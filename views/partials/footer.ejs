@@ -828,6 +828,68 @@ function toggleResource(id, forceDirection) {
     }
 
 
+function editTagsSubmit (button){
+    const inputs = button.closest('.tag-rollout-drawer').querySelector('.edit-tags-form').querySelectorAll('input');
+    let dataUpdate = [];
+    inputs.forEach(input =>{
+        const tagObj = {
+            tag_id: Number(input.closest('.editable-tag-row').getAttribute('data-id')),
+            tag_name: input.value,
+            tag_color: input.closest('.editable-tag-row').getAttribute('data-color'),
+            tag_inverted_color: invertColor(input.closest('.editable-tag-row').getAttribute('data-color'))
+        };
+        dataUpdate.push(tagObj);
+    });
+    console.log("All tags updated list", dataUpdate);
+    axios.put("/edit-tags", dataUpdate)
+    .then((response) => {
+        if (response.data.success) {
+            console.log("response success");
+            //update DOM tag elements .single-note-tags
+            const singleNoteTags = [...document.querySelectorAll('.single-note-tags')];
+            // console.log(singleNoteTags);
+            // console.log(singleNoteTags.filter((prop) => prop.getAttribute('data-id') == 1));
+            dataUpdate.forEach(tag =>{
+                const elementMatch = singleNoteTags.filter((prop) => prop.getAttribute('data-id') == tag.tag_id);
+                console.log("Tag id:", tag.tag_id, "matches: ", elementMatch);
+                elementMatch.forEach(element => {
+                    element.setAttribute('data-name', tag.tag_name);
+                    element.setAttribute('data-color', tag.tag_color);
+                    element.setAttribute('data-invert-color', tag.tag_inverted_color);
+                    element.style.backgroundColor = tag.tag_color;
+                    element.style.color = tag.tag_inverted_color;
+                    element.style.borderColor = tag.tag_inverted_color;
+                    if (element.nodeName == "SPAN") {
+                        element.innerText = tag.tag_name;
+                    }
+                    if (element.classList.contains('editable-tag-row')) {
+                        const inputElement = element.querySelector('input');
+                        const buttonElement = element.querySelector('.color-selector-icon');
+                        inputElement.value = tag.tag_name;
+                        inputElement.style.backgroundColor = tag.tag_color;
+                        inputElement.style.borderColor = tag.tag_inverted_color;
+                        inputElement.size = inputElement.value.length;
+                        buttonElement.setAttribute('data-current-color', tag.tag_color);
+                        buttonElement.setAttribute('data-jscolor', `{value:'${tag.tag_color}'}`);
+                    }
+                    if (element.classList.contains('clicked')) {
+                        element.style.boxShadow = `${tag.tag_color} 0px 0px 0px 4px`;
+                    }
+                });
+            });
+
+            //update DOM tag elements .single-note-tags > input
+            //update DOM tag elements .single-note-tags > .color-selector-icon
+
+        }
+    })
+    .catch((error) => {
+        console.error("Error editing tags", error);
+    });
+}
+
+
+
 // NOWE SUBMIT NOTE Z AXIOS i RES.JSON
     function submitNewNote(formId) {
         // Prevent default form submission

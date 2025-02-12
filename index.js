@@ -459,6 +459,12 @@ app.post("/assign-tags", async (req, res) => {
 
 });
 
+// EDIT TAGS
+app.put("/edit-tags", async (req, res) =>{
+    console.log("Edit tags request :", req.body);
+    res.status(200).json({success: true});
+});
+
 //NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
     const resourceId = req.body.resource_id;
