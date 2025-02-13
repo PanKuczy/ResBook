@@ -605,16 +605,21 @@ function toggleResource(id, forceDirection) {
         const tagName = element.getAttribute('data-name');
         const tagColor = element.getAttribute('data-color');
         const tagInvertColor = element.getAttribute('data-invert-color');
+        const elementEditable = element.closest('.tag-rollout-drawer').querySelector(`.edit-tags-form .editable-tag-row[data-id='${tagId}']`);
 
         //Ids
         if (selectedTagIds.includes(tagId)) {
             selectedTagIds = selectedTagIds.filter(id => id !== tagId);
             element.classList.remove('clicked');
             element.style.boxShadow = '';
+            elementEditable.classList.remove('clicked');
+            elementEditable.style.boxShadow = '';
         } else {
             selectedTagIds.push(tagId);
             element.classList.add('clicked');
             element.style.boxShadow = `0 0 0 4px ${tagColor}`;
+            elementEditable.classList.add('clicked');
+            elementEditable.style.boxShadow = `0 0 0 4px ${tagColor}`;
         }
         //Names
         if (selectedTagNames.includes(tagName)) {
@@ -640,9 +645,7 @@ function toggleResource(id, forceDirection) {
         document.getElementById('selectedNewNoteTagsColorsInv-' + resourceId).value = selectedTagColorsInv.join(',');
     }
 
-//////////////////////////////////////////////////////////////////////
-
-    // ADD NEW TAG - IN NEW NOTE AND EXISTING NOTE
+// ADD NEW TAG - IN NEW NOTE AND EXISTING NOTE
     function addTag(resourceId, noteId) {
 
         let newTagRollout = "";
@@ -1023,7 +1026,7 @@ function toggleResource(id, forceDirection) {
                     </span>
                 </p>
                 `;
-                // Append the new note element to the container (modify as per your layout)
+                // Append the new note element to the container
                 document.getElementById('notesbox-' + newNote.resource_id ).appendChild(newNoteElement);
                 jscolor.install('body'); // it's needed to initialize the newly created color picker
                 sortTagsRow();
@@ -1031,7 +1034,7 @@ function toggleResource(id, forceDirection) {
                 // fade in animation
                 document.getElementById(`note-id-${newNote.note_id}`).classList.remove("hidden");
                 document.getElementById(`note-id-${newNote.note_id}`).classList.add("visible");
-                // Optionally, reset the form after submission
+
                 form.reset();
                 document.getElementById(formId).classList.add("hidden")
                 document.getElementById(formId).classList.remove("visible")
