@@ -296,35 +296,17 @@ const itemNumber = "0860547051";
 // }
 
 
+// MAIN GET ROUTE
 app.get("/", async (req, res) => {
     const data = await getAllData();
     res.render("index.ejs", data);
-
 });
 
-// TO JUZ RACZEJ NIE POTRZEBNE, BO ZMIENILEM NA RES.JSON
-// app.get("/resource/:id", async (req,res) =>{
-//     const request = req.params.id;
-//     // console.log("BEFORE", userResourcesFull);
-//     const specificResource = userResourcesFull.resources.filter(resource => resource.resource_id == request);
-//     // console.log("SPECIFIC RESOURCE", specificResource);
-//     // userResourcesFull.resources = userResourcesFull.resources;
-//     const data = { ...userResourcesFull, resources: specificResource};
-//     data.notes_tags_corel = globalHelperData.notesTagsCorel;
-//     data.showElement = true;
-//     // console.log("AFTER", data);
-//     // console.log("AFTER", util.inspect(data, { depth: null, colors: true }));
-//     // console.log("GLOBAL HELPER DATA", globalHelperData);
-//     // const tagIds = data.notes_tags_corel.filter((id) => id.note_id == data.notes[0].id)[0].tag_id;
-//     // console.log("note tags", tagIds);
-//     res.render("index.ejs", data)
-// });
 
 //ADD CATEGORY
 app.post("/add-category", async (req,res) => {
     const request = req.body;
-
-    console.log("Server got request :",request);
+    // console.log("Add category request :",request);
     try {
         const queryNewCategory =`
         INSERT INTO categories (name, user_id)
@@ -340,13 +322,12 @@ app.post("/add-category", async (req,res) => {
         id: resultNewCategory.rows[0].id
         };
 
-        console.log("New Category object :",newCategory);
+        // console.log("New Category object :",newCategory);
         res.status(200).json({ success: true, newCategory });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error adding category' });
     }
-
 });
 
 //EDIT CATEGORIES
@@ -393,7 +374,6 @@ app.post("/assign-category", async (req,res) =>{
         console.error(err);
         res.status(500).json({ success: false, error: 'Error assigning category' });
     }
-
 });
 
 //REMOVE CATEGORY FROM RESOURCE
@@ -411,7 +391,6 @@ app.post("/strip-category", async (req,res) =>{
         console.error(err);
         res.status(500).json({ success: false, error: 'Error assigning category' });
     }
-
 });
 
 // ADD TAG
@@ -429,12 +408,11 @@ app.post("/add-new-tag", async (req,res) =>{
         console.error(error);
         res.status(500).json({ success: false, error: 'Error adding new tag' });
     }
-
 });
 
 // ASSIGN TAG TO NOTE
 app.post("/assign-tags", async (req, res) => {
-    console.log("Assign tags request: ", req.body);
+    // console.log("Assign tags request: ", req.body);
     try {
         const tagIdsInt = req.body.tags_ids.map(Number); // conversion is needed bc the array from the request is an array of strings eg. '1', '2'...
         const queryClearTags = `
@@ -456,20 +434,47 @@ app.post("/assign-tags", async (req, res) => {
         console.error(error);
         res.status(500).json({ success: false, error: 'Error assigning tags' });
     }
-
 });
 
 // EDIT TAGS
 app.put("/edit-tags", async (req, res) =>{
-    console.log("Edit tags request :", req.body);
-    res.status(200).json({success: true});
+    // console.log("Edit tags request :", req.body);
+    try {
+        const requestTags = req.body;
+        const queryUpdateTags = `
+            UPDATE tags
+            SET 
+                name = CASE
+                    ${requestTags.map((tag, index) => `
+                        WHEN id = $${index * 3 + 1} THEN $${index * 3 + 2}
+                    `).join('')}
+                END,
+                color = CASE
+                    ${requestTags.map((tag, index) => `
+                        WHEN id = $${index * 3 + 1} THEN $${index * 3 + 3}
+                    `).join('')}
+                END
+            WHERE id IN (${requestTags.map((tag, index) => `$${index * 3 + 1}`).join(', ')});
+        `;
+        // Flatten the values array
+        const values = requestTags.flatMap((tag) => [
+            tag.tag_id,
+            tag.tag_name,
+            tag.tag_color
+        ]);
+
+        await db.query(queryUpdateTags, values);
+        res.status(200).json({ success: true});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error editing tags' });
+    }
 });
 
 //NOWE ADD-NOTE Z RES.JSON
 app.post("/add-note", async (req, res) =>{
     const resourceId = req.body.resource_id;
     // console.log("new add note request", req.body);
-
     try {
         const queryNewNote = `
         INSERT INTO notes (user_id, resource_id, note_text, target_pages, target_object)
@@ -507,7 +512,6 @@ app.post("/add-note", async (req, res) =>{
         console.error(err);
         res.status(500).json({ success: false, error: 'Error adding note' });
     }
-
 });
 
 app.post("/delete-note", async (req,res) => {
@@ -556,8 +560,6 @@ app.post("/delete-tag", async (req, res) =>{
         console.error(err);
         res.status(500).json({ success: false, error: 'Error deleting item' });
       }
-
-
 });
 
 // db.end();
