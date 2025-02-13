@@ -427,12 +427,20 @@ margin: 50px 5% 50px 5%;
 .single-note-text{
     margin-top: 0;
     color: var(--color-graylight);
-    position: relative; /* Create a positioning context */
-    display: flex;
+    position: relative;
+    /* display: flex; */
     text-align: left;
+    /* justify-content: space-between; */
+    /* align-items: flex-end;  */
+    /* flex-wrap: wrap;  */
+}
+.note-text-area, .edit-note-textarea{
+    margin: 6px 0px;
+}
+.note-bottom-row{
+    display: flex;
     justify-content: space-between;
-    align-items: flex-end; /* Align items to the bottom */
-    flex-wrap: wrap; /* Allow items to wrap if necessary */
+    margin-bottom: 15px;
 }
 .single-note-targets{
     font-size: 14px;
@@ -491,7 +499,7 @@ margin: 50px 5% 50px 5%;
     position: relative;
 }
 
-.new-note-box textarea{
+.new-note-box textarea, .single-note-text textarea{
     width: 100%;
     height: auto; /* Let the textarea adjust its height */
     min-height: calc(1.5em * 4); /* 1.5em is the approximate height of a line of text */

@@ -448,7 +448,7 @@ function toggleResource(id, forceDirection) {
     }
 
     // Resize text areas automatically
-    const textareas = document.getElementsByClassName('new-note-text');
+    const textareas = document.querySelectorAll('.new-note-text, .edit-note-textarea');
     for (let element of textareas) {
         element.addEventListener('input', function() {
             // Reset the height to allow shrinking if necessary
@@ -1017,11 +1017,11 @@ function toggleResource(id, forceDirection) {
                         ${tagsRowHtml}
                     </div>
                 </div>
-                <p class="single-note-text" id="note-${newNote.note_id}-text">${newNote.note_text}
-                    <span class="single-note-targets" id="note-${newNote.note_id}-target-object">
+                <p class="single-note-text" id="note-text-${newNote.note_id}">${newNote.note_text}
+                    <span class="single-note-targets" id="note-target-object-${newNote.note_id}">
                         ${linkHtml}
                     </span>
-                    <span class="single-note-targets" id="note-${newNote.note_id}-target-pages">
+                    <span class="single-note-targets" id="note-target-pages-${newNote.note_id}">
                         ${pagesHtml}
                     </span>
                 </p>
@@ -1048,6 +1048,52 @@ function toggleResource(id, forceDirection) {
             alert('An error occurred while posting the note.');
         });
     }
+
+
+//EDIT NOTE TOGGLE WITH AXIOS ROUTE
+    function editNoteToggle(button, id){
+        const noteTextContainerChildren = [...document.querySelector(`#note-text-${id}`).children];
+        const submitButton = document.querySelector(`#note-id-${id} .edit-note-submit-button`);
+        const cancelButton = document.querySelector(`#note-id-${id} .edit-note-cancel-button`);
+        const textArea = document.querySelector(`#note-text-area-${id}`);
+        const textAreaEdit = document.querySelector(`#note-text-area-edit-${id}`);
+        const link = document.querySelector(`#note-target-object-${id}`);
+        const linkEdit = document.querySelector(`#note-target-object-edit-${id}`);
+        const pages = document.querySelector(`#note-target-pages-${id}`);
+        const pagesEdit = document.querySelector(`#note-target-pages-edit-${id}`);
+        // console.log(noteTextContainerChildren);
+        //check if cancel
+        if (button.getAttribute('name') == "edit-note-cancel") {
+            textAreaEdit.value = textArea.innerText;
+            linkEdit.querySelector('input').value = link.querySelector('a')?.innerText ?? null;
+            pagesEdit.querySelector('input').value = pages.getAttribute('data-content') ?? null;
+        }
+        //check if submit
+        if (button.getAttribute('name') == "edit-note-submit") {
+            console.log("new text value", textAreaEdit.value);
+            //check if not empty
+            //...
+
+            //axios
+            //...
+
+        }
+        //toggle buttons
+        noteTextContainerChildren.forEach(child => {
+            if (child.style.display == 'flex') {
+                child.style.display = 'none';
+                submitButton.disabled = true;
+                cancelButton.disabled = true;
+            } else {
+                child.style.display = 'flex';
+                submitButton.disabled = false;
+                cancelButton.disabled = false;
+            }
+        });
+    }
+
+
+
 
 
 </script>

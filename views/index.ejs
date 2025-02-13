@@ -146,18 +146,36 @@
     <!-- NOTE HEADING -->
                                 <div class="note-heading-row">
                                     <div class="note-date-del-edit-row">
-                                        <!-- ten przycisk raczej do zmiany -->
-                                        <form action="/edit-note" method="post">
-                                            <input type="hidden" name="note_id" value="<%= note?.note_id ?? null %>">
-                                            <button 
-                                                class="icon-button tooltip-container" 
-                                                type="edit" 
-                                                name="edit-note" 
-                                                onclick="handler('edit-note')">
-                                                <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit note</span>
-                                            </button>
-                                        </form>
-
+                                        <button 
+                                            class="icon-button tooltip-container" 
+                                            type="edit" 
+                                            name="edit-note" 
+                                            onclick="editNoteToggle(this, <%= note?.note_id ?? null %>)">
+                                            <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit note</span>
+                                        </button>
+                                        <button 
+                                            disabled
+                                            class="icon-button tooltip-container edit-note-submit-button"
+                                            type="button"
+                                            name="edit-note-submit" 
+                                            onclick="editNoteToggle(this, <%= note?.note_id ?? null %>)">
+                                            <i class="fa-solid fa-floppy-disk"></i><span class="tooltip">save changes</span>
+                                        </button>
+                                        <button 
+                                            disabled
+                                            class="icon-button tooltip-container edit-note-cancel-button" 
+                                            type="button" 
+                                            name="edit-note-cancel" 
+                                            onclick="editNoteToggle(this, <%= note?.note_id ?? null %>)">
+                                            <i class="fa-solid fa-rotate-left"></i><span class="tooltip">discard changes</span>
+                                        </button>
+                                        <button 
+                                            class="icon-button tooltip-container generate-citation-button" 
+                                            type="button" 
+                                            name="generate-citation" 
+                                            onclick="generateCitation('<%= note?.note_id ?? null %>')">
+                                        <i class="fa-solid fa-quote-right"></i><span class="tooltip">generate citation</span>
+                                        </button>
                                         <button 
                                             class="delete-button icon-button tooltip-container" 
                                             id="delete-note-<%= note?.note_id ?? null %>"
@@ -257,19 +275,32 @@
                                     </div>
                                 </div>
     <!-- NOTE TEXT -->
-                                <p class="single-note-text" id="note-<%= note?.note_id ?? null %>-text"><%= note.note_text %>
-                                    <span class="single-note-targets" id="note-<%= note?.note_id ?? null %>-target-object">
-                                        <% if (note?.target_object) { %>
-                                            Link: <a href="<%= note?.target_object %>" rel="noopener noreferrer" target="_blank"><%= note?.target_object %></a>
-                                        <%}%>
-                                    </span>
-                                    <span class="single-note-targets" id="note-<%= note?.note_id ?? null %>-target-pages">
-                                        <% if (note?.target_pages) { %>
-                                            Pages: <%= note.target_pages %>
-                                        <% } %>
-                                    </span>
+                                <div class="single-note-text" id="note-text-<%= note?.note_id ?? null %>">
+                                    
+                                    <p class="note-text-area" id="note-text-area-<%= note?.note_id ?? null %>" style="display: flex;"><%= note.note_text %></p>
+                                    <textarea class="edit-note-textarea" id="note-text-area-edit-<%= note?.note_id ?? null %>" style="display: none;"><%= note.note_text %></textarea>
+                                    <div class="note-bottom-row" style="display: flex;">
+                                        <span class="single-note-targets" id="note-target-object-<%= note?.note_id ?? null %>">
+                                            <% if (note?.target_object) { %>
+                                                Link: <a href="<%= note?.target_object %>" rel="noopener noreferrer" target="_blank"><%= note?.target_object %></a>
+                                            <%}%>
+                                        </span>
+                                        <span class="single-note-targets" id="note-target-pages-<%= note?.note_id ?? null %>" data-content="<%= note?.target_pages ?? null %>">
+                                            <% if (note?.target_pages) { %>
+                                                Pages: <%= note.target_pages %>
+                                            <% } %>
+                                        </span>
+                                    </div>
+                                    <div class="note-bottom-row" style="display: none;">
+                                        <span class="single-note-targets" id="note-target-object-edit-<%= note?.note_id ?? null %>">
+                                                Link: <input type="text" value="<%= note?.target_object ?? null %>">
+                                        </span>
+                                        <span class="single-note-targets" id="note-target-pages-edit-<%= note?.note_id ?? null %>">
+                                                Pages: <input type="text" value="<%= note.target_pages ?? null  %>">
+                                        </span>
+                                    </div>
 
-                                </p>
+                                </div>
                             </div>
                         <%}%>
                     <%}%>
