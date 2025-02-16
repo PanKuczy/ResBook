@@ -933,13 +933,14 @@ function toggleResource(id, forceDirection) {
         // Get the form element
         const form = document.getElementById(formId);
         const formObject = formToObject(formId);
+        console.log("New note dataa: ", formObject);
 
         // Send the data using axios
         axios.post('/add-note', formObject)
         .then((response) => {
             if (response.data.success) {
                 const newNote = response.data.newNote;
-                // console.log(newNote);
+                console.log("response new note",newNote);
                 // console.log("response", response.data);
 
                 // Create a new note DOM element
@@ -967,15 +968,38 @@ function toggleResource(id, forceDirection) {
                 newNoteElement.innerHTML = `
                 <div class="note-heading-row">
                     <div class="note-date-del-edit-row">
+                        <button 
+                            class="icon-button tooltip-container" 
+                            type="edit" 
+                            name="edit-note" 
+                            onclick="editNoteToggle(this, ${newNote.note_id})">
+                            <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit note</span>
+                        </button>
+                        <button 
+                            disabled
+                            class="icon-button tooltip-container edit-note-submit-button"
+                            type="button"
+                            name="edit-note-submit" 
+                            onclick="editNoteToggle(this, ${newNote.note_id})">
+                            <i class="fa-solid fa-floppy-disk"></i><span class="tooltip">save changes</span>
+                        </button>
+                        <button 
+                            disabled
+                            class="icon-button tooltip-container edit-note-cancel-button" 
+                            type="button" 
+                            name="edit-note-cancel" 
+                            onclick="editNoteToggle(this, ${newNote.note_id})">
+                            <i class="fa-solid fa-rotate-left"></i><span class="tooltip">discard changes</span>
+                        </button>
+                        <button 
+                            class="icon-button tooltip-container generate-citation-button" 
+                            type="button" 
+                            name="generate-citation" 
+                            onclick="generateCitation('${newNote.note_id}')">
+                        <i class="fa-solid fa-quote-right"></i><span class="tooltip">generate citation</span>
+                        </button>
 
-                        <form action="/edit-note" method="post">
-                            <input type="hidden" name="note_id" value="${newNote.note_id}">
-                            <button class="icon-button tooltip-container" type="edit" name="edit-note" onclick="handler('edit-note')">
-                                <i class="fa-solid fa-file-pen" aria-hidden="true"></i><span class="tooltip">edit note</span>
-                            </button>
-                        </form>
-
-                        <button class="icon-button tooltip-container" id="delete-note-${newNote.note_id}" type="button" onclick="showConfirmationPopup('${newNote.note_id}', '/delete-note', '${newNote.resource_id}', 'note-id-${newNote.note_id}')">
+                        <button class="delete-button icon-button tooltip-container" id="delete-note-${newNote.note_id}" type="button" onclick="showConfirmationPopup('${newNote.note_id}', '/delete-note', '${newNote.resource_id}', 'note-id-${newNote.note_id}', null)">
                             <i class="fa-solid fa-trash" aria-hidden="true"></i><span class="tooltip">delete note</span>
                         </button>
                         <p class="note-date" value="date" id="note-${newNote.note_id}-date"> ${newNote.formattedDate}</p>
@@ -1017,14 +1041,30 @@ function toggleResource(id, forceDirection) {
                         ${tagsRowHtml}
                     </div>
                 </div>
-                <p class="single-note-text" id="note-text-${newNote.note_id}">${newNote.note_text}
-                    <span class="single-note-targets" id="note-target-object-${newNote.note_id}">
-                        ${linkHtml}
-                    </span>
-                    <span class="single-note-targets" id="note-target-pages-${newNote.note_id}">
-                        ${pagesHtml}
-                    </span>
-                </p>
+
+                <!-- NOTE TEXT -->
+                <div class="single-note-text" id="note-text-${newNote.note_id}">
+                    
+                    <p class="note-text-area" id="note-text-area-${newNote.note_id}" style="display: flex;">${newNote.note_text}</p>
+                    <textarea class="edit-note-textarea" id="note-text-area-edit-${newNote.note_id}" style="display: none;">${newNote.note_text}</textarea>
+                    <div class="note-bottom-row" style="display: flex;">
+                        <span class="single-note-targets target-link" id="note-target-object-${newNote.note_id}">
+                            ${linkHtml}
+                        </span>
+                        <span class="single-note-targets target-pages" id="note-target-pages-${newNote.note_id}" data-content="${newNote.target_pages}">
+                            ${pagesHtml}
+                        </span>
+                    </div>
+                    <div class="note-bottom-row" style="display: none;">
+                        <span class="single-note-targets target-link" id="note-target-object-edit-${newNote.note_id}">
+                                Link: <input class="input-link" type="text" value="${newNote.target_object}">
+                        </span>
+                        <span class="single-note-targets target-pages" id="note-target-pages-edit-${newNote.note_id}">
+                                Pages: <input class="input-pages" type="text" value="${newNote.target_pages}">
+                        </span>
+                    </div>
+
+                </div>
                 `;
                 // Append the new note element to the container
                 document.getElementById('notesbox-' + newNote.resource_id ).appendChild(newNoteElement);
@@ -1061,23 +1101,73 @@ function toggleResource(id, forceDirection) {
         const linkEdit = document.querySelector(`#note-target-object-edit-${id}`);
         const pages = document.querySelector(`#note-target-pages-${id}`);
         const pagesEdit = document.querySelector(`#note-target-pages-edit-${id}`);
+        const resource = document.querySelector(`#note-id-${id}`).closest('.user-book');
         // console.log(noteTextContainerChildren);
-        //check if cancel
-        if (button.getAttribute('name') == "edit-note-cancel") {
-            textAreaEdit.value = textArea.innerText;
-            linkEdit.querySelector('input').value = link.querySelector('a')?.innerText ?? null;
-            pagesEdit.querySelector('input').value = pages.getAttribute('data-content') ?? null;
-        }
+
         //check if submit
         if (button.getAttribute('name') == "edit-note-submit") {
-            console.log("new text value", textAreaEdit.value);
+            // console.log("new text value", textAreaEdit.value);
             //check if not empty
-            //...
+            if (!textAreaEdit.value) {
+                alert("Text field empty!");
+                return false;
+            } else {
+                const data = {
+                    note_id: id,
+                    note_text: textAreaEdit.value,
+                    note_link: linkEdit.querySelector('input').value,
+                    note_pages: pagesEdit.querySelector('input').value
+                };
+                console.log("data to send: ",data);
+                //axios
+                axios.put("/edit-note", data)
+                .then(response => {
+                    if (response.data.success) {
+                        console.log("response ", response.data);
+                        //response and build html
+                        textArea.innerText = textAreaEdit.value;
+                        document.querySelector(`#note-${id}-date`).innerText = response.data.resultData.formattedDate;
+                        //check if new link field is not empty
+                        if (linkEdit.querySelector('input').value) {
+                            // console.log("new input has value: ", linkEdit.querySelector('input').value);
+                            //check if the <a> exists
+                            if (link.querySelector('a')) {
+                                // console.log("a exists");
+                                // console.log(link.innerHTML);
+                                link.querySelector('a').innerText = linkEdit.querySelector('input').value;
+                                link.querySelector('a').setAttribute('href', linkEdit.querySelector('input').value);
+                            } else {
+                                // console.log("a not exist, create try");
+                                document.querySelector(`#note-target-object-${id}`).innerHTML = `
+                                    Link:
+                                    <a href="${linkEdit.querySelector('input').value}" rel="noopener noreferrer" target="_blank">${linkEdit.querySelector('input').value}</a>
+                                `;
+                            }
+                        } else {
+                            // remove <a> if exists
+                            // console.log("new link is empty. clearing old one.");
+                            document.querySelector(`#note-target-object-${id}`).innerHTML = " ";
+                        }
 
-            //axios
-            //...
-
+                        //check if new pages field is not empty
+                        if (pagesEdit.querySelector('input').value) {
+                            // console.log("new input has value: ", pagesEdit.querySelector('input').value);
+                            pages.innerText = `Pages: ${pagesEdit.querySelector('input').value}`;
+                        } else {
+                            // remove pages if exist
+                            // console.log("new pages are empty. clearing old.");
+                            pages.innerText = "";
+                        }
+                        sortNotesToggle('date-descending', resource);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error editing note:', error);
+                    alert('Error editing note');
+                });
+            }
         }
+
         //toggle buttons
         noteTextContainerChildren.forEach(child => {
             if (child.style.display == 'flex') {
@@ -1088,8 +1178,16 @@ function toggleResource(id, forceDirection) {
                 child.style.display = 'flex';
                 submitButton.disabled = false;
                 cancelButton.disabled = false;
+                //set height of textarea input to fit existing text
+                textAreaEdit.style.height = (textAreaEdit.scrollHeight) + 'px';
             }
         });
+        //check if cancel - moved to end to the sake of not loosing \n line breaks
+        if (button.getAttribute('name') == "edit-note-cancel") {
+            textAreaEdit.value = textArea.innerText;
+            linkEdit.querySelector('input').value = link.querySelector('a')?.innerText ?? null;
+            pagesEdit.querySelector('input').value = pages.getAttribute('data-content') ?? null;
+        }
     }
 
 

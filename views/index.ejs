@@ -43,97 +43,99 @@
     <!-- NOTES     -->
      
                 <div class="notes-box hidden" id="notesbox-<%= item?.resource_id %>">
-                    <h4><span>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="handler('new-note-<%= item?.resource_id %>')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></span> <span class="notes-sortby">Sort by:</span></h4>
-    <!-- ADD NOTE -->
-                    <form class="new-note hidden" action="/add-note" method="post" id="add-new-note-<%= item?.resource_id %>">
-                        <div class="new-note-box">
-                            <button class="new-note-tag-rollout-button" onclick="selectTagsRolloutToggle(this, <%= item?.resource_id %>, null)" type="button">Select Tags <i id="triangle-icon-<%= item?.resource_id %>" class="fa-solid fa-square-caret-right"></i></button>
-                            <div id="tag-rollout-<%= item?.resource_id %>" class="tag-rollout-drawer hidden-fast">
-                                <div class="heading-with-buttons">
-                                    <h4>Assign Note Tags:</h4>
-                                    <div>
-                                        <button 
-                                        class="icon-button tooltip-container edit-tags-toggle-button" 
-                                        type="button"
-                                        name="edit-tags-toggle" 
-                                        onclick="editTagsToggle(<%= item?.resource_id %>, null)">
-                                        <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit tags</span>
-                                        </button>
-                                        <button 
-                                        disabled
-                                        class="icon-button tooltip-container edit-tags-submit-button"
-                                        type="button"
-                                        name="edit-tags-submit" 
-                                        onclick="editTagsSubmit(this)">
-                                        <i class="fa-solid fa-floppy-disk"></i><span class="tooltip">save changes</span>
-                                        </button>
-                                        <button 
-                                        disabled
-                                        class="icon-button tooltip-container edit-tags-cancel-button" 
-                                        type="button" 
-                                        name="edit-tags-cancel" 
-                                        onclick="editTagsToggle(<%= item?.resource_id %>, null)">
-                                        <i class="fa-solid fa-rotate-left"></i><span class="tooltip">discard changes</span>
-                                        </button>
+                    <div class="notes-box-heading">
+                        <h4><span>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="handler('new-note-<%= item?.resource_id %>')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></span> <span class="notes-sortby">Sort by:</span></h4>
+        <!-- ADD NOTE -->
+                        <form class="new-note hidden" action="/add-note" method="post" id="add-new-note-<%= item?.resource_id %>">
+                            <div class="new-note-box">
+                                <button class="new-note-tag-rollout-button" onclick="selectTagsRolloutToggle(this, <%= item?.resource_id %>, null)" type="button">Select Tags <i id="triangle-icon-<%= item?.resource_id %>" class="fa-solid fa-square-caret-right"></i></button>
+                                <div id="tag-rollout-<%= item?.resource_id %>" class="tag-rollout-drawer hidden-fast">
+                                    <div class="heading-with-buttons">
+                                        <h4>Assign Note Tags:</h4>
+                                        <div>
+                                            <button 
+                                            class="icon-button tooltip-container edit-tags-toggle-button" 
+                                            type="button"
+                                            name="edit-tags-toggle" 
+                                            onclick="editTagsToggle(<%= item?.resource_id %>, null)">
+                                            <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit tags</span>
+                                            </button>
+                                            <button 
+                                            disabled
+                                            class="icon-button tooltip-container edit-tags-submit-button"
+                                            type="button"
+                                            name="edit-tags-submit" 
+                                            onclick="editTagsSubmit(this)">
+                                            <i class="fa-solid fa-floppy-disk"></i><span class="tooltip">save changes</span>
+                                            </button>
+                                            <button 
+                                            disabled
+                                            class="icon-button tooltip-container edit-tags-cancel-button" 
+                                            type="button" 
+                                            name="edit-tags-cancel" 
+                                            onclick="editTagsToggle(<%= item?.resource_id %>, null)">
+                                            <i class="fa-solid fa-rotate-left"></i><span class="tooltip">discard changes</span>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="separator-2"></div>
-
-                                <div id="tag-container-<%= item?.resource_id %>" class="all-tags-row" style="display: flex;">
-                                    <% tags.forEach(tag => { %>
-                                        <span class="tag single-note-tags visible-horizontal" data-id="<%= tag.id %>" data-name="<%= tag.name %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
-                                            <%= tag.name %>
-                                        </span>
-                                    <% }); %>
-                                </div>
-                                <div class="edit-tags-form">
-                                    <div id="edit-tag-container-<%= item?.resource_id %>" class="all-tags-row" style="display: none;">
-
+                                    <div class="separator-2"></div>
+    
+                                    <div id="tag-container-<%= item?.resource_id %>" class="all-tags-row" style="display: flex;">
                                         <% tags.forEach(tag => { %>
-                                            <div class="editable-tag-row tag single-note-tags visible-horizontal" data-name="<%= tag.name %>" data-id="<%= tag.id %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>">
-                                                <input type="text" oninput="this.size = this.value.length" class="tag editable" value="<%= tag.name %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>;" >
-                                                </input>
-                                                <button 
-                                                class="icon-button color-selector-icon tooltip-container tag-color-<%= tag.id %>" 
-                                                data-jscolor="{value:'<%= tag.color %>'}"
-                                                type="button">
-                                                <span class="tooltip">change color</span>
-                                                </button>
-                                                <button 
-                                                class="delete-button icon-button tooltip-container delete-tag-<%= tag.id %>" 
-                                                type="button"
-                                                onclick="showConfirmationPopup('<%= tag.id %>', '/delete-tag', <%= item?.resource_id %>, null, null)">
-                                                <i class="fa-solid fa-trash"></i><span class="tooltip">delete tag</span>
-                                                </button>
-                                            </div>
+                                            <span class="tag single-note-tags visible-horizontal" data-id="<%= tag.id %>" data-name="<%= tag.name %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>" onclick="selectTag(this, <%= item?.resource_id %>)">
+                                                <%= tag.name %>
+                                            </span>
                                         <% }); %>
-
                                     </div>
+                                    <div class="edit-tags-form">
+                                        <div id="edit-tag-container-<%= item?.resource_id %>" class="all-tags-row" style="display: none;">
+    
+                                            <% tags.forEach(tag => { %>
+                                                <div class="editable-tag-row tag single-note-tags visible-horizontal" data-name="<%= tag.name %>" data-id="<%= tag.id %>" data-color="<%= tag.color %>" data-invert-color="<%= tag.invertColor %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>; border-color: <%= tag.invertColor %>">
+                                                    <input type="text" oninput="this.size = this.value.length" class="tag editable" value="<%= tag.name %>" style="background-color: <%= tag.color %>; color: <%= tag.invertColor %>;" >
+                                                    </input>
+                                                    <button 
+                                                    class="icon-button color-selector-icon tooltip-container tag-color-<%= tag.id %>" 
+                                                    data-jscolor="{value:'<%= tag.color %>'}"
+                                                    type="button">
+                                                    <span class="tooltip">change color</span>
+                                                    </button>
+                                                    <button 
+                                                    class="delete-button icon-button tooltip-container delete-tag-<%= tag.id %>" 
+                                                    type="button"
+                                                    onclick="showConfirmationPopup('<%= tag.id %>', '/delete-tag', <%= item?.resource_id %>, null, null)">
+                                                    <i class="fa-solid fa-trash"></i><span class="tooltip">delete tag</span>
+                                                    </button>
+                                                </div>
+                                            <% }); %>
+    
+                                        </div>
+                                    </div>
+                                    <div class="add-new-tag-miniform">
+                                        <input class="add-new-tag-input" type="text" placeholder="New tag name..." />
+                                        <button class="color-selector-button" data-jscolor="{value:'#5ED8FF'}" >color</button>
+                                        <button class="text-button" type="button" onclick="addTag(<%= item?.resource_id %>, null)">Add New Tag</button>
+                                    </div>
+                                    <input type="hidden" name="selectedTagIds" id="selectedNewNoteTags-<%= item?.resource_id %>" />
+                                    <input type="hidden" name="selectedTagsNames" id="selectedNewNoteTagsNames-<%= item?.resource_id %>" />
+                                    <input type="hidden" name="selectedTagsColors" id="selectedNewNoteTagsColors-<%= item?.resource_id %>" />
+                                    <input type="hidden" name="selectedTagsColorsInv" id="selectedNewNoteTagsColorsInv-<%= item?.resource_id %>" />
                                 </div>
-                                <div class="add-new-tag-miniform">
-                                    <input class="add-new-tag-input" type="text" placeholder="New tag name..." />
-                                    <button class="color-selector-button" data-jscolor="{value:'#5ED8FF'}" >color</button>
-                                    <button class="text-button" type="button" onclick="addTag(<%= item?.resource_id %>, null)">Add New Tag</button>
+    
+                                
+                                <textarea class="new-note-text" type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text-<%= item?.resource_id %>" required></textarea>
+                                <div class="flex-end">
+                                    <label for="new-note-pages">Pages: </label>
+                                    <input type="text" name="target_pages" placeholder="Pages" autocomplete="off" autofocus="true" id="new-note-pages-<%= item?.resource_id %>"/>
+                                    <label for="new-note-link">Link: </label>
+                                    <input type="text" name="target_object" placeholder="Link" autocomplete="off" autofocus="true" id="new-note-link-<%= item?.resource_id %>"/>
                                 </div>
-                                <input type="hidden" name="selectedTagIds" id="selectedNewNoteTags-<%= item?.resource_id %>" />
-                                <input type="hidden" name="selectedTagsNames" id="selectedNewNoteTagsNames-<%= item?.resource_id %>" />
-                                <input type="hidden" name="selectedTagsColors" id="selectedNewNoteTagsColors-<%= item?.resource_id %>" />
-                                <input type="hidden" name="selectedTagsColorsInv" id="selectedNewNoteTagsColorsInv-<%= item?.resource_id %>" />
+                                <input type="hidden" name="resource_id" value="<%= item.resource_id %>" />
+                                <button class="text-button" type="submit" name="note-submit" onclick="submitNewNote('add-new-note-<%= item?.resource_id %>')" value="" >Submit</button>
+                                <button class="text-button" type="reset" name="note-cancel" onclick="cancelNewNote('add-new-note-<%= item?.resource_id %>')" value="" >Cancel</button>
                             </div>
-
-                            
-                            <textarea class="new-note-text" type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text-<%= item?.resource_id %>" required></textarea>
-                            <div class="flex-end">
-                                <label for="new-note-pages">Pages: </label>
-                                <input type="text" name="target_pages" placeholder="Pages" autocomplete="off" autofocus="true" id="new-note-pages-<%= item?.resource_id %>"/>
-                                <label for="new-note-link">Link: </label>
-                                <input type="text" name="target_object" placeholder="Link" autocomplete="off" autofocus="true" id="new-note-link-<%= item?.resource_id %>"/>
-                            </div>
-                            <input type="hidden" name="resource_id" value="<%= item.resource_id %>" />
-                            <button class="text-button" type="submit" name="note-submit" onclick="submitNewNote('add-new-note-<%= item?.resource_id %>')" value="" >Submit</button>
-                            <button class="text-button" type="reset" name="note-cancel" onclick="cancelNewNote('add-new-note-<%= item?.resource_id %>')" value="" >Cancel</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
     <!-- ADD NOTE END -->
                     <!-- te dwie linijki są potrzebne żeby object był widziany jako array. Możliwe, że do wywalenia w przyszłości.  -->
                     <% let notesTagsCorelArray = [notes_tags_corel]; %>
@@ -280,23 +282,23 @@
                                     <p class="note-text-area" id="note-text-area-<%= note?.note_id ?? null %>" style="display: flex;"><%= note.note_text %></p>
                                     <textarea class="edit-note-textarea" id="note-text-area-edit-<%= note?.note_id ?? null %>" style="display: none;"><%= note.note_text %></textarea>
                                     <div class="note-bottom-row" style="display: flex;">
-                                        <span class="single-note-targets" id="note-target-object-<%= note?.note_id ?? null %>">
+                                        <span class="single-note-targets target-link" id="note-target-object-<%= note?.note_id ?? null %>">
                                             <% if (note?.target_object) { %>
                                                 Link: <a href="<%= note?.target_object %>" rel="noopener noreferrer" target="_blank"><%= note?.target_object %></a>
                                             <%}%>
                                         </span>
-                                        <span class="single-note-targets" id="note-target-pages-<%= note?.note_id ?? null %>" data-content="<%= note?.target_pages ?? null %>">
+                                        <span class="single-note-targets target-pages" id="note-target-pages-<%= note?.note_id ?? null %>" data-content="<%= note?.target_pages ?? null %>">
                                             <% if (note?.target_pages) { %>
                                                 Pages: <%= note.target_pages %>
                                             <% } %>
                                         </span>
                                     </div>
                                     <div class="note-bottom-row" style="display: none;">
-                                        <span class="single-note-targets" id="note-target-object-edit-<%= note?.note_id ?? null %>">
-                                                Link: <input type="text" value="<%= note?.target_object ?? null %>">
+                                        <span class="single-note-targets target-link" id="note-target-object-edit-<%= note?.note_id ?? null %>">
+                                                Link: <input class="input-link" type="text" value="<%= note?.target_object ?? null %>">
                                         </span>
-                                        <span class="single-note-targets" id="note-target-pages-edit-<%= note?.note_id ?? null %>">
-                                                Pages: <input type="text" value="<%= note.target_pages ?? null  %>">
+                                        <span class="single-note-targets target-pages" id="note-target-pages-edit-<%= note?.note_id ?? null %>">
+                                                Pages: <input class="input-pages" type="text" value="<%= note.target_pages ?? null  %>">
                                         </span>
                                     </div>
 

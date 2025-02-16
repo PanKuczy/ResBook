@@ -89,7 +89,7 @@ function appendInvertedColor (tag) {
 }
 
 function dateFormat(item){
-    if (item.created_at != null){
+    if (item.created_at != null || item.updated_at != null){
     const dateIso = new Date(item.updated_at ?? item.created_at);
     const formattedDate = dateIso.getFullYear() + '-' +
                           String(dateIso.getMonth() + 1).padStart(2, '0') + '-' +
@@ -513,6 +513,32 @@ app.post("/add-note", async (req, res) =>{
         res.status(500).json({ success: false, error: 'Error adding note' });
     }
 });
+
+// EDIT NOTE
+app.put("/edit-note", async (req,res) =>{
+    console.log(req.body);
+    try {
+        const requestNote = req.body;
+        const queryUpdateNote = `
+            UPDATE notes
+            SET note_text = $1, target_object = $2, target_pages = $3, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $4
+            RETURNING updated_at;
+        `;
+        const noteUpdateResult = await db.query(queryUpdateNote,[requestNote.note_text, requestNote.note_link, requestNote.note_pages, requestNote.note_id]);
+        const resultData = noteUpdateResult.rows[0];
+        dateFormat(resultData);
+        console.log(resultData);
+        res.status(200).json({success: true, resultData});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error editing note' });
+    }
+
+});
+
+
+//DELETE
 
 app.post("/delete-note", async (req,res) => {
     try {

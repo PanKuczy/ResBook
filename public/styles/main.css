@@ -275,7 +275,8 @@ margin: 50px 5% 50px 5%;
     justify-content: left;
     background-color: var(--color-graymid);
     /* min-width: 50vw; */
-    width: 100%;
+    /* width: 100%; wylaczylem zeby obcinalo linki. jak wszystkie divy maja w 100% to nie ma zadnego ktory by ograniczal za dlugie obiekty */
+    width: 54vw;
     min-height: 80px;
     margin: 5px;
     padding: 0px 25px;
@@ -428,26 +429,38 @@ margin: 50px 5% 50px 5%;
     margin-top: 0;
     color: var(--color-graylight);
     position: relative;
-    /* display: flex; */
+    width: 100%;
     text-align: left;
-    /* justify-content: space-between; */
-    /* align-items: flex-end;  */
-    /* flex-wrap: wrap;  */
 }
 .note-text-area, .edit-note-textarea{
     margin: 6px 0px;
+    white-space: pre-line;
 }
 .note-bottom-row{
     display: flex;
+    gap: 6px;
     justify-content: space-between;
     margin-bottom: 15px;
+    width: 100%;
 }
 .single-note-targets{
     font-size: 14px;
     padding-top: 5px;
     color: var(--color-beige1);
-    /* margin-left: 10px; */
-    /* align-self: flex-end; */
+}
+.input-link{
+    min-width: 20vw;
+}
+.input-pages{
+    min-width: 5vw;
+}
+.single-note-targets.target-link{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.single-note-targets.target-pages{
+    white-space: nowrap;
 }
 .single-note-targets a{
     text-decoration: underline 0.05em;
