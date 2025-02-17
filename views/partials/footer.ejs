@@ -156,6 +156,7 @@ function invertColor (color) {
 function toggleResource(id, forceDirection) {
         // console.log("Clicked ID: ", id);
         const rollout = document.getElementById("notesbox-" + id);
+        const stripe = document.querySelector(`#resource-id-${id} .right-stripe`);
         let icon = document.getElementById('toggle-notes-icon-' + id);
         // check forced direction
         if (!forceDirection) {
@@ -169,18 +170,22 @@ function toggleResource(id, forceDirection) {
             if (rollout.classList.value == "notes-box hidden" || rollout.classList.value === '') {
                 rollout.classList.remove("hidden");
                 rollout.classList.add("visible");
+                stripe.classList.add('border-bottom-5');
             } else {
                 rollout.classList.add("hidden");
                 rollout.classList.remove("visible");
+                stripe.classList.remove('border-bottom-5');
             }
         } else if (forceDirection === "down") {
             icon.classList.value = 'fa-solid fa-circle-chevron-up';
             rollout.classList.remove("hidden");
             rollout.classList.add("visible");
+            stripe.classList.add('border-bottom-5');
         } else if (forceDirection === "up") {
             icon.classList.value = 'fa-solid fa-circle-chevron-down';
             rollout.classList.add("hidden");
             rollout.classList.remove("visible");
+            stripe.classList.remove('border-bottom-5');
         }
     }
 
