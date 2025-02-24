@@ -354,6 +354,28 @@ margin: 50px 5% 50px 5%;
     flex-direction: column;
     align-items: flex-start;
 }
+/* .book-title * {
+    font-size: inherit;
+    font-weight: inherit;
+} */
+.book-title.editable, .book-subtitle.editable, .year-text.editable, .place-text.editable, .author-text.editable{
+    font-size: small;
+    font-weight: 300;
+}
+.book-title input{
+    font-size: 1.5rem;
+    font-weight: bold;
+    width: 100%;
+}
+.book-subtitle input {
+    font-size: 1.17rem;
+    font-weight: bold;
+    width: 100%;
+}
+.year-text input, .place-text input, .author-text input{
+    font-size: 0.83rem;
+    font-weight: bold;
+}
 .book-authors-date-place-row{
     display: flex;
     justify-content: space-between;
@@ -670,7 +692,7 @@ margin: 50px 5% 50px 5%;
 .tag:not(.editable-tag-row, .editable):hover {
     outline: 3px solid var(--color-beige1);
 }
-.editable{
+.tag.editable{
     cursor: initial;
     margin: 0px 0px 0px 5px;
 }
