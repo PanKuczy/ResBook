@@ -190,15 +190,6 @@ function toggleResource(id, forceDirection) {
     }
 
 
-
-// ONCLICKS ale tylko niektore
-
-    function handler(id) {
-        // console.log(id);
-        document.getElementById("add-" + id).classList.remove("hidden")
-        document.getElementById("add-" + id).classList.add("visible")
-    }
-
 // FILTERING RESOURCES BASIC FUNCTIONS
     let filtered = false;
     // const frontEndResources = <%-// JSON.stringify(resources) %>; //to chyba jednak nie bedzie potrzbene jak i cale zbieranie zasobow. niech ta funkcja opreuje tylko na DOM id'sach
@@ -439,9 +430,57 @@ function toggleResource(id, forceDirection) {
     }
 
 
+// ADD NEW RESOURCE
+
+
+// EDIT RESOURCE
+
+function editResourceToggle(button, id){
+    console.log(button, id);
+    const buttonName = button.getAttribute('name');
+    const resource = document.querySelector(`#resource-id-${id}`);
+    const heading = resource.querySelector('.book-heading');
+    const headingEdit = resource.querySelector('.book-heading.editable');
+    const submitButton = resource.querySelector('.edit-submit-button');
+    const cancelButton = resource.querySelector('.edit-cancel-button');
+
+    // check if edit
+    if(buttonName == 'edit-resource') {
+        console.log("edit toggle");
+        
+    } else if (buttonName == 'edit-resource-cancel'){
+        console.log("cancel request");
+    } else if (buttonName == 'edit-resource-submit'){
+        console.log("edit submit");
+    }
+
+    //toggle buttons and visibility
+    if (heading.style.display == 'flex') {
+        console.log("submit and cancel button enabled");
+        submitButton.disabled = false;
+        cancelButton.disabled = false;
+        heading.style.display = 'none';
+        headingEdit.style.display = 'flex';
+        //set height of textarea input to fit existing text
+        // textAreaEdit.style.height = (textAreaEdit.scrollHeight) + 'px';
+    } else {
+        console.log("submit and cancel button disabled");
+        submitButton.disabled = true;
+        cancelButton.disabled = true;
+        heading.style.display = 'flex';
+        headingEdit.style.display = 'none';
+    }
+
+}
 
 
 // ADD NEW NOTE
+    // rollout toggle
+    function newNoteRolloutToggle(id) {
+            document.getElementById("add-new-note-" + id).classList.remove("hidden");
+            document.getElementById("add-new-note-" + id).classList.add("visible");
+        }
+
     // Cancel new note form
     function cancelNewNote(id){
         document.getElementById(id).classList.add("hidden");
@@ -982,7 +1021,7 @@ function toggleResource(id, forceDirection) {
                         </button>
                         <button 
                             disabled
-                            class="icon-button tooltip-container edit-note-submit-button"
+                            class="icon-button tooltip-container edit-submit-button"
                             type="button"
                             name="edit-note-submit" 
                             onclick="editNoteToggle(this, ${newNote.note_id})">
@@ -990,7 +1029,7 @@ function toggleResource(id, forceDirection) {
                         </button>
                         <button 
                             disabled
-                            class="icon-button tooltip-container edit-note-cancel-button" 
+                            class="icon-button tooltip-container edit-cancel-button" 
                             type="button" 
                             name="edit-note-cancel" 
                             onclick="editNoteToggle(this, ${newNote.note_id})">
@@ -1098,8 +1137,8 @@ function toggleResource(id, forceDirection) {
 //EDIT NOTE TOGGLE WITH AXIOS ROUTE
     function editNoteToggle(button, id){
         const noteTextContainerChildren = [...document.querySelector(`#note-text-${id}`).children];
-        const submitButton = document.querySelector(`#note-id-${id} .edit-note-submit-button`);
-        const cancelButton = document.querySelector(`#note-id-${id} .edit-note-cancel-button`);
+        const submitButton = document.querySelector(`#note-id-${id} .edit-submit-button`);
+        const cancelButton = document.querySelector(`#note-id-${id} .edit-cancel-button`);
         const textArea = document.querySelector(`#note-text-area-${id}`);
         const textAreaEdit = document.querySelector(`#note-text-area-edit-${id}`);
         const link = document.querySelector(`#note-target-object-${id}`);
@@ -1174,20 +1213,27 @@ function toggleResource(id, forceDirection) {
         }
 
         //toggle buttons
+        if (textArea.style.display == 'flex') {
+            // console.log("submit and cancel button enabled");
+            submitButton.disabled = false;
+            cancelButton.disabled = false;
+            //set height of textarea input to fit existing text
+            textAreaEdit.style.height = (textAreaEdit.scrollHeight) + 'px';
+        } else {
+            // console.log("submit and cancel button disabled");
+            submitButton.disabled = true;
+            cancelButton.disabled = true;
+        }
+        // toggle elements visibility
         noteTextContainerChildren.forEach(child => {
             if (child.style.display == 'flex') {
                 child.style.display = 'none';
-                submitButton.disabled = true;
-                cancelButton.disabled = true;
             } else {
                 child.style.display = 'flex';
-                submitButton.disabled = false;
-                cancelButton.disabled = false;
-                //set height of textarea input to fit existing text
-                textAreaEdit.style.height = (textAreaEdit.scrollHeight) + 'px';
             }
         });
-        //check if cancel - moved to end to the sake of not loosing \n line breaks
+
+        //check if cancel - moved to end for the sake of not loosing \n line breaks
         if (button.getAttribute('name') == "edit-note-cancel") {
             textAreaEdit.value = textArea.innerText;
             linkEdit.querySelector('input').value = link.querySelector('a')?.innerText ?? null;
