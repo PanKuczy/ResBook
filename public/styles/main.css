@@ -293,12 +293,10 @@ margin: 50px 5% 50px 5%;
     border-radius: 5px;
     border-color: var(--color-beige1);
     outline: 1px solid none;
-    /* overflow: visible; */
 }
 .user-book:hover{
     border-color: var(--color-hover);
     outline: 1px solid var(--color-hover);
-
 }
 
 .user-book.dragover{
@@ -319,10 +317,6 @@ margin: 50px 5% 50px 5%;
     pointer-events: none;
 }
 
-.year-text{
-    float: inline-end;
-}
-
 .border-bottom-5{
     border-bottom: 4px solid var(--color-beige1);
 }
@@ -332,7 +326,7 @@ margin: 50px 5% 50px 5%;
     flex-direction: row;
     margin-bottom: -4px;
 }
-.book-heading:hover{
+.book-heading:not(.editable):hover{
     cursor: pointer;
 }
 
@@ -358,35 +352,65 @@ margin: 50px 5% 50px 5%;
     font-size: inherit;
     font-weight: inherit;
 } */
-.book-title.editable, .book-subtitle.editable, .year-text.editable, .place-text.editable, .author-text.editable{
+.book-title.editable, .book-subtitle.editable, .year-text.editable, .place-text.editable, .author-text.editable, .isbn-text.editable{
     font-size: small;
     font-weight: 300;
 }
-.book-title input{
+.author-text.editable, .place-text.editable{
+    width: 100%;
+}
+.year-text.editable, .isbn-text.editable{
+    width: calc(50% - 6px);
+}
+.book-title textarea{
     font-size: 1.5rem;
     font-weight: bold;
-    width: 100%;
+    width: calc(100% - 4px);
+    resize: none;
 }
-.book-subtitle input {
+.book-subtitle textarea {
     font-size: 1.17rem;
     font-weight: bold;
-    width: 100%;
+    width: calc(100% - 4px);
+    resize: none;
 }
-.year-text input, .place-text input, .author-text input{
+.author-text textarea {
+    resize: none;
+    width: calc(100% - 4px);
+}
+.year-text input, .place-text input, .isbn-text input {
+    width: calc(100% - 3px);
+}
+.year-text input, .place-text input, .author-text textarea, .isbn-text input{
     font-size: 0.83rem;
     font-weight: bold;
+
 }
 .book-authors-date-place-row{
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    /* align-items: flex-start; */
+    flex-wrap: wrap;
+    gap: 12px;
 }
-.authors-date-place-group{
+.authors-group{
     display: flex;
     gap: 2pt;
     flex-wrap: wrap;
 }
-.authors-date-place-group h5{
+.authors-group.editable{
+    flex: 1 1 calc(60% - 6px);
+}
+.date-place-group{
+    display: flex;
+    column-gap: 2pt;
+    flex-wrap: wrap;
+}
+.date-place-group.editable{
+    flex: 1 1 calc(40% - 6px);
+    column-gap: 12px;
+}
+.authors-group h5, .date-place-group h5{
     margin-top: 5px;
     margin-bottom: 5px;
 }
@@ -400,13 +424,50 @@ margin: 50px 5% 50px 5%;
     height: 120px;
     background-color: rgb(35, 35, 35);
     overflow: hidden;
-    align-content: center;
+    /* align-content: center; */
 }
 .book-cover img{
     align-self: center;
     width: 100%;
     height: auto;
 }
+/* .upload-cover{
+    display: flex;
+} */
+
+.custom-file-input {
+    color: transparent;
+    width: 90px;
+    border-radius: 3px;
+}
+.custom-file-input::-webkit-file-upload-button {
+    visibility: hidden;
+}
+.custom-file-input::before {
+    content: 'upload cover';
+    color: var(--color-graydark);
+    display: inline-block;
+    background-color: var(--color-beige1);
+    padding: 8px 8px 8px 7px;
+    outline: none;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: small;
+}
+.custom-file-input:hover::before {
+    /* border-color: black; */
+    background-color: var(--color-hover);
+}
+.custom-file-input:active {
+    outline: 0;
+}
+.custom-file-input:active::before {
+    background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9); 
+}
+
+
 
 .book-categories-row {
     display: flex;
@@ -439,6 +500,7 @@ margin: 50px 5% 50px 5%;
     bottom: 3px;
 }
 
+/* NOTES */
 .notes-box{
     padding: 25px;
     margin: 0px -25px;

@@ -18,11 +18,11 @@
             <% for(let item of resources){%>
                 <% const resourceIndex = resources.indexOf(item); %>
     <!-- BOOK -->
-            <div class="user-book deletable-item visible" id="resource-id-<%= item?.resource_id %>" data-id="<%= item?.resource_id %>">
+            <div class="user-book deletable-item visible" id="resource-id-<%= item?.resource_id %>" data-id="<%= item?.resource_id %>" data-type="<%= item?.resource_type ?? null %>" data-number="<%= item?.isbn ?? item?.doi ?? null %>">
                 <a class="book-heading" style="display: flex;" onclick="filterResources(null, null, <%= item?.resource_id %>)">
 
                     <div class="book-cover">
-                        <img src="<%= item?.cover_url ?? null %>">
+                        <img src="<%= item?.cover_url ?? null %>" draggable="false">
                     </div>
                     <div class="book-heading-text">
                         <div class="book-categories-row"> <!-- CATEGORIES -->
@@ -34,35 +34,57 @@
                         <h2 class="book-title"><%= item.resource_title %></h2>
                         <h3 class="book-subtitle"><%= item?.subtitle ?? null %></h3>
                         <div class="book-authors-date-place-row">
-                            <div class="authors-date-place-group"><h5 class="author-text">By </h5><h5 class="author-text"><%= item.authors %></h5></div>
-                            <div class="authors-date-place-group">
-                                <h5 class="year-text"><%= item?.publication_year ?? null -%></h5><h5 class="place-text"><%if(item?.place){%>,<% } %>
-                                <%- item?.place ?? null -%></h5>
+                            <div class="authors-group"><h5 class="author-text">By </h5><h5 class="author-text authors-content"><%= item.authors %></h5></div>
+                            <div class="date-place-group">
+                                <h5 class="year-text"><%= item?.publication_year ?? null -%></h5>
+                                <h5 class="comma"><%if(item?.publication_year && item?.place){%>,<% } %></h5>
+                                <h5 class="place-text"><%- item?.place ?? null -%></h5>
                             </div>
                         </div>
                     </div>
                     <div class="right-stripe"></div>
                 </a>
                 <!-- editable -->
-                <div class="book-heading editable" style="display: none;">
+                <form class="book-heading editable" style="display: none;">
+                    <div>
+                        <div class="book-cover editable">
+                            <img src="<%= item?.cover_url ?? null %>" draggable="false">
+                        </div>
+                        <input class="upload-cover custom-file-input" type="file" accept="image/*">
 
-                    <div class="book-cover">
-                        <img src="<%= item?.cover_url ?? null %>">
                     </div>
                     <div class="book-heading-text">
-                        
-                        <h2 class="book-title editable">Title: <input value="<%= item.resource_title %>"><h2>
-                        <h3 class="book-subtitle editable">Subtitle: <input value="<%= item?.subtitle ?? null %>"></h3>
+                        <h2 class="book-title editable">Title: <textarea rows="2"><%= item.resource_title %></textarea><h2>
+                        <h3 class="book-subtitle editable">Subtitle: <textarea rows="2"><%= item?.subtitle ?? null %></textarea></h3>
                         <div class="book-authors-date-place-row">
-                            <div class="authors-date-place-group"><h5 class="author-text editable">Authors: <input value="<%= item.authors %>"></h5></div>
-                            <div class="authors-date-place-group">
+                            <div class="authors-group editable"><h5 class="author-text editable">Authors: <textarea rows="4"><%= item.authors %></textarea></h5></div>
+                            <div class="date-place-group editable">
+                                <div class="resource-type-row">
+                                    <h5>Resource type: 
+                                        <% if (item?.resource_type == 'ISBN') {%>
+                                            <input type="radio" name="res-type" value="ISBN" checked />
+                                            <label for="ISBN">Book</label>
+                                            <input type="radio" name="res-type" value="DOI" />
+                                            <label for="DOI">Article</label>
+                                    </h5>
+                                </div>
+                                <h5 class="isbn-text editable">ISBN/DOI number:<input name="isbn-doi-number" id="resource-<%= item?.resource_id %>-isbn-doi" value="<%= item?.isbn ?? null %>"></h5>
+                                        <% } else if (item?.resource_type == 'DOI') {%>
+                                            <input type="radio" name="res-type" value="ISBN"/>
+                                            <label for="ISBN">Book</label>
+                                            <input type="radio" name="res-type" value="DOI" checked />
+                                            <label for="DOI">Article</label>
+                                    </h5>
+                                </div>
+                                <h5 class="isbn-text editable">ISBN/DOI:<input name="isbn-doi-number" id="resource-<%= item?.resource_id %>-isbn-doi" value="<%= item?.doi ?? null %>"></h5>
+                                <% } %>
+                                        
                                 <h5 class="year-text editable">Year: <input value="<%= item?.publication_year ?? null -%>"></h5><h5 class="place-text editable">Place: <input value="<%- item?.place ?? null -%>"></h5>
                             </div>
                         </div>
                     </div>
                     <div class="right-stripe"></div>
-
-                </div>
+                </form>
 
                 <div class="book-heading-buttons">
                     <button 

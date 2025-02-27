@@ -253,7 +253,7 @@ async function getAllData () {
             dateFormat(note);
         })};
     });
-    // console.log(util.inspect(data, { depth: null, colors: true }));
+    console.log(util.inspect(data, { depth: null, colors: true }));
     userResourcesFull = data;
     return data;
 }
@@ -392,6 +392,19 @@ app.post("/strip-category", async (req,res) =>{
         res.status(500).json({ success: false, error: 'Error assigning category' });
     }
 });
+
+
+//EDIT RESOURCE
+app.put("/edit-resource", async (req, res) => {
+    console.log(req.body);
+
+    // save image to server and add url to data
+
+    // pg
+    
+    res.status(200).json({success: true});
+});
+
 
 // ADD TAG
 app.post("/add-new-tag", async (req,res) =>{
