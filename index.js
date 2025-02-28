@@ -252,7 +252,7 @@ async function getAllData () {
             dateFormat(note);
         })};
     });
-    // console.log(util.inspect(data, { depth: null, colors: true }));
+    console.log(util.inspect(data, { depth: null, colors: true }));
     userResourcesFull = data;
     return data;
 }
