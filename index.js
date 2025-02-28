@@ -1,4 +1,5 @@
 import express from "express";
+import fs from "fs";
 import pg from "pg";
 import bodyParser from "body-parser";
 import ejs from "ejs";
@@ -18,7 +19,7 @@ const db = new pg.Client({
     database: "resbook",
     port: 5432
 });
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 let userState = "logged";
 let currentUserId = 1;
@@ -144,8 +145,7 @@ async function getAllData () {
         r.title AS resource_title,
         r.authors,
         r.resource_type,
-        r.isbn,
-        r.doi,
+        r.reference_number,
         r.created_at AS resource_created_at,
         r.subtitle,
         r.place,
@@ -222,8 +222,7 @@ async function getAllData () {
         categories: resultUserCategories.rows,
         tags: resultUserTags.rows,
         notes: resultUserNotes.rows,
-        notes_tags_corel: resultNotesTagsCorelation.rows,
-        showElement: false
+        notes_tags_corel: resultNotesTagsCorelation.rows
     };
     globalHelperData = {
         notesTagsCorel: resultNotesTagsCorelation.rows,
@@ -253,7 +252,7 @@ async function getAllData () {
             dateFormat(note);
         })};
     });
-    console.log(util.inspect(data, { depth: null, colors: true }));
+    // console.log(util.inspect(data, { depth: null, colors: true }));
     userResourcesFull = data;
     return data;
 }
@@ -396,13 +395,39 @@ app.post("/strip-category", async (req,res) =>{
 
 //EDIT RESOURCE
 app.put("/edit-resource", async (req, res) => {
-    console.log(req.body);
-
+    // console.log(req.body);
     // save image to server and add url to data
+    let coverPath = null;
+    if (req.body.cover_base64) {
+        // Remove the data URI prefix (e.g., "data:image/jpeg;base64,")
+        const base64Data = req.body.cover_base64.replace(/^data:image\/\w+;base64,/, '');
 
-    // pg
-    
-    res.status(200).json({success: true});
+        // Convert the base64 string back into a binary buffer
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        // Write the buffer to a file (e.g., "image.jpg")
+        const coverPathBackEnd = `public/assets/covers/res_${req.body.resource_id}_cover.jpg`;
+        coverPath = `assets/covers/res_${req.body.resource_id}_cover.jpg`;
+        fs.writeFile(coverPathBackEnd, buffer, (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error saving cover image.');
+            }
+        });
+    }
+    // postgres
+    try {
+        const queryEditRes = `
+            UPDATE resources
+            SET title = $1, subtitle = $2, authors = $3, resource_type = $4, place = $5, publication_year = $6, reference_number = $7, cover_url = COALESCE($8, cover_url)
+            WHERE id = $9
+        `;
+        await db.query(queryEditRes,[req.body.resource_title, req.body.resource_subtitle, req.body.authors, req.body.resource_type, req.body.place, req.body.publication_year, req.body.reference_number, coverPath, req.body.resource_id]);
+        res.status(200).json({success: true});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error editing resource' });
+    }
 });
 
 

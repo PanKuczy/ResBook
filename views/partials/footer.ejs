@@ -434,7 +434,6 @@ function toggleResource(id, forceDirection) {
 
 
 // EDIT RESOURCE
-
     function editResourceToggle(button, id){
         // console.log(button, id);
         const buttonName = button.getAttribute('name');
@@ -463,14 +462,27 @@ function toggleResource(id, forceDirection) {
         const newYear = headingEdit.querySelector('.year-text.editable input');
         const newPlace = headingEdit.querySelector('.place-text.editable input');
 
-        // check if edit, cancel or submit
-        if(buttonName == 'edit-resource') {
-            console.log("edit toggle");
-            
-        } else if (buttonName == 'edit-resource-cancel'){
-            console.log("edit cancel");
-        } else if (buttonName == 'edit-resource-submit'){
-            console.log("edit submit");
+        //clean up helper function
+        function cleanUp () {
+            newCover.setAttribute('src', existingCover.getAttribute('src')); 
+            newCover.setAttribute('upload-flag', false);
+            headingEdit.querySelector(`input[value="${existingType}"]`).checked = true; //revert 'type' radio input selection
+            newNumber.value = existingNumber;
+            newTitle.value = existingTitle.innerText;
+            newSubtitle.value = existingSubTitle.innerText;
+            newAuthors.value = existingAuthors.innerText;
+            newYear.value = existingYear.innerText;
+            newPlace.value = existingPlace.innerText;
+            // console.log("submit and cancel button disabled");
+            submitButton.disabled = true;
+            cancelButton.disabled = true;
+            heading.style.display = 'flex';
+            headingEdit.style.display = 'none';
+        }
+
+        // check if submit
+        if (buttonName == 'edit-resource-submit'){
+            // console.log("edit submit");
             //check if required fields are not empty
             if (!newTitle.value || !newAuthors.value) {
                 alert("title and authors fields can't be empty");
@@ -482,28 +494,22 @@ function toggleResource(id, forceDirection) {
                     resource_subtitle: newSubtitle.value,
                     authors: newAuthors.value,
                     resource_type: newType.value,
+                    reference_number: newNumber.value,
                     place: newPlace.value,
-                    cover_base64: newCover.getAttribute('src'),
                     publication_year: newYear.value
                 };
-                if (newType.value == 'ISBN') {
-                    data.isbn = newNumber.value;
-                } else if (newType.value == 'DOI') {
-                    data.doi = newNumber.value;
+                if (newCover.getAttribute('upload-flag')){
+                    data.cover_base64 = newCover.getAttribute('src');
                 }
                 //axios
                 axios.put("/edit-resource", data)
                 .then(response => {
                     if (response.data.success) {
-                        console.log("edit resource success", response.data);
-
+                        // console.log("edit resource success", response.data);
                         //DOM operations
-                        console.log("new cov", newCover);
                         existingCover.setAttribute('src', newCover.getAttribute('src'));
-                        console.log("existing cover:", existingCover);
                         resource.setAttribute('data-type', newType.value);
                         existingType = newType.value;
-                        console.log(newType);
                         newType.checked = true;
                         resource.setAttribute('data-number', newNumber.value);
                         existingNumber = newNumber.value;
@@ -517,6 +523,7 @@ function toggleResource(id, forceDirection) {
                         } else {
                             comma.innerText = "";
                         }
+                        cleanUp();
                     };
                 })
                 .catch(error => {
@@ -529,30 +536,13 @@ function toggleResource(id, forceDirection) {
 
         //toggle buttons and visibility and cleanup
         if (heading.style.display == 'flex') {
-            console.log("submit and cancel button enabled");
+            // console.log("submit and cancel button enabled");
             submitButton.disabled = false;
             cancelButton.disabled = false;
             heading.style.display = 'none';
             headingEdit.style.display = 'flex';
-        } else {
-            //clean up
-            setTimeout(() => {
-                    newCover.setAttribute('src', existingCover.getAttribute('src')); 
-                },300
-            ); //this was neccessary: the clean up was triggered before the response from the server
-            headingEdit.querySelector(`input[value="${existingType}"]`).checked = true; //revert 'type' radio input selection
-            newNumber.value = existingNumber;
-            newTitle.value = existingTitle.innerText;
-            newSubtitle.value = existingSubTitle.innerText;
-            newAuthors.value = existingAuthors.innerText;
-            newYear.value = existingYear.innerText;
-            newPlace.value = existingPlace.innerText;
-            //buttons and display
-            console.log("submit and cancel button disabled");
-            submitButton.disabled = true;
-            cancelButton.disabled = true;
-            heading.style.display = 'flex';
-            headingEdit.style.display = 'none';
+        } else if (buttonName != 'edit-resource-submit') {
+            cleanUp();
         }
 
     }
@@ -579,14 +569,17 @@ function toggleResource(id, forceDirection) {
         reader.onload = e => {
             const img = new Image();
             img.onload = () => {
-                const targetWidth = 90;
-                const targetHeight = 120;
+                const targetWidth = 180;
+                const targetHeight = 240;
 
                 // Create a canvas with target dimensions
                 const canvas = document.createElement('canvas');
                 canvas.width = targetWidth;
                 canvas.height = targetHeight;
                 const ctx = canvas.getContext('2d');
+                // Use high quality scaling settings
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
 
                 // Calculate scale factor to ensure the image covers the canvas entirely
                 const scale = Math.max(targetWidth / img.width, targetHeight / img.height);
@@ -607,6 +600,7 @@ function toggleResource(id, forceDirection) {
                 const previewImg = event.target.parentElement.querySelector('.book-cover img');
                 if (previewImg) {
                     previewImg.src = dataUrl;
+                    previewImg.setAttribute('upload-flag', true);
                 }
 
                 // Store the generated preview in a hidden input within the same form for final submission
@@ -627,7 +621,6 @@ function toggleResource(id, forceDirection) {
 
     // Initial attachment on page load
     attachCoverUploadListeners();
-
 
 
 // ADD NEW NOTE

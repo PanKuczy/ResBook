@@ -18,7 +18,7 @@
             <% for(let item of resources){%>
                 <% const resourceIndex = resources.indexOf(item); %>
     <!-- BOOK -->
-            <div class="user-book deletable-item visible" id="resource-id-<%= item?.resource_id %>" data-id="<%= item?.resource_id %>" data-type="<%= item?.resource_type ?? null %>" data-number="<%= item?.isbn ?? item?.doi ?? null %>">
+            <div class="user-book deletable-item visible" id="resource-id-<%= item?.resource_id %>" data-id="<%= item?.resource_id %>" data-type="<%= item?.resource_type ?? null %>" data-number="<%= item?.reference_number ?? null %>">
                 <a class="book-heading" style="display: flex;" onclick="filterResources(null, null, <%= item?.resource_id %>)">
 
                     <div class="book-cover">
@@ -68,7 +68,7 @@
                                             <label for="DOI">Article</label>
                                     </h5>
                                 </div>
-                                <h5 class="isbn-text editable">ISBN/DOI number:<input name="isbn-doi-number" id="resource-<%= item?.resource_id %>-isbn-doi" value="<%= item?.isbn ?? null %>"></h5>
+                                
                                         <% } else if (item?.resource_type == 'DOI') {%>
                                             <input type="radio" name="res-type" value="ISBN"/>
                                             <label for="ISBN">Book</label>
@@ -76,9 +76,9 @@
                                             <label for="DOI">Article</label>
                                     </h5>
                                 </div>
-                                <h5 class="isbn-text editable">ISBN/DOI:<input name="isbn-doi-number" id="resource-<%= item?.resource_id %>-isbn-doi" value="<%= item?.doi ?? null %>"></h5>
+
                                 <% } %>
-                                        
+                                <h5 class="isbn-text editable">ISBN/DOI number:<input name="isbn-doi-number" id="resource-<%= item?.resource_id %>-isbn-doi" value="<%= item?.reference_number ?? null %>"></h5>  
                                 <h5 class="year-text editable">Year: <input value="<%= item?.publication_year ?? null -%>"></h5><h5 class="place-text editable">Place: <input value="<%- item?.place ?? null -%>"></h5>
                             </div>
                         </div>
