@@ -79,6 +79,14 @@
                                     </h5>
                                 </div>
 
+                                <% } else {%>
+                                    <input type="radio" name="res-type" value="ISBN"/>
+                                    <label for="ISBN">Book</label>
+                                    <input type="radio" name="res-type" value="DOI"/>
+                                    <label for="DOI">Article</label>
+                                    </h5>
+                                </div>
+
                                 <% } %>
                                 <h5 class="isbn-text editable">ISBN/DOI number:<input name="isbn-doi-number" id="resource-<%= item?.resource_id %>-isbn-doi" value="<%= item?.reference_number ?? null %>"></h5>  
                                 <h5 class="year-text editable">Year: <input value="<%= item?.publication_year ?? null -%>"></h5><h5 class="place-text editable">Place: <input value="<%- item?.place ?? null -%>"></h5>

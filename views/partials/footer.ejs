@@ -1472,7 +1472,7 @@ function confirmDelete() {
                 setTimeout(() => {
                     itemElement.remove();
                 }, 300);
-            } else if (route == "/delete-tag") { //animation and delete for notes
+            } else if (route == "/delete-tag") { //animation and delete for tags
                 const tagElements = document.querySelectorAll(`.single-note-tags[data-id="${itemId}"]`);
                 // const tagElements = [...allTagElements].filter((tag) => tag.getAttribute('data-id') == itemId);
                 // console.log(tagElements);
@@ -1486,6 +1486,11 @@ function confirmDelete() {
                         element.remove();
                     });
                 }, 500);
+            } else if (route == "/delete-resource") { //animation and delete for notes
+                itemElement.classList.add('fade-out');
+                setTimeout(() => {
+                    itemElement.remove();
+                }, 300);
             }
         }
     })

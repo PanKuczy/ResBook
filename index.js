@@ -141,6 +141,7 @@ async function getAllData () {
     const resultUsers = await db.query("select * from users where id=($1)", [currentUserId]);
     const superQuery = `
     SELECT 
+        r.user_id,
         r.id AS resource_id,
         r.title AS resource_title,
         r.authors,
@@ -169,10 +170,9 @@ async function getAllData () {
             )
         ) AS notes
     FROM resources r
-    JOIN user_resources ur ON r.id = ur.resource_id
     LEFT JOIN resource_categories rc ON r.id = rc.resource_id
     LEFT JOIN categories c ON rc.category_id = c.id
-    LEFT JOIN notes n ON n.resource_id = r.id AND n.user_id = ur.user_id
+    LEFT JOIN notes n ON n.resource_id = r.id AND n.user_id = r.user_id
     LEFT JOIN (
         SELECT 
             nt.note_id, 
@@ -181,7 +181,7 @@ async function getAllData () {
         JOIN tags t ON nt.tag_id = t.id
         GROUP BY nt.note_id
     ) nt ON n.id = nt.note_id
-    WHERE ur.user_id = $1
+    WHERE r.user_id = $1
     GROUP BY r.id;
     `;
 
@@ -554,7 +554,7 @@ app.post("/add-note", async (req, res) =>{
 
 // EDIT NOTE
 app.put("/edit-note", async (req,res) =>{
-    console.log(req.body);
+    // console.log(req.body);
     try {
         const requestNote = req.body;
         const queryUpdateNote = `
@@ -566,7 +566,7 @@ app.put("/edit-note", async (req,res) =>{
         const noteUpdateResult = await db.query(queryUpdateNote,[requestNote.note_text, requestNote.note_link, requestNote.note_pages, requestNote.note_id]);
         const resultData = noteUpdateResult.rows[0];
         dateFormat(resultData);
-        console.log(resultData);
+        // console.log(resultData);
         res.status(200).json({success: true, resultData});
     } catch (err) {
         console.error(err);
@@ -577,6 +577,30 @@ app.put("/edit-note", async (req,res) =>{
 
 
 //DELETE
+
+app.post("/delete-resource", async (req,res) => {
+    console.log("Delete resource request: ", req.body);
+    try {
+        const queryDeleteResource = `
+            DELETE
+            FROM resources
+            WHERE id=$1
+        `;
+        await db.query(queryDeleteResource, [req.body.resource_id]);
+        // remove cover if exists
+        const coverPathBackEnd = `public/assets/covers/res_${req.body.resource_id}_cover.jpg`;
+        fs.rm(coverPathBackEnd, (err) => {
+            if (err) {
+                console.log("No cover found");
+            }
+        });
+        res.status(200).json({success: true});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error deleting resource' });
+      }
+
+});
 
 app.post("/delete-note", async (req,res) => {
     try {
