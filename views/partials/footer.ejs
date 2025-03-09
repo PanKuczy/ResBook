@@ -81,9 +81,9 @@ function invertColor (color) {
         .sort((a, b) => a.querySelector('li').getAttribute('data-name').localeCompare(b.querySelector('li').getAttribute('data-name'), undefined, {sensitivity: 'base'}))
         .forEach(node => editableList.appendChild(node));
 
-        //bookheadings
-        const bookHeadings = document.getElementsByClassName('book-categories-row');
-        for (const item of bookHeadings) {
+        //resourceheadings
+        const resourceHeadings = document.getElementsByClassName('resource-categories-row');
+        for (const item of resourceHeadings) {
             [...item.children]
             .sort((a, b) => a.innerText.localeCompare(b.innerText, undefined, {sensitivity: 'base'}))
             .forEach(node => item.appendChild(node));
@@ -198,14 +198,14 @@ function toggleResource(id, forceDirection) {
     let filteredResourcesDomIds = [];
 
     // zebranie wszystkich ksiazek
-    const userBooks = document.getElementsByClassName('user-book');
+    const userResources = document.getElementsByClassName('user-resource');
     // zebranie DOMid wszystkich ksiazek
-    let userBooksDomIds = [];
-    for (let book of userBooks) {
-        userBooksDomIds.push(book.id);
+    let userResourcesDomIds = [];
+    for (let resource of userResources) {
+        userResourcesDomIds.push(resource.id);
     };
-    // console.log("User books DOM IDs: ", userBooksDomIds);
-    filteredResourcesDomIds = [...userBooksDomIds];
+    // console.log("User resources DOM IDs: ", userResourcesDomIds);
+    filteredResourcesDomIds = [...userResourcesDomIds];
     // console.log("filteredResourcesDomIds: ", filteredResourcesDomIds);
 
     function filterResources(add, remove, isolate) {
@@ -229,13 +229,13 @@ function toggleResource(id, forceDirection) {
                 }
             }
 
-        let booksToHide = userBooksDomIds.filter(domId => {
+        let resourcesToHide = userResourcesDomIds.filter(domId => {
             return !filteredResourcesDomIds.includes(domId);
         });
-        // console.log("Books DOM IDs to hide: ", booksToHide);
-        for (let bookId of booksToHide) {
-            document.getElementById(bookId).classList.add("hidden")
-            document.getElementById(bookId).classList.remove("visible")
+        // console.log("Resources DOM IDs to hide: ", resourcesToHide);
+        for (let resourceId of resourcesToHide) {
+            document.getElementById(resourceId).classList.add("hidden")
+            document.getElementById(resourceId).classList.remove("visible")
         }
     }
 
@@ -403,10 +403,10 @@ function toggleResource(id, forceDirection) {
                                 const inputElement = editableListItem.querySelector('input');
                                 inputElement.setAttribute('value', formItem.name);
                             }
-                            // books
-                            const booksCategories = document.getElementsByClassName(`book-with-category-${formItem.id}`);
-                            if (booksCategories) {
-                                for (const classInstance of booksCategories) {
+                            // resources
+                            const resourcesCategories = document.getElementsByClassName(`resource-with-category-${formItem.id}`);
+                            if (resourcesCategories) {
+                                for (const classInstance of resourcesCategories) {
                                     classInstance.innerHTML = formItem.name;
                                 }
                             }
@@ -438,16 +438,21 @@ function toggleResource(id, forceDirection) {
         // console.log(button, id);
         const buttonName = button.getAttribute('name');
         const resource = document.querySelector(`#resource-id-${id}`);
-        const heading = resource.querySelector('.book-heading:not(.editable)');
-        const headingEdit = resource.querySelector('.book-heading.editable');
+        const heading = resource.querySelector('.resource-heading:not(.editable)');
+        const headingEdit = resource.querySelector('.resource-heading.editable');
         const submitButton = resource.querySelector('.edit-submit-button');
         const cancelButton = resource.querySelector('.edit-cancel-button');
         //existing data
         const existingCover = heading.querySelector('img');
         let existingType = resource.getAttribute('data-type');
         let existingNumber = resource.getAttribute('data-number');
-        const existingTitle = heading.querySelector('.book-title');
-        const existingSubTitle = heading.querySelector('.book-subtitle');
+        const existingTypeClass = resource.classList.contains('book')
+            ? 'book'
+            : resource.classList.contains('article')
+                ? 'article'
+                : null;
+        const existingTitle = heading.querySelector('.resource-title');
+        const existingSubTitle = heading.querySelector('.resource-subtitle');
         const existingAuthors = heading.querySelector('.authors-content');
         const existingYear = heading.querySelector('.year-text');
         const existingPlace = heading.querySelector('.place-text');
@@ -456,8 +461,8 @@ function toggleResource(id, forceDirection) {
         const newCover = headingEdit.querySelector('img');
         const newType = headingEdit.querySelector('input[name="res-type"]:checked');
         const newNumber = headingEdit.querySelector(`#resource-${id}-isbn-doi`);
-        const newTitle = headingEdit.querySelector('.book-title.editable textarea');
-        const newSubtitle = headingEdit.querySelector('.book-subtitle.editable textarea');
+        const newTitle = headingEdit.querySelector('.resource-title.editable textarea');
+        const newSubtitle = headingEdit.querySelector('.resource-subtitle.editable textarea');
         const newAuthors = headingEdit.querySelector('.author-text.editable textarea');
         const newYear = headingEdit.querySelector('.year-text.editable input');
         const newPlace = headingEdit.querySelector('.place-text.editable input');
@@ -513,6 +518,17 @@ function toggleResource(id, forceDirection) {
                         newType.checked = true;
                         resource.setAttribute('data-number', newNumber.value);
                         existingNumber = newNumber.value;
+                        if (newType.value == 'ISBN') {
+                            resource.classList.remove('article');
+                            resource.classList.add('book');
+                            resource.querySelector('.right-stripe').classList.remove('article');
+                            resource.querySelector('.right-stripe').classList.add('book');
+                        } else if (newType.value == 'DOI') {
+                            resource.classList.remove('book');
+                            resource.classList.add('article');
+                            resource.querySelector('.right-stripe').classList.remove('book');
+                            resource.querySelector('.right-stripe').classList.add('article');
+                        }
                         existingTitle.innerText = newTitle.value;
                         existingSubTitle.innerText = newSubtitle.value;
                         existingAuthors.innerText = newAuthors.value;
@@ -596,8 +612,8 @@ function toggleResource(id, forceDirection) {
                 // Convert the canvas content to a data URL (using JPEG in this example)
                 const dataUrl = canvas.toDataURL('image/jpeg');
 
-                // Update the preview image (assuming .book-cover > img is in the same container)
-                const previewImg = event.target.parentElement.querySelector('.book-cover img');
+                // Update the preview image (assuming .resource-cover > img is in the same container)
+                const previewImg = event.target.parentElement.querySelector('.resource-cover img');
                 if (previewImg) {
                     previewImg.src = dataUrl;
                     previewImg.setAttribute('upload-flag', true);
@@ -1294,7 +1310,7 @@ function toggleResource(id, forceDirection) {
         const linkEdit = document.querySelector(`#note-target-object-edit-${id}`);
         const pages = document.querySelector(`#note-target-pages-${id}`);
         const pagesEdit = document.querySelector(`#note-target-pages-edit-${id}`);
-        const resource = document.querySelector(`#note-id-${id}`).closest('.user-book');
+        const resource = document.querySelector(`#note-id-${id}`).closest('.user-resource');
         // console.log(noteTextContainerChildren);
 
         //check if submit
@@ -1459,13 +1475,13 @@ function confirmDelete() {
                 itemElement.classList.add('fade-out');
                 additionalItemElement.classList.add("hidden-horizontal");
                 additionalItemElement.classList.remove("visible-horizontal");
-                const categoriesOnBooks = document.querySelectorAll(`.book-with-category-${itemId}`);
-                categoriesOnBooks.forEach(element => element.classList.add("hidden-horizontal"));
-                categoriesOnBooks.forEach(element => element.classList.remove("visible-horizontal"));
+                const categoriesOnResources = document.querySelectorAll(`.resource-with-category-${itemId}`);
+                categoriesOnResources.forEach(element => element.classList.add("hidden-horizontal"));
+                categoriesOnResources.forEach(element => element.classList.remove("visible-horizontal"));
                 setTimeout(() => {
                     itemElement.remove();
                     additionalItemElement.remove();
-                    document.querySelectorAll(`.book-with-category-${itemId}`).forEach(element => element.remove());
+                    document.querySelectorAll(`.resource-with-category-${itemId}`).forEach(element => element.remove());
                 }, 500);
             } else if (route == "/delete-note") { //animation and delete for notes
                 itemElement.classList.add('fade-out');
@@ -1504,7 +1520,7 @@ function confirmDelete() {
 
 //ADD (DRAG) CATEGORY TO A RESOURCE
     let categoriesItemsList = document.getElementById('categories-list').querySelectorAll('.categories-item');
-    let resourcesDropTargets = document.querySelectorAll('.user-book');
+    let resourcesDropTargets = document.querySelectorAll('.user-resource');
     // event listeners for draggable categories
     categoriesItemsList.forEach(item => {
         // drag start
@@ -1519,9 +1535,9 @@ function confirmDelete() {
             // console.log("category data send: ", categoryData);
             event.dataTransfer.setData("text/plain", JSON.stringify(categoryData) );
 
-            //remove pointer events from book children
-            resourcesDropTargets.forEach(book => {
-                let children = book.querySelectorAll('*');
+            //remove pointer events from resource children
+            resourcesDropTargets.forEach(resource => {
+                let children = resource.querySelectorAll('*');
                 children.forEach(child => {
                     child.style.pointerEvents = 'none';
                 });
@@ -1530,7 +1546,7 @@ function confirmDelete() {
         // drag end
         item.addEventListener('dragend', (event) => {
             event.target.classList.remove('dragging');
-            //restore pointer events for book children
+            //restore pointer events for resource children
             resourcesDropTargets.forEach(item => {
                 let children = item.querySelectorAll('*');
                 children.forEach(child => {
@@ -1575,10 +1591,10 @@ function confirmDelete() {
         // console.log("dropped data:", droppedData);
         const selectedResource = document.querySelector(`#resource-id-${droppedData.resource_id}`)
         // console.log(selectedResource);
-        let selectedResourceCategories = selectedResource.querySelector('.book-categories-row');
+        let selectedResourceCategories = selectedResource.querySelector('.resource-categories-row');
 
         //check if the category is already present or if it's a proper draggable object
-        if (selectedResourceCategories.querySelector(`#book-${droppedData.resource_id}-cat-${droppedData.id}`) || !droppedData.draggable_cat_to_book) {
+        if (selectedResourceCategories.querySelector(`#resource-${droppedData.resource_id}-cat-${droppedData.id}`) || !droppedData.draggable_cat_to_book) {
             return false;
         } else {
             //axios route
@@ -1587,17 +1603,17 @@ function confirmDelete() {
                 if (response.data.success) {
                     // build html span element
                     let newHtmlElement = document.createElement('span');
-                    newHtmlElement.classList.add('single-category', `book-with-category-${droppedData.id}`, 'hidden-horizontal');
-                    newHtmlElement.setAttribute('id', `book-${droppedData.resource_id}-cat-${droppedData.id}`);
+                    newHtmlElement.classList.add('single-category', `resource-with-category-${droppedData.id}`, 'hidden-horizontal');
+                    newHtmlElement.setAttribute('id', `resource-${droppedData.resource_id}-cat-${droppedData.id}`);
                     newHtmlElement.setAttribute('data-id', droppedData.id);
                     newHtmlElement.setAttribute('draggable', 'true');
                     newHtmlElement.innerText = droppedData.name;
-                    addBookCatListeners(newHtmlElement, selectedResource);
+                    addResourceCatListeners(newHtmlElement, selectedResource);
                     selectedResourceCategories.appendChild(newHtmlElement);
                     sortCategoriesList();
                     setTimeout(() => {
-                        document.getElementById(`book-${droppedData.resource_id}-cat-${droppedData.id}`).classList.remove("hidden-horizontal")
-                        document.getElementById(`book-${droppedData.resource_id}-cat-${droppedData.id}`).classList.add("visible-horizontal")
+                        document.getElementById(`resource-${droppedData.resource_id}-cat-${droppedData.id}`).classList.remove("hidden-horizontal")
+                        document.getElementById(`resource-${droppedData.resource_id}-cat-${droppedData.id}`).classList.add("visible-horizontal")
                     }, 10); //time out żeby się animacje odpalały
                 }
             })
@@ -1613,24 +1629,24 @@ function confirmDelete() {
     // event listeners for draggable categories
     const bucketButton = document.querySelector('#remove-item-bucket');
     // add listeners to one category function - needs calling elsewere
-    function addBookCatListeners (categoryObj, bookObj){
+    function addResourceCatListeners (categoryObj, resourceObj){
         //drag start
         categoryObj.addEventListener('dragstart', (event) => {
             bucketButton.style.pointerEvents = 'auto'; //to prevent the hidden popup from interfering with category dragging
             event.target.classList.add('draggingdelete');
             event.dataTransfer.clearData();
             const categoryData = {
-                resource_id: bookObj.getAttribute('data-id'),
+                resource_id: resourceObj.getAttribute('data-id'),
                 category_id: categoryObj.getAttribute('data-id'),
                 draggable_cat_to_trash: true
             };
             // console.log("category data: ", categoryData);
             event.dataTransfer.setData("text/plain", JSON.stringify(categoryData) );
 
-            //remove pointer events from book children
-            resourcesDropTargets.forEach(book => {
-                book.style.pointerEvents = 'none';  
-                let children = book.querySelectorAll('*:not(.single-category)');
+            //remove pointer events from resource children
+            resourcesDropTargets.forEach(resource => {
+                resource.style.pointerEvents = 'none';  
+                let children = resource.querySelectorAll('*:not(.single-category)');
                 children.forEach(child => {
                     child.style.pointerEvents = 'none';
                 });
@@ -1642,10 +1658,10 @@ function confirmDelete() {
         categoryObj.addEventListener('dragend', (event) => {
             bucketButton.style.pointerEvents = ''; //restore popup pointer events
             event.target.classList.remove('draggingdelete');
-            //restore pointer events for book children
-            resourcesDropTargets.forEach(book => {
-                book.style.pointerEvents = '';
-                let children = book.querySelectorAll('*:not(.single-category)');
+            //restore pointer events for resource children
+            resourcesDropTargets.forEach(resource => {
+                resource.style.pointerEvents = '';
+                let children = resource.querySelectorAll('*:not(.single-category)');
                 children.forEach(child => {
                     child.style.pointerEvents = '';
                 });
@@ -1655,12 +1671,12 @@ function confirmDelete() {
 
     }
 
-    // on page load assign listeners to each category item on each book
-    resourcesDropTargets.forEach(book => {
-        let bookCategories = book.querySelectorAll('.single-category');
-        bookCategories.forEach(category =>{
+    // on page load assign listeners to each category item on each resource
+    resourcesDropTargets.forEach(resource => {
+        let resourceCategories = resource.querySelectorAll('.single-category');
+        resourceCategories.forEach(category =>{
             // console.log(category);
-            addBookCatListeners(category, book);
+            addResourceCatListeners(category, resource);
         });
     });
 
@@ -1693,7 +1709,7 @@ function confirmDelete() {
     //AFTER DROP FUNCTION WITH AXIOS ROUTE
     function removeCategoryFromResource(droppedData) {
         // console.log("dropped data:", droppedData);
-        let itemToRemove = document.querySelector(`#book-${droppedData.resource_id}-cat-${droppedData.category_id}`)
+        let itemToRemove = document.querySelector(`#resource-${droppedData.resource_id}-cat-${droppedData.category_id}`)
 
         //check if it's a proper draggable object
         if (!droppedData.draggable_cat_to_trash) {
