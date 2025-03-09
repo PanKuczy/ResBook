@@ -252,7 +252,7 @@ async function getAllData () {
             dateFormat(note);
         })};
     });
-    console.log(util.inspect(data, { depth: null, colors: true }));
+    // console.log(util.inspect(data, { depth: null, colors: true }));
     userResourcesFull = data;
     return data;
 }
@@ -392,6 +392,29 @@ app.post("/strip-category", async (req,res) =>{
     }
 });
 
+
+//ADD RESOURCE
+app.post("/new-resource", async (req,res) => {
+    console.log("new resource request", req.body);
+    try {
+        const queryTags = `
+        SELECT id, name, color
+        FROM tags
+        WHERE user_id = ($1);
+        `
+        const resultUserTags = await db.query(queryTags, [currentUserId]);
+        const tagsData = resultUserTags.rows;
+        tagsData.forEach(element => {
+            appendInvertedColor(element);
+        });
+        res.status(200).json({success: true, resource_id: 999, tags: tagsData});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Error adding resource' });
+    }
+
+
+});
 
 //EDIT RESOURCE
 app.put("/edit-resource", async (req, res) => {

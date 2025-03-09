@@ -91,10 +91,16 @@ function invertColor (color) {
 
     }
 
-    function sortTagsRow(){
+    function sortTagsRow(parent){
+        let range = undefined;
+        if (!parent) {
+            range = document;
+        } else {
+            range = parent;
+        }
         // non editable list
-        const nonEditLists = document.querySelectorAll('.all-tags-row, .note-tags-row');
-        const editLists = document.querySelectorAll('.edit-tags-form > .all-tags-row , .edit-tags-form > .note-tags-row ');
+        const nonEditLists = range.querySelectorAll('.all-tags-row, .note-tags-row');
+        const editLists = range.querySelectorAll('.edit-tags-form > .all-tags-row , .edit-tags-form > .note-tags-row ');
         nonEditLists.forEach(tagsRowContainer =>{
             [...tagsRowContainer.children]
             .sort((a, b) => a.innerText.localeCompare(b.innerText, undefined, {sensitivity: 'base'}))
@@ -431,7 +437,318 @@ function toggleResource(id, forceDirection) {
 
 
 // ADD NEW RESOURCE
+    function createNewResourceToggle(){
+        const newResPopup = document.querySelector('#new-resource-popup');
+        if (newResPopup.style.display == 'none') {
+            newResPopup.style.display = 'flex';
+            newResPopup.style.pointerEvents = 'auto';
+        } else {
+            const inputs = newResPopup.querySelectorAll('input:not([name="res-type"]), textarea');
+            inputs.forEach(item => {
+                item.value = "";
+            });
+            newResPopup.querySelector('img').setAttribute('src', '');
+            newResPopup.querySelector('img').setAttribute('upload-flag', false);
+            newResPopup.querySelectorAll('.resource-type-row input').forEach(item => {
+                item.checked = false;
+            }); 
+            newResPopup.style.display = 'none';
+            newResPopup.style.pointerEvents = 'none';
+        }
+    }
 
+    function submitNewResource() {
+        const newResPopup = document.querySelector('#new-resource-popup');
+        const headingEdit = newResPopup.querySelector('.resource-heading.editable');
+        //new data
+        const newCover = headingEdit.querySelector('img');
+        const newType = headingEdit.querySelector('input[name="res-type"]:checked');
+        const newNumber = headingEdit.querySelector('#resource-new-isbn-doi');
+        const newTitle = headingEdit.querySelector('.resource-title.editable textarea');
+        const newSubtitle = headingEdit.querySelector('.resource-subtitle.editable textarea');
+        const newAuthors = headingEdit.querySelector('.author-text.editable textarea');
+        const newYear = headingEdit.querySelector('.year-text.editable input');
+        const newPlace = headingEdit.querySelector('.place-text.editable input');
+
+        //check if required fields are not empty
+        if (!newTitle.value || !newAuthors.value || !newType) {
+            alert("title, authors and resource type fields can't be empty");
+            return false;
+        } else {
+            const data = {
+                resource_title: newTitle.value,
+                resource_subtitle: newSubtitle.value,
+                authors: newAuthors.value,
+                resource_type: newType.value,
+                reference_number: newNumber.value,
+                place: newPlace.value,
+                publication_year: newYear.value
+            };
+            if (newCover.getAttribute('upload-flag')){
+                data.cover_base64 = newCover.getAttribute('src');
+            }
+            console.log(data);
+            //axios
+            axios.post("/new-resource", data)
+            .then(response => {
+                if (response.data.success) {
+                    console.log("create resource success", response.data);
+                    const newId = response.data.resource_id;
+                    const tags = response.data.tags;
+                    //DOM operations
+                    const newResourceElement = document.createElement('div');
+                    newResourceElement.classList.add('user-resource', 'deletable-item', 'hidden');
+                    if (newType == 'ISBN') {
+                        newResourceElement.classList.add('book');
+                    } else if (newType == 'DOI'){
+                        newResourceElement.classList.add('article');
+                    }
+                    newResourceElement.setAttribute('id', `resource-id-${newId}`);
+                    newResourceElement.setAttribute('data-id', newId);
+                    newResourceElement.setAttribute('data-type', newType.value);
+                    newResourceElement.setAttribute('data-number', newNumber.value ?? null);
+// -----------------------------------------------------------------
+                    newResourceElement.innerHTML =` 
+
+                        <a class="resource-heading" style="display: flex;" onclick="filterResources(null, null, ${newId})">
+                            
+                            <div class="resource-cover">
+                                <img src="${newCover.getAttribute('src') ?? null }" draggable="false">
+                            </div>
+                            <div class="resource-heading-text">
+                                <div class="resource-categories-row"> <!-- CATEGORIES -->
+                                </div>
+                                
+                                <h2 class="resource-title">${newTitle.value}</h2>
+                                <h3 class="resource-subtitle">${newSubtitle.value}</h3>
+                                <div class="resource-authors-date-place-row">
+                                    <div class="authors-group"><h5 class="author-text">By </h5><h5 class="author-text authors-content">${newAuthors.value}</h5></div>
+                                    <div class="date-place-group">
+                                        <h5 class="year-text">${newYear?.value ?? ''}</h5>
+                                        <h5 class="comma">${newYear.value && newPlace.value ? ',' : '' }</h5>
+                                        <h5 class="place-text">${newPlace.value ?? ''}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="right-stripe ${newType.value == "ISBN" ? "book" : "article"}"></div>
+                        </a>
+                        <!-- editable -->
+                        <form class="resource-heading editable" style="display: none;">
+                            <div>
+                                <div class="resource-cover editable">
+                                    <img src="${newCover.getAttribute('src') ?? null }" draggable="false">
+                                </div>
+                                <input class="upload-cover custom-file-input" type="file" accept="image/*">
+
+                            </div>
+                            <div class="resource-heading-text">
+                                <h2 class="resource-title editable">Title: <textarea rows="2">${newTitle.value}</textarea><h2>
+                                <h3 class="resource-subtitle editable">Subtitle: <textarea rows="2">${newSubtitle.value}</textarea></h3>
+                                <div class="resource-authors-date-place-row">
+                                    <div class="authors-group editable"><h5 class="author-text editable">Authors: <textarea rows="4">${newAuthors.value}</textarea></h5></div>
+                                    <div class="date-place-group editable">
+                                        <div class="resource-type-row">
+                                            <h5>Resource type: 
+                                                    <input type="radio" name="res-type" value="ISBN" checked />
+                                                    <label for="ISBN">Book</label>
+                                                    <input type="radio" name="res-type" value="DOI" />
+                                                    <label for="DOI">Article</label>
+                                            </h5>
+                                        </div>
+                                        <h5 class="isbn-text editable">ISBN/DOI number:<input name="isbn-doi-number" id="resource-${newId}-isbn-doi" value="${newNumber.value}"></h5>  
+                                        <h5 class="year-text editable">Year: <input value="${newYear.value}"></h5><h5 class="place-text editable">Place: <input value="${newPlace.value}"></h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="right-stripe"></div>
+                        </form>
+
+                        <div class="resource-heading-buttons">
+                            <button 
+                                class="icon-button tooltip-container edit-toggle-button" 
+                                type="edit" 
+                                name="edit-resource" 
+                                onclick="editResourceToggle(this, ${newId})">
+                                <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit resource</span>
+                            </button>
+                            <button 
+                                disabled
+                                class="icon-button tooltip-container edit-submit-button"
+                                type="button"
+                                name="edit-resource-submit" 
+                                onclick="editResourceToggle(this, ${newId})">
+                                <i class="fa-solid fa-floppy-disk"></i><span class="tooltip">save changes</span>
+                            </button>
+                            <button 
+                                disabled
+                                class="icon-button tooltip-container edit-cancel-button" 
+                                type="button" 
+                                name="edit-resource-cancel" 
+                                onclick="editResourceToggle(this, ${newId})">
+                                <i class="fa-solid fa-rotate-left"></i><span class="tooltip">discard changes</span>
+                            </button>
+                            <button 
+                                class="delete-button icon-button tooltip-container" 
+                                id="delete-resource-${newId}"
+                                type="button"
+                                onclick="showConfirmationPopup(null, '/delete-resource', '${newId}', 'resource-id-${newId}', null)">
+                                <i class="fa-solid fa-trash"></i><span class="tooltip">delete resource</span>
+                            </button>
+                        </div>
+                        <div class="resource-expand">
+                            <button class="icon-button" onclick="toggleResource(${newId})" type="button"><i id="toggle-notes-icon-${newId}" class="fa-solid fa-circle-chevron-down"></i></button>
+                        </div>
+                        <!-- NOTES     -->
+
+                        <div class="notes-box hidden" id="notesbox-${newId}">
+                            <div class="notes-box-heading">
+                                <h4><span>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="newNoteRolloutToggle('${newId}')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></span> <span class="notes-sortby">Sort by:</span></h4>
+                        <!-- ADD NOTE -->
+                                <form class="new-note hidden" action="/add-note" method="post" id="add-new-note-${newId}">
+                                    <div class="new-note-box">
+                                        <button class="new-note-tag-rollout-button" onclick="selectTagsRolloutToggle(this, ${newId}, null)" type="button">Select Tags <i id="triangle-icon-${newId}" class="fa-solid fa-square-caret-right"></i></button>
+                                        <div id="tag-rollout-${newId}" class="tag-rollout-drawer hidden-fast">
+                                            <div class="heading-with-buttons">
+                                                <h4>Assign Note Tags:</h4>
+                                                <div>
+                                                    <button 
+                                                    class="icon-button tooltip-container edit-tags-toggle-button" 
+                                                    type="button"
+                                                    name="edit-tags-toggle" 
+                                                    onclick="editTagsToggle(${newId}, null)">
+                                                    <i class="fa-solid fa-file-pen"></i><span class="tooltip">edit tags</span>
+                                                    </button>
+                                                    <button 
+                                                    disabled
+                                                    class="icon-button tooltip-container edit-tags-submit-button"
+                                                    type="button"
+                                                    name="edit-tags-submit" 
+                                                    onclick="editTagsSubmit(this)">
+                                                    <i class="fa-solid fa-floppy-disk"></i><span class="tooltip">save changes</span>
+                                                    </button>
+                                                    <button 
+                                                    disabled
+                                                    class="icon-button tooltip-container edit-tags-cancel-button" 
+                                                    type="button" 
+                                                    name="edit-tags-cancel" 
+                                                    onclick="editTagsToggle(${newId}, null)">
+                                                    <i class="fa-solid fa-rotate-left"></i><span class="tooltip">discard changes</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="separator-2"></div>
+            
+                                            <div id="tag-container-${newId}" class="all-tags-row" style="display: flex;">
+                                            </div>
+                                            <div class="edit-tags-form">
+                                                <div id="edit-tag-container-${newId}" class="all-tags-row" style="display: none;">
+                                                </div>
+                                            </div>
+                                            <div class="add-new-tag-miniform">
+                                                <input class="add-new-tag-input" type="text" placeholder="New tag name..." />
+                                                <button class="color-selector-button" data-jscolor="{value:'#5ED8FF'}" >color</button>
+                                                <button class="text-button" type="button" onclick="addTag(${newId}, null)">Add New Tag</button>
+                                            </div>
+                                            <input type="hidden" name="selectedTagIds" id="selectedNewNoteTags-${newId}" />
+                                            <input type="hidden" name="selectedTagsNames" id="selectedNewNoteTagsNames-${newId}" />
+                                            <input type="hidden" name="selectedTagsColors" id="selectedNewNoteTagsColors-${newId}" />
+                                            <input type="hidden" name="selectedTagsColorsInv" id="selectedNewNoteTagsColorsInv-${newId}" />
+                                        </div>
+            
+                                        
+                                        <textarea class="new-note-text" type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text-${newId}" required></textarea>
+                                        <div class="flex-end">
+                                            <label for="new-note-link">Link: </label>
+                                            <input class="input-link" type="text" name="target_object" placeholder="Link" autocomplete="off" autofocus="true" id="new-note-link-${newId}"/>
+                                            <label for="new-note-pages">Pages: </label>
+                                            <input class="input-pages" type="text" name="target_pages" placeholder="Pages" autocomplete="off" autofocus="true" id="new-note-pages-${newId}"/>
+        
+                                        </div>
+                                        <input type="hidden" name="resource_id" value="${newId}" />
+                                        <button class="text-button" type="submit" name="note-submit" onclick="submitNewNote('add-new-note-${newId}')" value="" >Submit</button>
+                                        <button class="text-button" type="reset" name="note-cancel" onclick="cancelNewNote('add-new-note-${newId}')" value="" >Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        
+                        
+                        
+                        </div>
+                    `
+                    if (newType.value == "ISBN") {
+                        newResourceElement.querySelector('.date-place-group.editable input[value="ISBN"]').setAttribute('checked', true);
+                    } else {
+                        newResourceElement.querySelector('.date-place-group.editable input[value="DOI"]').setAttribute('checked', true);
+                    }
+
+                    //tags
+                    const tagContainer = newResourceElement.querySelector(`#tag-container-${newId}`);
+                    tags.forEach(tag => { 
+                        const spanElement = document.createElement('span');
+                        spanElement.classList.add('tag', 'single-note-tags', 'visible-horizontal');
+                        spanElement.setAttribute('data-id', tag.id);
+                        spanElement.setAttribute('data-name', tag.name);
+                        spanElement.setAttribute('data-color', tag.color);
+                        spanElement.setAttribute('data-invert-color', tag.invertColor);
+                        spanElement.style.backgroundColor = tag.color;
+                        spanElement.style.color = tag.invertColor;
+                        spanElement.style.borderColor = tag.invertColor;
+                        spanElement.setAttribute('onclick', `selectTag(this, ${newId})`);
+                        spanElement.innerText = tag.name;
+                        tagContainer.appendChild(spanElement);
+                    });
+                    const editTagContainer = newResourceElement.querySelector(`#edit-tag-container-${newId}`);
+                    tags.forEach(tag => { 
+                        const divElement = document.createElement('div');
+                        divElement.classList.add('editable-tag-row', 'tag', 'single-note-tags', 'visible-horizontal');
+                        divElement.setAttribute('data-id', tag.id);
+                        divElement.setAttribute('data-name', tag.name);
+                        divElement.setAttribute('data-color', tag.color);
+                        divElement.setAttribute('data-invert-color', tag.invertColor);
+                        divElement.style.backgroundColor = tag.color;
+                        divElement.style.color = tag.invertColor;
+                        divElement.style.borderColor = tag.invertColor;
+                        divElement.setAttribute('onclick', `selectTag(this, ${newId})`);
+                        divElement.innerHTML = `
+                            <input type="text" oninput="this.size = this.value.length" class="tag editable" value="${tag.name}" style="background-color: ${tag.color}; color: ${tag.invertColor};" size="${tag.name.length}">
+                            </input>
+                            <button 
+                            class="icon-button color-selector-icon tooltip-container tag-color-${tag.id}" 
+                            data-jscolor="{value:'${tag.color}'}"
+                            type="button">
+                            <span class="tooltip">change color</span>
+                            </button>
+                            <button 
+                            class="delete-button icon-button tooltip-container delete-tag-${tag.id}" 
+                            type="button"
+                            onclick="showConfirmationPopup('${tag.id}', '/delete-tag', ${newId}, null, null)">
+                            <i class="fa-solid fa-trash"></i><span class="tooltip">delete tag</span>
+                            </button>
+                        `;
+                        editTagContainer.appendChild(divElement);
+                    });
+                    sortTagsRow(newResourceElement);
+                    //dodac listenery do kategorii, js-color w rolloucie nowej notatki i edytowalnych tagow nowej notatki
+
+                    document.querySelector('.main-inner-box').appendChild(newResourceElement);
+                    newResourceElement.classList.remove('hidden');
+                    newResourceElement.classList.add('visible');
+
+                    createNewResourceToggle();
+                };
+            })
+            .catch(error => {
+                console.error('Error adding resource:', error);
+                alert('Error adding resource');
+            });
+
+        }
+
+    }
+
+
+    
 
 // EDIT RESOURCE
     function editResourceToggle(button, id){

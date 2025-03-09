@@ -17,14 +17,14 @@
                 <button class="button button-utils">Filter</button>
                 <button class="button button-utils">Search</button>
                 <div class="res-sort-button-group"><button class="button button-utils">Sort</button><div id="res-sort-type-text">by date</div></div>
-                <button class="button button-utils" onclick="createNewResource()">Add resource</button>
+                <button class="button button-utils" onclick="createNewResourceToggle()">Add resource</button>
             </div>
             <div class="main-inner-box">
 
     
                 <% for(let item of resources){%>
                     <% const resourceIndex = resources.indexOf(item); %>
-        <!-- BOOK -->
+        <!-- RESOURCE -->
                 <div class="user-resource <% if (item?.resource_type == "ISBN") {%><%= "book" %><%} else {%><%= "article" %><% } %> deletable-item visible" id="resource-id-<%= item?.resource_id %>" data-id="<%= item?.resource_id %>" data-type="<%= item?.resource_type ?? null %>" data-number="<%= item?.reference_number ?? null %>">
                     <a class="resource-heading" style="display: flex;" onclick="filterResources(null, null, <%= item?.resource_id %>)">
     
@@ -425,6 +425,48 @@
                         type="button">
                         <i class="fa-solid fa-trash"style="pointer-events: none;"></i><span class="tooltip">remove item</span>
                         </button>
+                    </div>
+                </div>
+    <!-- ADD NEW RESOURCE  -->
+                <div id="new-resource-popup" style="display: none; pointer-events: none;">
+                    <div class="new-resource-popup-content">
+                        <div class="new-resource-top-row">
+                            <div class="new-res-buttons-group"></div>
+                            <h3>Add new resource</h3>
+                            <div class="new-res-buttons-group">
+                                <button class="text-button" type="submit" name="note-submit" onclick="submitNewResource()" value="" >Submit</button>
+                                <button class="text-button" type="reset" name="note-cancel" onclick="createNewResourceToggle()" value="" >Cancel</button>
+                            </div>
+                        </div>
+                        <form class="resource-heading editable">
+                            <div>
+                                <div class="resource-cover editable">
+                                    <img src="" draggable="false">
+                                </div>
+                                <input class="upload-cover custom-file-input" type="file" accept="image/*">
+        
+                            </div>
+                            <div class="resource-heading-text">
+                                <h2 class="resource-title editable">Title: <textarea rows="2"></textarea><h2>
+                                <h3 class="resource-subtitle editable">Subtitle: <textarea rows="2"></textarea></h3>
+                                <div class="resource-authors-date-place-row">
+                                    <div class="authors-group editable"><h5 class="author-text editable">Authors: <textarea rows="4"></textarea></h5></div>
+                                    <div class="date-place-group editable">
+                                        <div class="resource-type-row">
+                                            <h5>Resource type: 
+                                            <input type="radio" name="res-type" value="ISBN"/>
+                                            <label for="ISBN">Book</label>
+                                            <input type="radio" name="res-type" value="DOI"/>
+                                            <label for="DOI">Article</label>
+                                            </h5>
+                                        </div>
+                                        <h5 class="isbn-text editable">ISBN/DOI number:<input name="isbn-doi-number" id="resource-new-isbn-doi" value=""></h5>  
+                                        <h5 class="year-text editable">Year: <input value=""></h5><h5 class="place-text editable">Place: <input value=""></h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+    
                     </div>
                 </div>
             </div>
