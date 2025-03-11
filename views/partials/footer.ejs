@@ -234,7 +234,7 @@
     }
     //call sorting on page load
     sortCategoriesList();
-    sortResources('added-date-asc');
+    sortResources('added-date-desc');
     sortNotesToggle('date-descending', null);
     sortTagsRow();
 
@@ -712,7 +712,7 @@
                 publication_year: newYear.value,
                 url: newUrl.value
             };
-            if (newCover.getAttribute('upload-flag')){
+            if (newCover.getAttribute('upload-flag') == 'true'){
                 data.cover_base64 = newCover.getAttribute('src');
             }
             // console.log(data);
@@ -771,8 +771,12 @@
                             <div class="resource-heading-text">
                                 <h2 class="resource-title editable">Title: <textarea rows="2">${newTitle.value}</textarea><h2>
                                 <h3 class="resource-subtitle editable">Subtitle: <textarea rows="2">${newSubtitle.value}</textarea></h3>
+                                <h3 class="resource-journal editable">Journal: <textarea rows="1">${newJournal?.value}</textarea></h3>
                                 <div class="resource-authors-date-place-row">
-                                    <div class="authors-group editable"><h5 class="author-text editable">Authors: <textarea rows="4">${newAuthors.value}</textarea></h5></div>
+                                    <div class="authors-group editable">
+                                        <h5 class="author-text editable">Authors: <textarea rows="2">${newAuthors.value}</textarea></h5>
+                                        <h5 class="url-text editable">Link: <input value="${newUrl.value}"></h5>
+                                    </div>
                                     <div class="date-place-group editable">
                                         <div class="resource-type-row">
                                             <h5>Resource type: 

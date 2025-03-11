@@ -400,9 +400,49 @@ app.post("/strip-category", async (req,res) =>{
 //ADD RESOURCE
 app.post("/new-resource", async (req,res) => {
     console.log("new resource request", req.body);
+
+
     try {
         //returning bedzie id i created_at (do przepuszczenia przez formater)
+        const queryAddResource = `
+        INSERT INTO resources (user_id, title, subtitle, journal, authors, resource_type, reference_number, place, publication_year, url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING id, created_at;
+        `
+        const resultAddResource = await db.query(queryAddResource, [currentUserId, req.body.resource_title, req.body.resource_subtitle, req.body.journal, req.body.authors, req.body.resource_type, req.body.reference_number, req.body.place, req.body.publication_year, req.body.url]);
+        const resultData = resultAddResource.rows[0];
+        const queryAddCover = `
+        UPDATE resources
+        SET cover_url = $1
+        WHERE id = $2;
+        `
 
+        // save image to server and add url to data
+        let coverPath = undefined;
+        if (req.body.cover_base64) {
+            // Remove the data URI prefix (e.g., "data:image/jpeg;base64,")
+            const base64Data = req.body.cover_base64.replace(/^data:image\/\w+;base64,/, '');
+
+            // Convert the base64 string back into a binary buffer
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            // Write the buffer to a file (e.g., "image.jpg")
+            const coverPathBackEnd = `public/assets/covers/res_${resultData.id}_cover.jpg`;
+            coverPath = `assets/covers/res_${resultData.id}_cover.jpg`;
+            fs.writeFileSync(coverPathBackEnd, buffer, (err) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Error saving cover image.');
+                }
+            });
+            await db.query(queryAddCover, [coverPath, resultData.id]);
+        }
+
+        // date
+        
+        dateFormat(resultData);
+
+        // tags
         const queryTags = `
         SELECT id, name, color
         FROM tags
@@ -413,7 +453,7 @@ app.post("/new-resource", async (req,res) => {
         tagsData.forEach(element => {
             appendInvertedColor(element);
         });
-        res.status(200).json({success: true, resource_id: 999, formattedDate: "1939-10-10" , tags: tagsData});
+        res.status(200).json({success: true, resource_id: 999, formattedDate: resultData.formattedDate , tags: tagsData});
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error adding resource' });
