@@ -5,15 +5,25 @@
 <script>
 
 // AUTO FIT INPUT ON PAGE LOAD
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('input.editable').forEach(input => {
-        input.size = input.value.length;
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input.editable').forEach(input => {
+            input.size = input.value.length;
+        });
     });
-});
+
+// URL BUTTONS
+    function urlButton (button) {
+        console.log(button.getAttribute('data-url'));
+        const targetUrl = button.getAttribute('data-url');
+        const newWindow = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        if (newWindow) {
+        newWindow.opener = null;
+        }
+    }
 
 // COLOR PICKER AND INVERTER
-let colorPickerInverted = "red";
-function colorPickerData(data) {
+    let colorPickerInverted = "red";
+    function colorPickerData(data) {
     const color = data.toRGBString();
     const currentButton = data.previewElement;
     // console.log(data);
@@ -46,7 +56,7 @@ function colorPickerData(data) {
     return invertedColor;
 }
 
-function invertColor (color) {
+    function invertColor (color) {
     const regex = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/;
     const result = color.match(regex);
     let invertColor = "";
@@ -90,6 +100,90 @@ function invertColor (color) {
             }
 
     }
+
+    let currentResourcesSort = undefined;
+    function sortResources(order){
+        const parent = document.querySelector('.main-inner-box');
+        const resources = document.querySelectorAll('.user-resource');
+
+        switch (order) {
+            case 'authors-asc':
+                [...resources]
+                .sort((a, b) => a.querySelector('.authors-content').innerText.localeCompare(b.querySelector('.authors-content').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order;
+                break;
+            case 'authors-desc':
+                [...resources]
+                .sort((b, a) => a.querySelector('.authors-content').innerText.localeCompare(b.querySelector('.authors-content').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order;
+                break;
+            case 'title-asc':
+                [...resources]
+                .sort((a, b) => a.querySelector('.resource-title').innerText.localeCompare(b.querySelector('.resource-title').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'title-desc':
+                [...resources]
+                .sort((b, a) => a.querySelector('.resource-title').innerText.localeCompare(b.querySelector('.resource-title').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'subtitle-asc':
+                [...resources]
+                .sort((a, b) => a.querySelector('.resource-subtitle').innerText.localeCompare(b.querySelector('.resource-subtitle').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'subtitle-desc':
+                [...resources]
+                .sort((b, a) => a.querySelector('.resource-subtitle').innerText.localeCompare(b.querySelector('.resource-subtitle').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'published-date-asc':
+                [...resources]
+                .sort((a, b) => a.querySelector('.year-text').innerText.localeCompare(b.querySelector('.year-text').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'published-date-desc':
+                [...resources]
+                .sort((b, a) => a.querySelector('.year-text').innerText.localeCompare(b.querySelector('.year-text').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'added-date-asc':
+                [...resources]
+                .sort((a, b) => a.getAttribute('data-created-date').localeCompare(b.getAttribute('data-created-date'), undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'added-date-desc':
+                [...resources]
+                .sort((b, a) => a.getAttribute('data-created-date').localeCompare(b.getAttribute('data-created-date'), undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'place-asc':
+                [...resources]
+                .sort((a, b) => a.querySelector('.place-text').innerText.localeCompare(b.querySelector('.place-text').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            case 'place-desc':
+                [...resources]
+                .sort((b, a) => a.querySelector('.place-text').innerText.localeCompare(b.querySelector('.place-text').innerText, undefined, {sensitivity: 'base'}))
+                .forEach(node => parent.appendChild(node));
+                currentResourcesSort = order; 
+                break;
+            default:
+                break;
+        }
+        console.log("Current resource sort: ", currentResourcesSort);
+    };
 
     function sortTagsRow(parent){
         let range = undefined;
@@ -140,6 +234,7 @@ function invertColor (color) {
     }
     //call sorting on page load
     sortCategoriesList();
+    sortResources('added-date-asc');
     sortNotesToggle('date-descending', null);
     sortTagsRow();
 
@@ -159,7 +254,7 @@ function invertColor (color) {
 
 // TOGGLE RESOURCE
 // forceDirection can have "up" or "down" values
-function toggleResource(id, forceDirection) {
+    function toggleResource(id, forceDirection) {
         // console.log("Clicked ID: ", id);
         const rollout = document.getElementById("notesbox-" + id);
         const stripe = document.querySelector(`#resource-id-${id} .right-stripe`);
@@ -296,7 +391,7 @@ function toggleResource(id, forceDirection) {
                     if (response.data.success) {
                         const newCategoryResponse = response.data.newCategory;
                         // console.log("Response data :", response.data);
-                        // CREATE ELEMENTS
+                        // CREATE DOM ELEMENTS
                         // non editable list
                         let newCategoryElement = document.createElement('li');
                         newCategoryElement.classList.add('categories-item');
@@ -322,7 +417,7 @@ function toggleResource(id, forceDirection) {
                         </button><li class="categories-item" data-id="${newCategoryResponse.id}" data-name="${formObject.newCategoryName}" ><input type="text" id="editable-category-${newCategoryResponse.id}" value="${formObject.newCategoryName}" required></li>
                         `;
                         document.getElementById('categories-list-editable').appendChild(newCategoryEditableElement);
-
+                        catDraggable([newCategoryElement]);
                         form.reset();
                         sortCategoriesList()
                     } else {
@@ -457,6 +552,135 @@ function toggleResource(id, forceDirection) {
         }
     }
 
+    async function getDataFromLibraries() {
+        event.preventDefault();
+        const newResPopup = document.querySelector('#new-resource-popup');
+        const headingEdit = newResPopup.querySelector('.resource-heading.editable');
+        //new data
+        const newCover = headingEdit.querySelector('img');
+        const newType = headingEdit.querySelector('input[name="res-type"]:checked');
+        const newNumber = headingEdit.querySelector('#resource-new-isbn-doi');
+        const newTitle = headingEdit.querySelector('.resource-title.editable textarea');
+        const newSubtitle = headingEdit.querySelector('.resource-subtitle.editable textarea');
+        const newJournal = headingEdit.querySelector('.resource-journal.editable textarea');
+        const newAuthors = headingEdit.querySelector('.author-text.editable textarea');
+        const newYear = headingEdit.querySelector('.year-text.editable input');
+        const newPlace = headingEdit.querySelector('.place-text.editable input');
+        const newUrl = headingEdit.querySelector('.url-text.editable input');
+
+
+        // ISBN przykladowe 9781800643451
+        // ISBN przykladowe 0860547051
+        // ISBN przykladowe 9788323540991
+        // DOI przykladowe 10.1594/PANGAEA.726855
+        // DOI przykladowe 10.5604/01.3001.0013.2010
+        // DOI przykladowe 10.1016/j.ancene.2014.05.003
+        if (!newNumber.value || !newType) {
+            alert("choose resource type and ISBN number");
+            return false;
+        } else {
+            let fetchedData = undefined;
+            //check if ISBN or DOI
+            if (newType.value == 'ISBN') {
+                const queryUrl = `https://openlibrary.org/api/books?bibkeys=${newType.value}:${newNumber.value}&jscmd=data&format=json`;
+                // console.log("query url: ", queryUrl);
+                try {
+                    // console.log("fetching...");
+                    const getBookOL = await axios.get(queryUrl);
+                    const resultSubData = getBookOL.data[`${newType.value}:${newNumber.value}`];
+                    if (resultSubData) {
+                        // console.log("response: ", resultSubData);
+                        fetchedData = {
+                            title: resultSubData?.title,
+                            subtitle: resultSubData?.subtitle ?? null,
+                            journal: null,
+                            publication_year: resultSubData?.publish_date ?? null,
+                            place: resultSubData?.publish_places?.[0]?.name ?? null,
+                            cover_url: resultSubData?.cover?.medium ?? null,
+                            // url: resultSubData?.url,
+                            url: "https://openlibrary.org" + resultSubData?.key + "/-/borrow?action=locate"
+
+                        };
+                        let authorsArray = [];
+                        for (let i = 0; i < resultSubData?.authors.length; i++) {
+                            authorsArray.push(resultSubData?.authors[i].name);
+                            if (i===3){
+                                authorsArray[3] = "et. al";
+                                break
+                            }
+                        }
+                        fetchedData.authors = authorsArray.join(", ");
+                        // console.log(fetchedData);
+                    } else {
+                        alert("resource not found");
+                    }
+                } catch (error) {
+                    console.log(error);
+                    alert(error);
+                }
+            } else if (newType.value == 'DOI') {
+                const queryUrl = `https://api.crossref.org/works/${newNumber.value}`;
+                try {
+                    console.log("fetching...");
+                    const getCrossrefOrg = await axios.get(queryUrl);
+                    console.log("result data ", getCrossrefOrg.data.message);
+                    const resultSubData = getCrossrefOrg.data.message;
+                    const date = resultSubData?.published["date-parts"][0];
+                    const dateJoined = date.join("-");
+                    console.log(dateJoined);
+                    if (getCrossrefOrg.status = 200) {
+                        console.log("response: ", resultSubData);
+                        fetchedData = {
+                            title: resultSubData?.title[0] ?? null,
+                            subtitle: resultSubData?.subtitle[0] ?? null,
+                            publication_year: resultSubData?.published["date-parts"]?.[0].join('-') ?? null,
+                            place: null,
+                            cover_url: null,
+                            url: resultSubData?.URL
+                        };
+                        let authorsArray = [];
+                        for (let i = 0; i < resultSubData?.author.length; i++) {
+                            authorsArray.push(resultSubData?.author[i].family + " " + resultSubData?.author[i].given);
+                            if (i===3){
+                                authorsArray[3] = "et. al";
+                                break
+                            }
+                        }
+                        fetchedData.authors = authorsArray.join(", ");
+                        let journalArray = [];
+                        if (resultSubData?.["container-title"]?.[0]) {
+                            journalArray.push(resultSubData?.["container-title"]?.[0]);
+                        }
+                        if (resultSubData?.volume) {
+                            journalArray.push(resultSubData?.volume);
+                        }
+                        if (resultSubData?.["journal-issue"]?.issue) {
+                            journalArray.push(resultSubData?.["journal-issue"]?.issue);
+                        }
+                        fetchedData.journal = journalArray.join(" / ");
+                        console.log(fetchedData);
+                    } else {
+                        alert("resource not found");
+                    }
+                } catch (error) {
+                    console.log(error);
+                    alert(error);
+                }
+            }
+            //dom operations
+            if (fetchedData) {
+                newTitle.value = fetchedData.title;
+                newSubtitle.value = fetchedData.subtitle;
+                newJournal.value = fetchedData.journal;
+                newYear.value = fetchedData.publication_year;
+                newPlace.value = fetchedData.place;
+                newAuthors.value = fetchedData.authors;
+                newUrl.value = fetchedData.url;
+                newCover.setAttribute('src', fetchedData.cover_url ?? '');
+            }
+        }
+    }
+
     function submitNewResource() {
         const newResPopup = document.querySelector('#new-resource-popup');
         const headingEdit = newResPopup.querySelector('.resource-heading.editable');
@@ -466,9 +690,11 @@ function toggleResource(id, forceDirection) {
         const newNumber = headingEdit.querySelector('#resource-new-isbn-doi');
         const newTitle = headingEdit.querySelector('.resource-title.editable textarea');
         const newSubtitle = headingEdit.querySelector('.resource-subtitle.editable textarea');
+        const newJournal = headingEdit.querySelector('.resource-journal.editable textarea');
         const newAuthors = headingEdit.querySelector('.author-text.editable textarea');
         const newYear = headingEdit.querySelector('.year-text.editable input');
         const newPlace = headingEdit.querySelector('.place-text.editable input');
+        const newUrl = headingEdit.querySelector('.url-text.editable input');
 
         //check if required fields are not empty
         if (!newTitle.value || !newAuthors.value || !newType) {
@@ -478,23 +704,26 @@ function toggleResource(id, forceDirection) {
             const data = {
                 resource_title: newTitle.value,
                 resource_subtitle: newSubtitle.value,
+                journal: newJournal.value,
                 authors: newAuthors.value,
                 resource_type: newType.value,
                 reference_number: newNumber.value,
                 place: newPlace.value,
-                publication_year: newYear.value
+                publication_year: newYear.value,
+                url: newUrl.value
             };
             if (newCover.getAttribute('upload-flag')){
                 data.cover_base64 = newCover.getAttribute('src');
             }
-            console.log(data);
+            // console.log(data);
             //axios
             axios.post("/new-resource", data)
             .then(response => {
                 if (response.data.success) {
-                    console.log("create resource success", response.data);
+                    // console.log("create resource success", response.data);
                     const newId = response.data.resource_id;
                     const tags = response.data.tags;
+                    const createdDate = response.data.formattedDate;
                     //DOM operations
                     const newResourceElement = document.createElement('div');
                     newResourceElement.classList.add('user-resource', 'deletable-item', 'hidden');
@@ -507,20 +736,19 @@ function toggleResource(id, forceDirection) {
                     newResourceElement.setAttribute('data-id', newId);
                     newResourceElement.setAttribute('data-type', newType.value);
                     newResourceElement.setAttribute('data-number', newNumber.value ?? null);
-// -----------------------------------------------------------------
-                    newResourceElement.innerHTML =` 
+                    newResourceElement.setAttribute('data-created-date', createdDate);
 
-                        <a class="resource-heading" style="display: flex;" onclick="filterResources(null, null, ${newId})">
-                            
+                    newResourceElement.innerHTML =` 
+                        <a class="resource-heading" style="display: flex;" onclick="filterResources(null, null, ${newId})">                            
                             <div class="resource-cover">
                                 <img src="${newCover.getAttribute('src') ?? null }" draggable="false">
                             </div>
                             <div class="resource-heading-text">
                                 <div class="resource-categories-row"> <!-- CATEGORIES -->
-                                </div>
-                                
+                                </div>         
                                 <h2 class="resource-title">${newTitle.value}</h2>
                                 <h3 class="resource-subtitle">${newSubtitle.value}</h3>
+                                <div class="journal-group"><h3>${newJournal?.value ? 'In: ' : ''}</h3><h3 class="resource-journal">${newJournal.value}</h3></div>
                                 <div class="resource-authors-date-place-row">
                                     <div class="authors-group"><h5 class="author-text">By </h5><h5 class="author-text authors-content">${newAuthors.value}</h5></div>
                                     <div class="date-place-group">
@@ -539,7 +767,6 @@ function toggleResource(id, forceDirection) {
                                     <img src="${newCover.getAttribute('src') ?? null }" draggable="false">
                                 </div>
                                 <input class="upload-cover custom-file-input" type="file" accept="image/*">
-
                             </div>
                             <div class="resource-heading-text">
                                 <h2 class="resource-title editable">Title: <textarea rows="2">${newTitle.value}</textarea><h2>
@@ -594,12 +821,20 @@ function toggleResource(id, forceDirection) {
                                 onclick="showConfirmationPopup(null, '/delete-resource', '${newId}', 'resource-id-${newId}', null)">
                                 <i class="fa-solid fa-trash"></i><span class="tooltip">delete resource</span>
                             </button>
+                            <button
+                                ${newUrl?.value ? 'enabled' : 'disabled' }
+                                class="url-button icon-button tooltip-container" 
+                                id="resource-url-${newId}"
+                                type="button"
+                                data-url="${newUrl?.value ?? null}"
+                                onclick="urlButton(this)">
+                                <i class="fa-solid fa-up-right-from-square"></i><span class="tooltip">open link to the resource</span>
+                            </button>
                         </div>
                         <div class="resource-expand">
                             <button class="icon-button" onclick="toggleResource(${newId})" type="button"><i id="toggle-notes-icon-${newId}" class="fa-solid fa-circle-chevron-down"></i></button>
                         </div>
                         <!-- NOTES     -->
-
                         <div class="notes-box hidden" id="notesbox-${newId}">
                             <div class="notes-box-heading">
                                 <h4><span>Notes <span><button class="icon-button tooltip-container" type="add" name="add-note" onclick="newNoteRolloutToggle('${newId}')"><i class="fa-solid fa-square-plus"></i><span class="tooltip">create new note</span></button></span></span> <span class="notes-sortby">Sort by:</span></h4>
@@ -654,8 +889,7 @@ function toggleResource(id, forceDirection) {
                                             <input type="hidden" name="selectedTagsColors" id="selectedNewNoteTagsColors-${newId}" />
                                             <input type="hidden" name="selectedTagsColorsInv" id="selectedNewNoteTagsColorsInv-${newId}" />
                                         </div>
-            
-                                        
+
                                         <textarea class="new-note-text" type="text" name="note_text" placeholder="New note..." autocomplete="off" autofocus="true" id="new-note-text-${newId}" required></textarea>
                                         <div class="flex-end">
                                             <label for="new-note-link">Link: </label>
@@ -670,10 +904,6 @@ function toggleResource(id, forceDirection) {
                                     </div>
                                 </form>
                             </div>
-
-                        
-                        
-                        
                         </div>
                     `
                     if (newType.value == "ISBN") {
@@ -728,13 +958,16 @@ function toggleResource(id, forceDirection) {
                         `;
                         editTagContainer.appendChild(divElement);
                     });
-                    sortTagsRow(newResourceElement);
+                    
                     //dodac listenery do kategorii, js-color w rolloucie nowej notatki i edytowalnych tagow nowej notatki
 
                     document.querySelector('.main-inner-box').appendChild(newResourceElement);
-                    newResourceElement.classList.remove('hidden');
-                    newResourceElement.classList.add('visible');
-
+                    jscolor.install('body'); 
+                    sortTagsRow(newResourceElement);
+                    sortResources(currentResourcesSort);
+                    document.querySelector(`#resource-id-${newId}`).classList.remove('hidden');
+                    document.querySelector(`#resource-id-${newId}`).classList.add('visible');
+                    resourceCatDroppable([newResourceElement]);
                     createNewResourceToggle();
                 };
             })
@@ -770,9 +1003,11 @@ function toggleResource(id, forceDirection) {
                 : null;
         const existingTitle = heading.querySelector('.resource-title');
         const existingSubTitle = heading.querySelector('.resource-subtitle');
+        const existingJournal = heading.querySelector('.resource-journal');
         const existingAuthors = heading.querySelector('.authors-content');
         const existingYear = heading.querySelector('.year-text');
         const existingPlace = heading.querySelector('.place-text');
+        const existingUrl = resource.querySelector('.url-button');
         const comma = heading.querySelector('.comma');
         //new data
         const newCover = headingEdit.querySelector('img');
@@ -780,9 +1015,11 @@ function toggleResource(id, forceDirection) {
         const newNumber = headingEdit.querySelector(`#resource-${id}-isbn-doi`);
         const newTitle = headingEdit.querySelector('.resource-title.editable textarea');
         const newSubtitle = headingEdit.querySelector('.resource-subtitle.editable textarea');
+        const newJournal = headingEdit.querySelector('.resource-journal.editable textarea');
         const newAuthors = headingEdit.querySelector('.author-text.editable textarea');
         const newYear = headingEdit.querySelector('.year-text.editable input');
         const newPlace = headingEdit.querySelector('.place-text.editable input');
+        const newUrl = headingEdit.querySelector('.url-text.editable input');
 
         //clean up helper function
         function cleanUp () {
@@ -792,9 +1029,11 @@ function toggleResource(id, forceDirection) {
             newNumber.value = existingNumber;
             newTitle.value = existingTitle.innerText;
             newSubtitle.value = existingSubTitle.innerText;
+            newJournal.value = existingJournal.innerText;
             newAuthors.value = existingAuthors.innerText;
             newYear.value = existingYear.innerText;
             newPlace.value = existingPlace.innerText;
+            newUrl.value = existingUrl.getAttribute('data-url');
             // console.log("submit and cancel button disabled");
             submitButton.disabled = true;
             cancelButton.disabled = true;
@@ -810,17 +1049,19 @@ function toggleResource(id, forceDirection) {
                 alert("title and authors fields can't be empty");
                 return false;
             } else {
-                const data = {
+                let data = {
                     resource_id: id,
                     resource_title: newTitle.value,
                     resource_subtitle: newSubtitle.value,
+                    journal: newJournal.value,
                     authors: newAuthors.value,
                     resource_type: newType.value,
                     reference_number: newNumber.value,
                     place: newPlace.value,
-                    publication_year: newYear.value
+                    publication_year: newYear.value,
+                    url: newUrl.value,
                 };
-                if (newCover.getAttribute('upload-flag')){
+                if (newCover.getAttribute('upload-flag') == 'true'){
                     data.cover_base64 = newCover.getAttribute('src');
                 }
                 //axios
@@ -848,6 +1089,7 @@ function toggleResource(id, forceDirection) {
                         }
                         existingTitle.innerText = newTitle.value;
                         existingSubTitle.innerText = newSubtitle.value;
+                        existingJournal.innerText = newJournal.value;
                         existingAuthors.innerText = newAuthors.value;
                         existingYear.innerText = newYear.value;
                         existingPlace.innerText = newPlace.value;
@@ -855,6 +1097,12 @@ function toggleResource(id, forceDirection) {
                             comma.innerText = ",";
                         } else {
                             comma.innerText = "";
+                        }
+                        existingUrl.setAttribute('data-url', newUrl.value);
+                        if (newUrl.value) {
+                            existingUrl.disabled = false;
+                        } else {
+                            existingUrl.disabled = true;
                         }
                         cleanUp();
                     };
@@ -937,15 +1185,15 @@ function toggleResource(id, forceDirection) {
                 }
 
                 // Store the generated preview in a hidden input within the same form for final submission
-                const form = event.target.closest('form');
-                let hiddenInput = form.querySelector('input[name="coverPreview"]');
-                if (!hiddenInput) {
-                    hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'coverPreview';
-                    form.appendChild(hiddenInput);
-                }
-                hiddenInput.value = dataUrl;
+                // const form = event.target.closest('form');
+                // let hiddenInput = form.querySelector('input[name="coverPreview"]');
+                // if (!hiddenInput) {
+                //     hiddenInput = document.createElement('input');
+                //     hiddenInput.type = 'hidden';
+                //     hiddenInput.name = 'coverPreview';
+                //     form.appendChild(hiddenInput);
+                // }
+                // hiddenInput.value = dataUrl;
             };
             img.src = e.target.result;
         };
@@ -1836,72 +2084,79 @@ function confirmDelete() {
 
 
 //ADD (DRAG) CATEGORY TO A RESOURCE
-    let categoriesItemsList = document.getElementById('categories-list').querySelectorAll('.categories-item');
-    let resourcesDropTargets = document.querySelectorAll('.user-resource');
-    // event listeners for draggable categories
-    categoriesItemsList.forEach(item => {
-        // drag start
-        item.addEventListener('dragstart', (event) => {
-            event.target.classList.add('dragging');
-            event.dataTransfer.clearData();
-            const categoryData = {
-                id: item.getAttribute('data-id'),
-                name: item.getAttribute('data-name'),
-                draggable_cat_to_book: true
-            };
-            // console.log("category data send: ", categoryData);
-            event.dataTransfer.setData("text/plain", JSON.stringify(categoryData) );
+    function catDraggable(elementsArray) {
+        // event listeners for draggable categories
+        elementsArray.forEach(item => {
+            // drag start
+            item.addEventListener('dragstart', (event) => {
+                event.target.classList.add('dragging');
+                event.dataTransfer.clearData();
+                const categoryData = {
+                    id: item.getAttribute('data-id'),
+                    name: item.getAttribute('data-name'),
+                    draggable_cat_to_book: true
+                };
+                // console.log("category data send: ", categoryData);
+                event.dataTransfer.setData("text/plain", JSON.stringify(categoryData) );
 
-            //remove pointer events from resource children
-            resourcesDropTargets.forEach(resource => {
-                let children = resource.querySelectorAll('*');
-                children.forEach(child => {
-                    child.style.pointerEvents = 'none';
+                //remove pointer events from resource children
+                document.querySelectorAll('.user-resource').forEach(resource => {
+                    let children = resource.querySelectorAll('*');
+                    children.forEach(child => {
+                        child.style.pointerEvents = 'none';
+                    });
                 });
             });
-        });
-        // drag end
-        item.addEventListener('dragend', (event) => {
-            event.target.classList.remove('dragging');
-            //restore pointer events for resource children
-            resourcesDropTargets.forEach(item => {
-                let children = item.querySelectorAll('*');
-                children.forEach(child => {
-                    child.style.pointerEvents = '';
+            // drag end
+            item.addEventListener('dragend', (event) => {
+                event.target.classList.remove('dragging');
+                //restore pointer events for resource children
+                document.querySelectorAll('.user-resource').forEach(item => {
+                    let children = item.querySelectorAll('*');
+                    children.forEach(child => {
+                        child.style.pointerEvents = '';
+                    });
                 });
+                // console.log("drag ended");
             });
-            // console.log("drag ended");
         });
-    });
+    }
+    // call on page load
+    catDraggable(document.getElementById('categories-list').querySelectorAll('.categories-item'));
 
     // event listeners for resources
-    resourcesDropTargets.forEach(item => {
-        item.addEventListener('dragenter', (event) => {
-            event.preventDefault();
-            event.target.classList.add('dragover');
-            // console.log("drag started");
-        });
-        item.addEventListener('dragleave', (event) => {
-            event.preventDefault();
-            event.target.classList.remove('dragover');
-            // console.log("drag ended");
-        });
+    function resourceCatDroppable(resourceElementsArray) {
+        // console.log(resourceElementsArray);
+        resourceElementsArray.forEach(item => {
+            item.addEventListener('dragenter', (event) => {
+                event.preventDefault();
+                event.target.classList.add('dragover');
+                // console.log("drag started");
+            });
+            item.addEventListener('dragleave', (event) => {
+                event.preventDefault();
+                event.target.classList.remove('dragover');
+                // console.log("drag ended");
+            });
 
-        // to allow the drop by preventing the default behavior during dragover
-        item.addEventListener('dragover', (event) => {
-            event.preventDefault();  // This allows the drop event to be triggered
-        });
+            // to allow the drop by preventing the default behavior during dragover
+            item.addEventListener('dragover', (event) => {
+                event.preventDefault();  // This allows the drop event to be triggered
+            });
 
-        // drop
-        item.addEventListener('drop', (event) => {
-            event.preventDefault();
-            const dataReceived = JSON.parse(event.dataTransfer.getData("text/plain"));
-            dataReceived.resource_id = item.id.slice(12);
-            // console.log("Data received", dataReceived);
-            addCategoryToResource(dataReceived);
-            event.target.classList.remove('dragover');
+            // drop
+            item.addEventListener('drop', (event) => {
+                event.preventDefault();
+                const dataReceived = JSON.parse(event.dataTransfer.getData("text/plain"));
+                dataReceived.resource_id = item.id.slice(12);
+                // console.log("Data received", dataReceived);
+                addCategoryToResource(dataReceived);
+                event.target.classList.remove('dragover');
+            });
         });
-    });
+    }
+    // call on page load
+    resourceCatDroppable(document.querySelectorAll('.user-resource'));
 
     //AFTER DROP FUNCTION WITH AXIOS ROUTE
     function addCategoryToResource(droppedData) {
@@ -1947,6 +2202,7 @@ function confirmDelete() {
     const bucketButton = document.querySelector('#remove-item-bucket');
     // add listeners to one category function - needs calling elsewere
     function addResourceCatListeners (categoryObj, resourceObj){
+        const resourcesDropTargets = document.querySelectorAll('.user-resource');
         //drag start
         categoryObj.addEventListener('dragstart', (event) => {
             bucketButton.style.pointerEvents = 'auto'; //to prevent the hidden popup from interfering with category dragging
@@ -1989,7 +2245,7 @@ function confirmDelete() {
     }
 
     // on page load assign listeners to each category item on each resource
-    resourcesDropTargets.forEach(resource => {
+    document.querySelectorAll('.user-resource').forEach(resource => {
         let resourceCategories = resource.querySelectorAll('.single-category');
         resourceCategories.forEach(category =>{
             // console.log(category);

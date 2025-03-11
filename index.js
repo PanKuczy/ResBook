@@ -147,10 +147,12 @@ async function getAllData () {
         r.authors,
         r.resource_type,
         r.reference_number,
-        r.created_at AS resource_created_at,
+        r.created_at,
         r.subtitle,
+        r.journal,
         r.place,
         r.cover_url,
+        r.url,
         r.publication_year,
         json_agg(
             DISTINCT jsonb_build_object(
@@ -242,7 +244,9 @@ async function getAllData () {
             noteObj.tags_objects = filteredTagObjects;
         });
     });
-
+    data.resources.forEach(resource => {
+        dateFormat(resource);
+    });
     data.notes.forEach(note => {
         dateFormat(note);
     });
@@ -397,6 +401,8 @@ app.post("/strip-category", async (req,res) =>{
 app.post("/new-resource", async (req,res) => {
     console.log("new resource request", req.body);
     try {
+        //returning bedzie id i created_at (do przepuszczenia przez formater)
+
         const queryTags = `
         SELECT id, name, color
         FROM tags
@@ -407,7 +413,7 @@ app.post("/new-resource", async (req,res) => {
         tagsData.forEach(element => {
             appendInvertedColor(element);
         });
-        res.status(200).json({success: true, resource_id: 999, tags: tagsData});
+        res.status(200).json({success: true, resource_id: 999, formattedDate: "1939-10-10" , tags: tagsData});
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error adding resource' });
@@ -418,9 +424,9 @@ app.post("/new-resource", async (req,res) => {
 
 //EDIT RESOURCE
 app.put("/edit-resource", async (req, res) => {
-    // console.log(req.body);
+    console.log("edit resource request: ",req.body);
     // save image to server and add url to data
-    let coverPath = null;
+    let coverPath = undefined;
     if (req.body.cover_base64) {
         // Remove the data URI prefix (e.g., "data:image/jpeg;base64,")
         const base64Data = req.body.cover_base64.replace(/^data:image\/\w+;base64,/, '');
@@ -442,10 +448,10 @@ app.put("/edit-resource", async (req, res) => {
     try {
         const queryEditRes = `
             UPDATE resources
-            SET title = $1, subtitle = $2, authors = $3, resource_type = $4, place = $5, publication_year = $6, reference_number = $7, cover_url = COALESCE($8, cover_url)
-            WHERE id = $9
+            SET title = $1, subtitle = $2, authors = $3, resource_type = $4, place = $5, publication_year = $6, reference_number = $7, cover_url = COALESCE($8, cover_url), journal = $9, url = $10
+            WHERE id = $11
         `;
-        await db.query(queryEditRes,[req.body.resource_title, req.body.resource_subtitle, req.body.authors, req.body.resource_type, req.body.place, req.body.publication_year, req.body.reference_number, coverPath, req.body.resource_id]);
+        await db.query(queryEditRes,[req.body.resource_title, req.body.resource_subtitle, req.body.authors, req.body.resource_type, req.body.place, req.body.publication_year, req.body.reference_number, coverPath, req.body.journal, req.body.url, req.body.resource_id]);
         res.status(200).json({success: true});
     } catch (err) {
         console.error(err);

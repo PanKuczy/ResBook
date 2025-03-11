@@ -25,7 +25,7 @@
                 <% for(let item of resources){%>
                     <% const resourceIndex = resources.indexOf(item); %>
         <!-- RESOURCE -->
-                <div class="user-resource <% if (item?.resource_type == "ISBN") {%><%= "book" %><%} else {%><%= "article" %><% } %> deletable-item visible" id="resource-id-<%= item?.resource_id %>" data-id="<%= item?.resource_id %>" data-type="<%= item?.resource_type ?? null %>" data-number="<%= item?.reference_number ?? null %>">
+                <div class="user-resource <% if (item?.resource_type == "ISBN") {%><%= "book" %><%} else {%><%= "article" %><% } %> deletable-item visible" id="resource-id-<%= item?.resource_id %>" data-id="<%= item?.resource_id %>" data-type="<%= item?.resource_type ?? null %>" data-number="<%= item?.reference_number ?? null %>" data-created-date="<%= item?.formattedDate %>">
                     <a class="resource-heading" style="display: flex;" onclick="filterResources(null, null, <%= item?.resource_id %>)">
     
                         <div class="resource-cover">
@@ -42,6 +42,7 @@
                             
                             <h2 class="resource-title"><%= item.resource_title %></h2>
                             <h3 class="resource-subtitle"><%= item?.subtitle ?? null %></h3>
+                            <div class="journal-group"><h3><%if(item?.journal){%>In: <% } %></h3><h3 class="resource-journal"><%= item?.journal ?? null %></h3></div>
                             <div class="resource-authors-date-place-row">
                                 <div class="authors-group"><h5 class="author-text">By </h5><h5 class="author-text authors-content"><%= item.authors %></h5></div>
                                 <div class="date-place-group">
@@ -65,8 +66,12 @@
                         <div class="resource-heading-text">
                             <h2 class="resource-title editable">Title: <textarea rows="2"><%= item.resource_title %></textarea><h2>
                             <h3 class="resource-subtitle editable">Subtitle: <textarea rows="2"><%= item?.subtitle ?? null %></textarea></h3>
+                            <h3 class="resource-journal editable">Journal: <textarea rows="1"><%= item?.journal ?? null %></textarea></h3>
                             <div class="resource-authors-date-place-row">
-                                <div class="authors-group editable"><h5 class="author-text editable">Authors: <textarea rows="4"><%= item.authors %></textarea></h5></div>
+                                <div class="authors-group editable">
+                                    <h5 class="author-text editable">Authors: <textarea rows="2"><%= item.authors %></textarea></h5>
+                                    <h5 class="url-text editable">Link: <input value="<%= item?.url ?? null %>"></h5>
+                                </div>
                                 <div class="date-place-group editable">
                                     <div class="resource-type-row">
                                         <h5>Resource type: 
@@ -133,6 +138,15 @@
                             type="button"
                             onclick="showConfirmationPopup(null, '/delete-resource', '<%= item?.resource_id %>', 'resource-id-<%= item?.resource_id %>', null)">
                             <i class="fa-solid fa-trash"></i><span class="tooltip">delete resource</span>
+                        </button>
+                        <button
+                            <% if (!item?.url) {%> disabled <% } %>
+                            class="url-button icon-button tooltip-container" 
+                            id="resource-url-<%= item?.resource_id %>"
+                            type="button"
+                            data-url="<%= item?.url ?? null %>"
+                            onclick="urlButton(this)">
+                            <i class="fa-solid fa-up-right-from-square"></i><span class="tooltip">open link to the resource</span>
                         </button>
                     </div>
                     <div class="resource-expand">
@@ -434,8 +448,8 @@
                             <div class="new-res-buttons-group"></div>
                             <h3>Add new resource</h3>
                             <div class="new-res-buttons-group">
-                                <button class="text-button" type="submit" name="note-submit" onclick="submitNewResource()" value="" >Submit</button>
-                                <button class="text-button" type="reset" name="note-cancel" onclick="createNewResourceToggle()" value="" >Cancel</button>
+                                <button class="text-button" type="submit" name="resource-submit" onclick="submitNewResource()" value="" >Submit</button>
+                                <button class="text-button" type="reset" name="resource-cancel" onclick="createNewResourceToggle()" value="" >Cancel</button>
                             </div>
                         </div>
                         <form class="resource-heading editable">
@@ -449,19 +463,30 @@
                             <div class="resource-heading-text">
                                 <h2 class="resource-title editable">Title: <textarea rows="2"></textarea><h2>
                                 <h3 class="resource-subtitle editable">Subtitle: <textarea rows="2"></textarea></h3>
+                                <h3 class="resource-journal editable">Journal: <textarea rows="1"></textarea></h3>
                                 <div class="resource-authors-date-place-row">
-                                    <div class="authors-group editable"><h5 class="author-text editable">Authors: <textarea rows="4"></textarea></h5></div>
-                                    <div class="date-place-group editable">
-                                        <div class="resource-type-row">
-                                            <h5>Resource type: 
-                                            <input type="radio" name="res-type" value="ISBN"/>
-                                            <label for="ISBN">Book</label>
-                                            <input type="radio" name="res-type" value="DOI"/>
-                                            <label for="DOI">Article</label>
-                                            </h5>
+                                    <div class="authors-group editable">
+                                        <h5 class="author-text editable">Authors: <textarea rows="2"></textarea></h5>
+                                        <div class="fetch-group-row">
+                                            <div class="fetch-group-column">
+                                                <div class="resource-type-row">
+                                                    <h5>Resource type: 
+                                                    <input type="radio" name="res-type" value="ISBN"/>
+                                                    <label for="ISBN">Book</label>
+                                                    <input type="radio" name="res-type" value="DOI"/>
+                                                    <label for="DOI">Article</label>
+                                                    </h5>
+                                                    
+                                                </div>
+                                                <h5 class="isbn-text editable">ISBN/DOI number:<input name="isbn-doi-number" id="resource-new-isbn-doi" value=""></h5>
+                                            </div>
+                                            <button id="fetch-button" class="text-button" type="button" name="resource-fetch" onclick="getDataFromLibraries()" value="" >Fetch data by ISBN/DOI</button>
                                         </div>
-                                        <h5 class="isbn-text editable">ISBN/DOI number:<input name="isbn-doi-number" id="resource-new-isbn-doi" value=""></h5>  
-                                        <h5 class="year-text editable">Year: <input value=""></h5><h5 class="place-text editable">Place: <input value=""></h5>
+                                    </div>
+                                    <div class="date-place-group editable">
+                                        <h5 class="year-text editable">Year: <input value=""></h5>
+                                        <h5 class="place-text editable">Place: <input value=""></h5>
+                                        <h5 class="url-text editable">Link: <input value=""></h5>
                                     </div>
                                 </div>
                             </div>
