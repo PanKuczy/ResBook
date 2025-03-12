@@ -163,6 +163,18 @@ input:focus, textarea:focus{
     align-items: center;
     gap: 6px;
 }
+
+.utils-back-icon{
+    padding: 1px 1px;
+    width: 20px;
+    color: var(--color-graymid);
+}
+/* .utils-back-icon::before {
+    content: "go-back-svgrepo-com.svg"; 
+    font-family: "Font Awesome 6 Free"; 
+    font-weight: 900; 
+} */
+
 #res-sort-type-text{
     line-height: 24px;
     font-weight: 500;
@@ -861,7 +873,7 @@ input:focus, textarea:focus{
     content: "\f53f"; 
     font-family: "Font Awesome 6 Free"; 
     font-weight: 900; 
-  }
+}
 
 #tag-container {
     display: flex;
@@ -1009,6 +1021,7 @@ input:focus, textarea:focus{
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 100;
     /* pointer-events: none; Optional: Prevent interactions when hidden */
 }
 .popup-content {

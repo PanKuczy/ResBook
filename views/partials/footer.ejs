@@ -311,84 +311,101 @@
 
 
 // FILTERING RESOURCES BASIC FUNCTIONS
-    let filtered = false;
-    // const frontEndResources = <%-// JSON.stringify(resources) %>; //to chyba jednak nie bedzie potrzbene jak i cale zbieranie zasobow. niech ta funkcja opreuje tylko na DOM id'sach
+    //GLOBAL VARIABLES FOR FILTERING
+    let filtered = false; // niepotrzebne?
 
     let filteredResourcesIds = [];
     let filteredResourcesDomIds = [];
-
-    // zebranie wszystkich ksiazek
-    const userResources = document.getElementsByClassName('user-resource');
-    // zebranie DOMid wszystkich ksiazek
+    let userResources = undefined;
     let userResourcesDomIds = [];
-    for (let resource of userResources) {
-        userResourcesDomIds.push(resource.id);
-    };
+    let selectedCatIds = [];
+
+    function collectAllResources() {
+        userResources = document.querySelectorAll('.user-resource');
+        // console.log("all user resources", userResources);
+        for (let resource of userResources) {
+            userResourcesDomIds.push(resource.id);
+        };
+    }
+    // call on page load
+    collectAllResources();
     // console.log("User resources DOM IDs: ", userResourcesDomIds);
     filteredResourcesDomIds = [...userResourcesDomIds];
     // console.log("filteredResourcesDomIds: ", filteredResourcesDomIds);
 
-    function filterResources(add, remove, isolate) {
-        // console.log("filtrowanie: ", add, remove, isolate);
+    function filterResources(add, remove, isolate, reset, catIds) {
+        console.log("filtrowanie: ", add, remove, isolate, reset, catIds);
 
         if (isolate) {
             filteredResourcesDomIds = [`resource-id-${isolate}`];
             toggleResource(isolate, "down");
 
-            } else if(add) {
-                const newId = `resource-id-${add}`;
-                if (!filteredResourcesDomIds.includes(newId)) {
-                    filteredResourcesDomIds.push(newId); // Only add if it doesn't exist already
-                }
-            } else if(remove) {
-                const indexToRemove = filteredResourcesDomIds.indexOf(`resource-id-${remove}`);
-                // console.log("Remove item index: ", indexToRemove);
-                if (indexToRemove !== -1) {
-                    filteredResourcesDomIds.splice(indexToRemove, 1);
-                    // console.log("filteredResourcesDomIds: ", filteredResourcesDomIds);
-                }
+        } else if(add) {
+            const newId = `resource-id-${add}`;
+            if (!filteredResourcesDomIds.includes(newId)) {
+                filteredResourcesDomIds.push(newId); // Only add if it doesn't exist already
             }
+        } else if(remove) {
+            const indexToRemove = filteredResourcesDomIds.indexOf(`resource-id-${remove}`);
+            // console.log("Remove item index: ", indexToRemove);
+            if (indexToRemove !== -1) {
+                filteredResourcesDomIds.splice(indexToRemove, 1);
+                // console.log("filteredResourcesDomIds: ", filteredResourcesDomIds);
+            }
+        } else if (reset) {
+            filteredResourcesDomIds = [...userResourcesDomIds];
+            const allCats = document.querySelectorAll('#categories-list .categories-item');
+            allCats.forEach(cat => cat.classList.remove('clicked'));
+            selectedCatIds = [];
+        } else if (catIds) {
+            if (catIds.length > 0) {
+                filteredResourcesDomIds = [];
+                catIds.forEach(catId => {
+                    const matchingSingleCategories = document.querySelectorAll(`.resource-categories-row .single-category[data-id="${catId}"]`);
+                    matchingSingleCategories.forEach(matchingCat => {
+                        filteredResourcesDomIds.push(matchingCat.closest('.user-resource').id);
+                    });
+                    console.log("matchingSingleCategories", matchingSingleCategories);
+                });
+            } else {
+                filteredResourcesDomIds = [...userResourcesDomIds];
+            }
+
+        }
 
         let resourcesToHide = userResourcesDomIds.filter(domId => {
             return !filteredResourcesDomIds.includes(domId);
         });
-        // console.log("Resources DOM IDs to hide: ", resourcesToHide);
+        console.log("Resources DOM IDs to show: ", filteredResourcesDomIds);
+        console.log("Resources DOM IDs to hide: ", resourcesToHide);
+
         for (let resourceId of resourcesToHide) {
             document.getElementById(resourceId).classList.add("hidden")
             document.getElementById(resourceId).classList.remove("visible")
+        }
+        for (let resourceId of filteredResourcesDomIds) {
+            document.getElementById(resourceId).classList.remove("hidden")
+            document.getElementById(resourceId).classList.add("visible")
         }
     }
 
 
 
 // FILTER BY CATEGORY
-    // na razie skopiowana na chama z tagsow
-    let selectedCatIds = [];
-    let selectedCatNames = [];
-
-    function selectCategory(element, resourceId) {
-        const catId = element.getAttribute('data-id');
-        const catName = element.getAttribute('data-name');
+    function selectCategory(button) {
+        const catId = button.getAttribute('data-id');
+        const catName = button.getAttribute('data-name');
 
         //Ids
         if (selectedCatIds.includes(catId)) {
             selectedCatIds = selectedCatIds.filter(id => id !== catId);
-            element.classList.remove('clicked');
+            button.classList.remove('clicked');
         } else {
             selectedCatIds.push(catId);
-            element.classList.add('clicked');
+            button.classList.add('clicked');
         }
-        //Names
-        if (selectedCatNames.includes(catName)) {
-            selectedCatNames = selectedCatNames.filter(name => name !== catName);
-        } else {
-            selectedCatNames.push(catName);
-        }
-
-        //tu dalej powinna byc funkcja filtrujaca
-
-        // document.getElementById('selectedNewNoteCats-' + resourceId).value = selectedCatIds.join(',');
-        // document.getElementById('selectedNewNoteCatsNames-' + resourceId).value = selectedCatNames.join(',');
+        console.log("selected categories ids: ", selectedCatIds);
+        filterResources(null, null, null, null, selectedCatIds);
     }
 
 
@@ -2050,76 +2067,78 @@
 
     // DELETE ITEM CONFIRM
     function confirmDelete() {
-    // Hide the confirmation popup
-    document.getElementById('confirmation-popup').style.display = 'none';
+        // Hide the confirmation popup
+        document.getElementById('confirmation-popup').style.display = 'none';
 
-    const itemDomId = document.getElementById('delete-form').delete_item_DOMid.value;
-    const additionalItemDomId = document.getElementById('delete-form').delete_item_DOMid_additional.value;
-    const itemElement = document.getElementById(itemDomId);
-    const additionalItemElement = document.getElementById(additionalItemDomId);
-    const itemId = document.getElementById('delete-form').delete_item_id.value;
-    const itemResourceId = document.getElementById('delete-form').delete_resource_id.value;
-    const route = document.getElementById('delete-form').delete_route.value;
+        const itemDomId = document.getElementById('delete-form').delete_item_DOMid.value;
+        const additionalItemDomId = document.getElementById('delete-form').delete_item_DOMid_additional.value;
+        const itemElement = document.getElementById(itemDomId);
+        const additionalItemElement = document.getElementById(additionalItemDomId);
+        const itemId = document.getElementById('delete-form').delete_item_id.value;
+        const itemResourceId = document.getElementById('delete-form').delete_resource_id.value;
+        const route = document.getElementById('delete-form').delete_route.value;
 
-    // console.log("FE Delete request sent: ", itemDomId, additionalItemDomId, itemId, itemResourceId, route);
-    const data = {
-        resource_id: itemResourceId, 
-        item_id: itemId
-    };
+        // console.log("FE Delete request sent: ", itemDomId, additionalItemDomId, itemId, itemResourceId, route);
+        const data = {
+            resource_id: itemResourceId, 
+            item_id: itemId
+        };
 
-    // axios route
-    axios.post(route, data)
-    .then(response => {
-        if (response.data.success) {
-            // result depending on route
-            if (route == "/delete-category") { //animation and delete for categories
-                itemElement.classList.add('fade-out');
-                additionalItemElement.classList.add("hidden-horizontal");
-                additionalItemElement.classList.remove("visible-horizontal");
-                const categoriesOnResources = document.querySelectorAll(`.resource-with-category-${itemId}`);
-                categoriesOnResources.forEach(element => element.classList.add("hidden-horizontal"));
-                categoriesOnResources.forEach(element => element.classList.remove("visible-horizontal"));
-                setTimeout(() => {
-                    itemElement.remove();
-                    additionalItemElement.remove();
-                    document.querySelectorAll(`.resource-with-category-${itemId}`).forEach(element => element.remove());
-                }, 500);
-            } else if (route == "/delete-note") { //animation and delete for notes
-                itemElement.classList.add('fade-out');
-                setTimeout(() => {
-                    // Update note counter
-                    const counterField = document.querySelector(`#resource-id-${itemResourceId} .notes-counter-field`);
-                    const counterInt = parseInt(counterField.innerText);
-                    counterField.innerText = (counterInt - 1);
-                    itemElement.remove();
-                }, 300);
-            } else if (route == "/delete-tag") { //animation and delete for tags
-                const tagElements = document.querySelectorAll(`.single-note-tags[data-id="${itemId}"]`);
-                // console.log(tagElements);
-                tagElements.forEach(element => {
-                    element.classList.add("fade-out");
-                    element.classList.add("hidden-horizontal");
-                    element.classList.remove("visible-horizontal");
-                });
-                setTimeout(() => {
+        // axios route
+        axios.post(route, data)
+        .then(response => {
+            if (response.data.success) {
+                // result depending on route
+                if (route == "/delete-category") { //animation and delete for categories
+                    itemElement.classList.add('fade-out');
+                    additionalItemElement.classList.add("hidden-horizontal");
+                    additionalItemElement.classList.remove("visible-horizontal");
+                    const categoriesOnResources = document.querySelectorAll(`.resource-with-category-${itemId}`);
+                    categoriesOnResources.forEach(element => element.classList.add("hidden-horizontal"));
+                    categoriesOnResources.forEach(element => element.classList.remove("visible-horizontal"));
+                    setTimeout(() => {
+                        itemElement.remove();
+                        additionalItemElement.remove();
+                        document.querySelectorAll(`.resource-with-category-${itemId}`).forEach(element => element.remove());
+                        selectedCatIds.splice(selectedCatIds.findIndex((id) => id == itemId) , 1);
+                        filterResources(null, null, null, null, selectedCatIds);
+                    }, 500);
+                } else if (route == "/delete-note") { //animation and delete for notes
+                    itemElement.classList.add('fade-out');
+                    setTimeout(() => {
+                        // Update note counter
+                        const counterField = document.querySelector(`#resource-id-${itemResourceId} .notes-counter-field`);
+                        const counterInt = parseInt(counterField.innerText);
+                        counterField.innerText = (counterInt - 1);
+                        itemElement.remove();
+                    }, 300);
+                } else if (route == "/delete-tag") { //animation and delete for tags
+                    const tagElements = document.querySelectorAll(`.single-note-tags[data-id="${itemId}"]`);
+                    // console.log(tagElements);
                     tagElements.forEach(element => {
-                        element.remove();
+                        element.classList.add("fade-out");
+                        element.classList.add("hidden-horizontal");
+                        element.classList.remove("visible-horizontal");
                     });
-                }, 500);
-            } else if (route == "/delete-resource") { //animation and delete for notes
-                itemElement.classList.add('fade-out');
-                setTimeout(() => {
-                    itemElement.remove();
-                }, 300);
+                    setTimeout(() => {
+                        tagElements.forEach(element => {
+                            element.remove();
+                        });
+                    }, 500);
+                } else if (route == "/delete-resource") { //animation and delete for notes
+                    itemElement.classList.add('fade-out');
+                    setTimeout(() => {
+                        itemElement.remove();
+                    }, 300);
+                    collectAllResources();
+                }
             }
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting item:', error);
-        alert('Error deleting item');
-    });
-
-}
+        })
+        .catch(error => {
+            console.error('Error deleting item:', error);
+            alert('Error deleting item');
+        });
+    }
 
 
 //ADD (DRAG) CATEGORY TO A RESOURCE
@@ -2336,6 +2355,7 @@
                     itemToRemove.classList.remove("visible-horizontal");
                     setTimeout(() => {
                         itemToRemove.remove();
+                        filterResources(null, null, null, null, selectedCatIds);
                         sortCategoriesList();
                     }, 500); //time out żeby się animacje odpalały
                 }
