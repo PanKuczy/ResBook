@@ -21,9 +21,7 @@
             </div>
             <div class="main-inner-box">
 
-    
                 <% for(let item of resources){%>
-                    <% const resourceIndex = resources.indexOf(item); %>
         <!-- RESOURCE -->
                 <div class="user-resource <% if (item?.resource_type == "ISBN") {%><%= "book" %><%} else {%><%= "article" %><% } %> deletable-item visible" id="resource-id-<%= item?.resource_id %>" data-id="<%= item?.resource_id %>" data-type="<%= item?.resource_type ?? null %>" data-number="<%= item?.reference_number ?? null %>" data-created-date="<%= item?.formattedDate %>">
                     <a class="resource-heading" style="display: flex;" onclick="filterResources(null, null, <%= item?.resource_id %>)">

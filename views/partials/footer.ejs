@@ -1229,18 +1229,26 @@
     }
 
     // Resize text areas automatically
-    const textareas = document.querySelectorAll('.new-note-text, .edit-note-textarea');
-    for (let element of textareas) {
-        element.addEventListener('input', function() {
-            // Reset the height to allow shrinking if necessary
-            this.style.height = 'auto';
-            // Set the new height based on the scroll height
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-    };
+    function textareaAutoSizer(parent) {
+        let textareas = undefined;
+        if (!parent) {
+            textareas = document.querySelectorAll('.new-note-text, .edit-note-textarea');
+        } else {
+            textareas = parent.querySelectorAll('.new-note-text, .edit-note-textarea');
+        }
+        for (let element of textareas) {
+            element.addEventListener('input', function() {
+                // Reset the height to allow shrinking if necessary
+                this.style.height = 'auto';
+                // Set the new height based on the scroll height
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        };
+    }
+    // call on page load
+    textareaAutoSizer();
 
-
-// SELECT TAGS ROLLOUT, FOR NEW NOTE AND EXISTING NOTE
+    // SELECT TAGS ROLLOUT, FOR NEW NOTE AND EXISTING NOTE
     let selectedTagIds = [];
     let selectedTagNames = [];
     let selectedTagColors = [];
@@ -1377,7 +1385,6 @@
             // console.log(selectedTagIds);
         }
     }
-
 
     // NEW NOTE ROLLOUT - SELECT TAGS
 
@@ -1527,6 +1534,7 @@
 
     }
 
+
 // ASSIGN TAGS TO NOTE
     function assignTags(button, resourceId, noteId){
         // console.log("Tags assignment client request. Note: ", noteId, " Tag Ids: ", selectedTagIds);
@@ -1582,7 +1590,7 @@
     }
 
 
-// EDIT AND DELETE TAGS
+// EDIT TAGS
     // Buttons toggle
     function editTagsToggle(resourceId, noteId){
         let parentRollout = undefined;
@@ -1705,8 +1713,7 @@
     }
 
 
-
-// NOWE SUBMIT NOTE Z AXIOS i RES.JSON
+// SUBMIT NEW NOTE
     function submitNewNote(formId) {
         // Prevent default form submission
         event.preventDefault();
@@ -1714,14 +1721,14 @@
         // Get the form element
         const form = document.getElementById(formId);
         const formObject = formToObject(formId);
-        console.log("New note data: ", formObject);
+        // console.log("New note data: ", formObject);
 
         // Send the data using axios
         axios.post('/add-note', formObject)
         .then((response) => {
             if (response.data.success) {
                 const newNote = response.data.newNote;
-                console.log("response new note",newNote);
+                // console.log("response new note",newNote);
                 // console.log("response", response.data);
 
                 // Create a new note DOM element
@@ -1852,7 +1859,6 @@
                 // Update note counter
                 const counterField = document.querySelector(`#resource-id-${newNote.resource_id} .notes-counter-field`);
                 const counterInt = parseInt(counterField.innerText);
-                console.log(counterField, counterInt);
                 counterField.innerText = (counterInt + 1);
                 // initialize the newly created color picker
                 jscolor.install('body'); 
@@ -1862,7 +1868,11 @@
                 document.getElementById(`note-id-${newNote.note_id}`).classList.remove("hidden");
                 document.getElementById(`note-id-${newNote.note_id}`).classList.add("visible");
 
+                //textarea listener
+                textareaAutoSizer(document.getElementById(`note-id-${newNote.note_id}`));
+
                 form.reset();
+                clearSelectedTags();
                 document.getElementById(formId).classList.add("hidden")
                 document.getElementById(formId).classList.remove("visible")
 
@@ -1877,7 +1887,7 @@
     }
 
 
-//EDIT NOTE TOGGLE WITH AXIOS ROUTE
+// EDIT NOTE TOGGLE WITH AXIOS ROUTE
     function editNoteToggle(button, id){
         const noteTextContainerChildren = [...document.querySelector(`#note-text-${id}`).children];
         const submitButton = document.querySelector(`#note-id-${id} .edit-submit-button`);
@@ -1905,13 +1915,13 @@
                     note_link: linkEdit.querySelector('input').value,
                     note_pages: pagesEdit.querySelector('input').value
                 };
-                console.log("data to send: ",data);
+                // console.log("data to send: ",data);
                 //axios
                 axios.put("/edit-note", data)
                 .then(response => {
                     if (response.data.success) {
-                        console.log("response ", response.data);
-                        //response and build html
+                        // console.log("response ", response.data);
+                        //DOM elements
                         textArea.innerText = textAreaEdit.value;
                         document.querySelector(`#note-${id}-date`).innerText = response.data.resultData.formattedDate;
                         //check if new link field is not empty
@@ -1960,8 +1970,7 @@
             // console.log("submit and cancel button enabled");
             submitButton.disabled = false;
             cancelButton.disabled = false;
-            //set height of textarea input to fit existing text
-            textAreaEdit.style.height = (textAreaEdit.scrollHeight) + 'px';
+
         } else {
             // console.log("submit and cancel button disabled");
             submitButton.disabled = true;
@@ -1976,6 +1985,9 @@
             }
         });
 
+        //set height of textarea input to fit existing text
+        textAreaEdit.style.height = (textAreaEdit.scrollHeight) + 'px';
+
         //check if cancel - moved to end for the sake of not loosing \n line breaks
         if (button.getAttribute('name') == "edit-note-cancel") {
             textAreaEdit.value = textArea.innerText;
@@ -1985,13 +1997,8 @@
     }
 
 
+// DELETE ITEMS - GLOBAL FUNCTIONS
 
-
-
-</script>
-
-<!-- DELETE ITEMS - GLOBAL FUNCTIONS -->
-<script>
     // Removal popup
     function showRemovePopup() {
         document.getElementById('remove-popup').style.display = 'flex';
@@ -2016,14 +2023,13 @@
         document.getElementById('confirmation-popup').style.display = 'flex';
     }
 
-// Function to handle cancellation
+    // Cancel delete
     function cancelDelete() {
     // Hide the confirmation popup without submitting the form
     document.getElementById('confirmation-popup').style.display = 'none';
 }
 
-// Delete Item (DELETE request using Axios)
-// Function to handle deletion when user confirms
+    // DELETE ITEM CONFIRM
     function confirmDelete() {
     // Hide the confirmation popup
     document.getElementById('confirmation-popup').style.display = 'none';
@@ -2037,8 +2043,6 @@
     const route = document.getElementById('delete-form').delete_route.value;
 
     // console.log("FE Delete request sent: ", itemDomId, additionalItemDomId, itemId, itemResourceId, route);
-    
-    // do data bedzie mozna dodawac kolejne opcje jezeli beda potrzebne, np. note_id przy kasowaniu tagow
     const data = {
         resource_id: itemResourceId, 
         item_id: itemId
@@ -2072,7 +2076,6 @@
                 }, 300);
             } else if (route == "/delete-tag") { //animation and delete for tags
                 const tagElements = document.querySelectorAll(`.single-note-tags[data-id="${itemId}"]`);
-                // const tagElements = [...allTagElements].filter((tag) => tag.getAttribute('data-id') == itemId);
                 // console.log(tagElements);
                 tagElements.forEach(element => {
                     element.classList.add("fade-out");
