@@ -101,10 +101,10 @@
 
     }
 
-    let currentResourcesSort = undefined;
     function sortResources(order){
         const parent = document.querySelector('.main-inner-box');
         const resources = document.querySelectorAll('.user-resource');
+        let currentResourcesSort = undefined;
 
         switch (order) {
             case 'authors-asc':
@@ -182,8 +182,27 @@
             default:
                 break;
         }
-        console.log("Current resource sort: ", currentResourcesSort);
+        // console.log("Current resource sort: ", currentResourcesSort);
     };
+
+    function sortResourcesToggle(button){
+        // console.log(button);
+        const sortMenu = document.querySelector('#res-sort-list');
+        const sortInfo = document.querySelector('#res-sort-type-text');
+        if (button) {
+            sortResources(button.value);
+            const currentLabel = sortMenu.querySelector(`label[for="${button.value}"]`);
+            sortInfo.innerText = currentLabel.innerText;
+        }
+        // show/hide menu
+        if (sortMenu.classList.contains('hidden-fast')) {
+            sortMenu.classList.remove('hidden-fast');
+            sortMenu.classList.add('visible-fast');
+        } else {
+            sortMenu.classList.add('hidden-fast');
+            sortMenu.classList.remove('visible-fast');
+        }
+    }
 
     function sortTagsRow(parent){
         let range = undefined;
@@ -212,7 +231,6 @@
 
     }
 
-
     function sortNotesToggle(order, singleResource){
         // trzeba jeszcze dodac togglowanie przy klikaniu ikony ze strzalka lub wyborze z listy
         const notesBoxes = singleResource?.getElementsByClassName('notes-box') ?? document.getElementsByClassName('notes-box');
@@ -232,6 +250,7 @@
         }
 
     }
+    
     //call sorting on page load
     sortCategoriesList();
     sortResources('added-date-desc');

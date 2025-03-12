@@ -16,7 +16,27 @@
             <div class="utilities-bar" id="utilities-bar" autofocus="false">
                 <button class="button button-utils">Filter</button>
                 <button class="button button-utils">Search</button>
-                <div class="res-sort-button-group"><button class="button button-utils">Sort</button><div id="res-sort-type-text">by date</div></div>
+                <div class="res-sort-button-group">
+                    <button class="button button-utils" onclick="sortResourcesToggle()">Sort by</button>
+                    <div id="res-sort-type-text">date created (user) &#11206</div>
+                    <div id="res-sort-list" class="box hidden-fast">
+                        <form id="res-sort-form">
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="title-asc" onclick="sortResourcesToggle(this)"><label for="title-asc">title &#11205</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="title-desc" onclick="sortResourcesToggle(this)"><label for="title-desc">title &#11206</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="subtitle-asc" onclick="sortResourcesToggle(this)"><label for="subtitle-asc">subtitle &#11205</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="subtitle-desc" onclick="sortResourcesToggle(this)"><label for="subtitle-desc">subtitle &#11206</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="authors-asc" onclick="sortResourcesToggle(this)"><label for="authors-asc">authors &#11205</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="authors-desc" onclick="sortResourcesToggle(this)"><label for="authors-desc">authors &#11206</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="published-date-asc" onclick="sortResourcesToggle(this)"><label for="published-date-asc">date published &#11205</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="published-date-desc" onclick="sortResourcesToggle(this)"><label for="published-date-desc">date published &#11206</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="added-date-asc" onclick="sortResourcesToggle(this)"><label for="added-date-asc">date created (user) &#11205</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="added-date-desc" onclick="sortResourcesToggle(this)" checked><label for="added-date-desc">date created (user) &#11206</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="place-asc" onclick="sortResourcesToggle(this)"><label for="place-asc">place &#11205</label></div>
+                            <div class="res-sort-item"><input type="radio" name="res-sort" value="place-desc" onclick="sortResourcesToggle(this)"><label for="place-desc">place &#11206</label></div>
+
+                        </form>
+                    </div>
+                </div>
                 <button class="button button-utils" onclick="createNewResourceToggle()">Add resource</button>
             </div>
             <div class="main-inner-box">

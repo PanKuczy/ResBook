@@ -10,6 +10,7 @@
     --color-red: rgb(255, 139, 139);
     --color-brown-pale: #A53837;
     --color-blue-pale: #325195;
+    accent-color: var(--color-brown-pale);
 }
 
 body {
@@ -157,13 +158,52 @@ input:focus, textarea:focus{
     border-color: var(--color-graymid);
 } 
 .res-sort-button-group{
+    position: relative;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 #res-sort-type-text{
     line-height: 24px;
-    font-style: italic;
+    font-weight: 500;
+    font-size: 14px;
+}
+#res-sort-list{
+    color: var(--color-beige1);
+    max-height: fit-content;
+    position: absolute;
+    top: 23px;
+    background: var(--color-graymid);
+    width: max-content;
+    box-shadow: 1px 1px 20px 0px rgba(0, 0, 0, 0.7);
+    z-index: 8;
+}
+#res-sort-form{
+    display: flex;
+    flex-direction: column;
+    margin: 0.5em;
+    padding: 0px;
+}
+.res-sort-item{
+    list-style: none;
+    display: flex;
+    font-size: 14px;
+    padding: 3px;
+    margin: 0px;
+    border: 0.5px solid;
+    border-color: rgba(255, 255, 255, 0);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: border-color 0.3s, color 0.3s;
+}
+.res-sort-item input[type="radio"]{
+    border-radius: 50%;
+    height: 1em;
+    width: 1em;
+    margin-right: 6px;
+}
+.res-sort-item input[type="radio"]:focus{
+    outline: none;
 }
 
 /* CATEGORY */
