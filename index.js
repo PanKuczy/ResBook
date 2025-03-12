@@ -161,16 +161,16 @@ async function getAllData () {
             )
         ) AS resource_categories,
         json_agg(
-            DISTINCT jsonb_build_object(
-                'note_id', n.id,
-                'note_text', n.note_text,
-                'created_at', n.created_at,
-                'updated_at', n.updated_at,
-                'target_pages', n.target_pages,
-                'target_object', n.target_object,
-                'tags', nt.tags
-            )
-        ) AS notes
+        DISTINCT jsonb_build_object(
+            'note_id', n.id,
+            'note_text', n.note_text,
+            'created_at', n.created_at,
+            'updated_at', n.updated_at,
+            'target_pages', n.target_pages,
+            'target_object', n.target_object,
+            'tags', nt.tags
+        )
+        ) FILTER (WHERE n.id IS NOT NULL) AS notes
     FROM resources r
     LEFT JOIN resource_categories rc ON r.id = rc.resource_id
     LEFT JOIN categories c ON rc.category_id = c.id
@@ -238,7 +238,7 @@ async function getAllData () {
 
     // add assigned tag objects under each note under each resource (only on data.resources.notes and not on data.notes)
     data.resources.forEach(resObj => {
-        resObj.notes.forEach(noteObj => {
+        resObj.notes?.forEach(noteObj => {
             const filteredTagIds = resultNotesTagsCorelation.rows.filter((row) => row.note_id == noteObj.note_id).map(({note_id, tag_id}) => (tag_id));
             const filteredTagObjects = filterData(data.tags, filteredTagIds, 'id');
             noteObj.tags_objects = filteredTagObjects;
@@ -251,12 +251,12 @@ async function getAllData () {
         dateFormat(note);
     });
     data.resources.forEach(resource => {
-        if (resource.notes.length > 0){ 
-            resource.notes.forEach(note => {
+        if (resource.notes?.length > 0){ 
+            resource.notes?.forEach(note => {
             dateFormat(note);
         })};
     });
-    // console.log(util.inspect(data, { depth: null, colors: true }));
+    console.log(util.inspect(data, { depth: null, colors: true }));
     userResourcesFull = data;
     return data;
 }
@@ -453,7 +453,7 @@ app.post("/new-resource", async (req,res) => {
         tagsData.forEach(element => {
             appendInvertedColor(element);
         });
-        res.status(200).json({success: true, resource_id: 999, formattedDate: resultData.formattedDate , tags: tagsData});
+        res.status(200).json({success: true, resource_id: resultData.id, formattedDate: resultData.formattedDate , tags: tagsData});
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, error: 'Error adding resource' });

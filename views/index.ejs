@@ -53,6 +53,9 @@
                             </div>
                         </div>
                         <div class="right-stripe <% if (item?.resource_type == "ISBN") {%><%= "book" %><%} else {%><%= "article" %><% } %>"></div>
+                        <div class="notes-counter-box">
+                            <p class="notes-counter-field"><%= item.notes?.length ?? "0" %></p>
+                        </div>
                     </a>
                     <!-- editable -->
                     <form class="resource-heading editable" style="display: none;">
@@ -254,7 +257,7 @@
                         <% let notesTagsCorelArray = [notes_tags_corel]; %>
                         <% notesTagsCorelArray = [...notes_tags_corel]; %> 
     
-                        <% for(let note of item?.notes ?? null){%>
+                        <% for(let note of item?.notes || []){%>
                             <% if (note?.note_id) {%>
                                 <div class="single-note-item deletable-item <%if (!note?.note_id){%><%='hidden'%><%}%>" id="note-id-<%= note?.note_id %>">
                                     <% const filteredArray = notesTagsCorelArray.filter((id) => id.note_id == note.note_id ) %>

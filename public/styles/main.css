@@ -334,7 +334,20 @@ input:focus, textarea:focus{
 .right-stripe.article{
     background-color: var(--color-blue-pale);
 }
-
+.notes-counter-box{
+    position: absolute;
+    bottom: 0px;
+    right: 32px;
+    border: 0.05em solid;
+    border-bottom: none;
+    border-radius: 5px 5px 0px 0px;
+    border-color: var(--color-beige1);
+}
+.notes-counter-field{
+    margin: 4px 8px;
+    font-weight: 300;
+    font-size: small;
+}
 .user-resource{
     position: relative;
     align-content: start;
@@ -377,6 +390,7 @@ input:focus, textarea:focus{
 }
 .resource-heading{
     display: flex;
+    position: relative;
     /* height: max-content; */
     min-height: inherit;
     flex-direction: row;
@@ -542,6 +556,7 @@ input:focus, textarea:focus{
 .resource-categories-row {
     display: flex;
     flex-wrap: wrap;
+    gap: 3px;
     justify-content: flex-end;
     max-width: 50%;
     float: inline-end;
@@ -558,7 +573,7 @@ input:focus, textarea:focus{
     padding: 3px 10px;
     height: 20px;
     line-height: 20px;
-    margin: 1.5px;
+    /* margin: 1.5px; */
 }
 .single-category.draggingdelete{
     background-color: var(--color-red);

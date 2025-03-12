@@ -759,6 +759,9 @@
                                 </div>
                             </div>
                             <div class="right-stripe ${newType.value == "ISBN" ? "book" : "article"}"></div>
+                            <div class="notes-counter-box">
+                                <p class="notes-counter-field">0</p>
+                            </div>
                         </a>
                         <!-- editable -->
                         <form class="resource-heading editable" style="display: none;">
@@ -1711,7 +1714,7 @@
         // Get the form element
         const form = document.getElementById(formId);
         const formObject = formToObject(formId);
-        console.log("New note dataa: ", formObject);
+        console.log("New note data: ", formObject);
 
         // Send the data using axios
         axios.post('/add-note', formObject)
@@ -1846,7 +1849,13 @@
                 `;
                 // Append the new note element to the container
                 document.getElementById('notesbox-' + newNote.resource_id ).appendChild(newNoteElement);
-                jscolor.install('body'); // it's needed to initialize the newly created color picker
+                // Update note counter
+                const counterField = document.querySelector(`#resource-id-${newNote.resource_id} .notes-counter-field`);
+                const counterInt = parseInt(counterField.innerText);
+                console.log(counterField, counterInt);
+                counterField.innerText = (counterInt + 1);
+                // initialize the newly created color picker
+                jscolor.install('body'); 
                 sortTagsRow();
                 sortNotesToggle();
                 // fade in animation
@@ -2008,14 +2017,14 @@
     }
 
 // Function to handle cancellation
-function cancelDelete() {
+    function cancelDelete() {
     // Hide the confirmation popup without submitting the form
     document.getElementById('confirmation-popup').style.display = 'none';
 }
 
 // Delete Item (DELETE request using Axios)
 // Function to handle deletion when user confirms
-function confirmDelete() {
+    function confirmDelete() {
     // Hide the confirmation popup
     document.getElementById('confirmation-popup').style.display = 'none';
 
@@ -2055,6 +2064,10 @@ function confirmDelete() {
             } else if (route == "/delete-note") { //animation and delete for notes
                 itemElement.classList.add('fade-out');
                 setTimeout(() => {
+                    // Update note counter
+                    const counterField = document.querySelector(`#resource-id-${itemResourceId} .notes-counter-field`);
+                    const counterInt = parseInt(counterField.innerText);
+                    counterField.innerText = (counterInt - 1);
                     itemElement.remove();
                 }, 300);
             } else if (route == "/delete-tag") { //animation and delete for tags
